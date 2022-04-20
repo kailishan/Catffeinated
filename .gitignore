@@ -3,3 +3,5 @@ out/
 .vs
 /x64/
 src/x64/
+src/x64/Debug
+Debug/
