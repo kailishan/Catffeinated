@@ -7,6 +7,7 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include <glad/glad.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "gameObject.h"
 #include "GLSL.h"
 #include "Program.h"
 #include "MatrixStack.h"
@@ -21,12 +22,11 @@ using namespace std;
 using namespace glm;
 shared_ptr<Shape> shape;
 
-
 double get_last_elapsed_time()
 {
 	static double lasttime = glfwGetTime();
 	double actualtime = glfwGetTime();
-	double difference = actualtime- lasttime;
+	double difference = actualtime - lasttime;
 	lasttime = actualtime;
 	return difference;
 }
@@ -51,139 +51,6 @@ glm::vec3 midpoint(shared_ptr<Shape> shape)
     return midpoint;
 }
 
-class gameObject
-{
-public:
-
-	glm::vec3 pos, vel;
-	float rad, rot;
-	bool destroying = false;
-	bool destroyed = false;
-	glm::mat4 matrix = mat4(1);
-
-	gameObject()
-	{
-		//pos = glm::vec3(rand() % 25 - 12, 0, rand() % 25 - 12);
-		pos = glm::vec3((rand() % 25) -12, 0.35, (rand() % 25) - 12);
-		//rot = glm::radians((float)(rand() % 361)); // y-axis
-		//vel = vec3(0, 0, 0); // random x and y velocity
-		float velocities[] = { 0.05f, 0.025f, 0.0125f, -0.0125f, -0.025f, -0.05f };
-		vel = vec3(velocities[rand() % 6], 0.0f, velocities[rand() % 6]);
-		rot = tan(vel.z / vel.x);
-		//vel = vec3(static_cast <float> (rand()) / static_cast <float> (1) * 0.00000000075, 0, static_cast <float> (rand()) / static_cast <float> (1) * 0.00000000075); // random x and y velocity
-		vec3 posDirection = glm::normalize(pos);
-		vec3 velDirection = glm::normalize(vel);
-		float angle = acos(glm::dot(posDirection, velDirection));
-
-		rad = .5;
-		cout << "x: " << pos.x << " z: " << pos.z << endl;
-	}
-
-	bool isColliding(gameObject other)
-	{
-		if (destroying || other.destroying)
-			return false;
-		float d = distance(pos.x, pos.y, pos.z, other.pos.x, other.pos.y, other.pos.z);
-		if (d > rad + other.rad)
-			return false;
-		else if (d <= rad + other.rad && !other.destroying) {
-			vel.x = -vel.x;
-			vel.z = -vel.z;
-			return true;
-		}
-		else
-			return false;
-	}
-
-	void destroy(double ftime)
-	{
-		rad -= 0.01;
-		vel.x = 0;
-		vel.y = 0;
-		if (rad <= 0)
-		{
-			//destroying = false;
-			//cout << "(CAT) x:" << pos.x << " z: " << pos.z << endl;
-			destroyed = true;
-		}
-	}
-
-	void move(double ftime)
-	{	
-		/*
-		if (pos.x > 12.5 && vel.x > 0)
-			vel.x = -vel.x;
-		if (pos.x < -12.5 && vel.x < 0)
-			vel.x = -vel.x;
-		if (pos.z > 12.5 && vel.z > 0)
-			vel.z = -vel.z;
-		if (pos.z < -12.5 && vel.z < 0)
-			vel.z = -vel.z;
-			*/
-		rot = atan(vel.z / vel.x);
-		if (vel.z < 0)
-			rot += radians(180.f);
-		
-		glm::mat4 R = glm::rotate(glm::mat4(1), rot, glm::vec3(0.0f, 1.0f, 0.0f));
-		R = formRotationMatrix(ftime);
-		vec4 dir = vec4(vel, 1);
-
-		if (pos.x + dir.x > 12.5 || pos.x + dir.x < -12.5) {
-			pos = pos;
-			vel.x = -vel.x;
-		}
-		else if (pos.z + dir.z > 12.5 || pos.z + dir.z < -12.5) {
-			pos = pos;
-			vel.z = -vel.z; 
-		}
-		else
-			pos += glm::vec3(dir.x, dir.y, dir.z);
-
-		glm::mat4 T = glm::translate(glm::mat4(1), pos);
-		matrix = T * R;
-	}
-
-	void process(vector <gameObject> others, int index, double ftime)
-	{
-		if (destroyed)
-			return;
-		if (destroying) {
-			destroy(ftime);
-			return;
-		}
-		else
-		{
-			for (int i = 0; i < others.size(); i++)
-			{
-				if (i == index)
-					continue;
-				else if (isColliding(others.at(i)))
-					continue;
-			}
-		}
-		move(ftime);
-	}
-
-	glm::mat4 formRotationMatrix(float frametime)
-    {
-        glm::vec3 dogMid = midpoint(shape);
-        glm::vec3 curPos = pos;
-
-        glm::vec3 dest = curPos + vel * frametime;
-
-        // vector in direction to look at
-        glm::vec3 forward = glm::normalize(dest - curPos);
-        glm::vec3 left = glm::normalize(glm::cross(vec3(0, 1, 0), forward));
-        glm::vec3 up = glm::cross(forward, left);
-        // dog originally points forward, e.g. in +z direction
-        // need to rotate dog to align with forward...
-        glm::mat4 rot = glm::mat4(vec4(left.x, left.y, left.z, 0), vec4(0, 1, 0, 0),
-            vec4(forward.x, forward.y, forward.z, 0), vec4(0, 0, 0, 1));
-
-        return rot;
-    }
-};
-
 class camera
 {
 public:
@@ -203,15 +70,15 @@ public:
 
 	bool isColliding(gameObject other)
 	{
-		float d = distance(-pos.x, -pos.y, -pos.z, other.pos.x, other.pos.y, other.pos.z);
-		if (d > rad + other.rad)
+		float d = distance(-pos.x, -pos.y, -pos.z, other.getPos().x, other.getPos().y, other.getPos().z);
+		if (d > rad + other.getRad())
 			return false;
-		else if (d <= rad + other.rad && !other.destroying)
+		else if (d <= rad + other.getRad() && !other.getDestroying())
 		{
 			score++;
 			cout << "CATS BOOPED: " << score << endl;
 			//cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
-			other.destroying = true;
+			other.setDestroying(true);
 			return true;
 		}
 		else
@@ -268,7 +135,6 @@ public:
 
 camera mycam;
 
-
 class gameManager
 {
 public:
@@ -279,18 +145,18 @@ public:
 	int framecount = 0;
 	vector <gameObject> objects;
 
-	gameManager()
+	gameManager(shared_ptr<Shape> shape)
 	{
 		srand(glfwGetTime());
 		while (count <= 14)
 		{
-			spawnGameObject();
+			spawnGameObject(shape);
 		}
 	}
 
-	void spawnGameObject()
+	void spawnGameObject(shared_ptr<Shape> shape)
 	{
-		gameObject object = gameObject();
+		gameObject object = gameObject(shape);
 		objects.push_back(object);
 		count++;
 	}
@@ -300,22 +166,21 @@ public:
 		vector <int> destroyList; 
 		for (int i = 0; i < objects.size(); i++)
 		{
-			if (mycam.isColliding(objects.at(i)) && !objects.at(i).destroying) // CHECK COLLISION W/ PLAYER
+			if (mycam.isColliding(objects.at(i)) && !objects.at(i).getDestroying()) // CHECK COLLISION W/ PLAYER
 			{
-				objects.at(i).destroying = true;
+				objects.at(i).setDestroying(true);
 				count--;
 				cout << "CATS REMAINING: " << count << endl;
 				//score++;
 				//cout << "OBJECTS DESTROYED: " << score << endl;
 			}
 			objects.at(i).process(objects, i, ftime); // CHECK COLLISION W/ GAME OBJECTS
-			if (objects.at(i).destroyed) // DESTROY OBJECT
+			if (objects.at(i).getDestroyed()) // DESTROY OBJECT
 			{
 				if (std::find(destroyList.begin(), destroyList.end(), i) != destroyList.end())
 					destroyList.push_back(i);
 			}
 		}
-
 
 		// destroy list
 		if (destroyList.size() == 0)
@@ -337,9 +202,6 @@ public:
 
 	}
 };
-
-gameManager myManager;
-
 
 class Application : public EventCallbacks
 {
@@ -645,7 +507,6 @@ public:
 		heightshader->addAttribute("vertTex");
 	}
 
-
 	/****DRAW
 	This is the most important function in your program - this is where you
 	will actually issue the commands to draw any geometry you have set up to
@@ -712,11 +573,11 @@ public:
 		for (int i = 0; i < myManager.objects.size(); i++)
 		{
 			gameObject currObj = myManager.objects.at(i);
-			vec3 currPos = currObj.pos;
-			S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.rad));
+			vec3 currPos = currObj.getPos();
+			S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
 			T = glm::translate(glm::mat4(1.0f), currPos);
-			glm::mat4 R = glm::rotate(glm::mat4(1), currObj.rot, glm::vec3(0, 1, 0));
-			M = myManager.objects.at(i).matrix * S;
+			glm::mat4 R = glm::rotate(glm::mat4(1), currObj.getRot(), glm::vec3(0, 1, 0));
+			M = myManager.objects.at(i).getMatrix() * S;
 			glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 			shape->draw(progL, false);
 		}
@@ -750,6 +611,8 @@ public:
 
 	}
 
+
+
 };
 //******************************************************************************************
 int main(int argc, char **argv)
@@ -775,6 +638,7 @@ int main(int argc, char **argv)
 	// Initialize scene.
 	application->init(resourceDir);
 	application->initGeom();
+
 
 	// Loop until the user closes the window.
 	while(! glfwWindowShouldClose(windowManager->getHandle()))
