@@ -7,6 +7,8 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include <glad/glad.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "camera.h"
+#include "gameObject.h"
 #include "GLSL.h"
 #include "Program.h"
 #include "MatrixStack.h"
@@ -19,27 +21,21 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include <glm/gtc/matrix_transform.hpp>
 using namespace std;
 using namespace glm;
-shared_ptr<Shape> shape;
 
+shared_ptr<Shape> shape;
+camera mycam;
+float deltaTimeCamera = 0.0f;
+float lastFrame = 0.0f;
 
 double get_last_elapsed_time()
 {
 	static double lasttime = glfwGetTime();
 	double actualtime = glfwGetTime();
-	double difference = actualtime- lasttime;
+	double difference = actualtime - lasttime;
 	lasttime = actualtime;
 	return difference;
 }
 
-float distance(float x1, float y1,
-	float z1, float x2,
-	float y2, float z2)
-{
-	float d = sqrt(pow(x2 - x1, 2) +
-		pow(y2 - y1, 2) +
-		pow(z2 - z1, 2) * 1.0);
-	return d;
-}
 
 glm::vec3 midpoint(shared_ptr<Shape> shape)
 {
@@ -50,224 +46,6 @@ glm::vec3 midpoint(shared_ptr<Shape> shape)
 
     return midpoint;
 }
-
-class gameObject
-{
-public:
-
-	glm::vec3 pos, vel;
-	float rad, rot;
-	bool destroying = false;
-	bool destroyed = false;
-	glm::mat4 matrix = mat4(1);
-
-	gameObject()
-	{
-		//pos = glm::vec3(rand() % 25 - 12, 0, rand() % 25 - 12);
-		pos = glm::vec3((rand() % 25) -12, 0.35, (rand() % 25) - 12);
-		//rot = glm::radians((float)(rand() % 361)); // y-axis
-		//vel = vec3(0, 0, 0); // random x and y velocity
-		float velocities[] = { 0.05f, 0.025f, 0.0125f, -0.0125f, -0.025f, -0.05f };
-		vel = vec3(velocities[rand() % 6], 0.0f, velocities[rand() % 6]);
-		rot = tan(vel.z / vel.x);
-		//vel = vec3(static_cast <float> (rand()) / static_cast <float> (1) * 0.00000000075, 0, static_cast <float> (rand()) / static_cast <float> (1) * 0.00000000075); // random x and y velocity
-		vec3 posDirection = glm::normalize(pos);
-		vec3 velDirection = glm::normalize(vel);
-		float angle = acos(glm::dot(posDirection, velDirection));
-
-		rad = .5;
-		cout << "x: " << pos.x << " z: " << pos.z << endl;
-	}
-
-	bool isColliding(gameObject other)
-	{
-		if (destroying || other.destroying)
-			return false;
-		float d = distance(pos.x, pos.y, pos.z, other.pos.x, other.pos.y, other.pos.z);
-		if (d > rad + other.rad)
-			return false;
-		else if (d <= rad + other.rad && !other.destroying) {
-			vel.x = -vel.x;
-			vel.z = -vel.z;
-			return true;
-		}
-		else
-			return false;
-	}
-
-	void destroy(double ftime)
-	{
-		rad -= 0.01;
-		vel.x = 0;
-		vel.y = 0;
-		if (rad <= 0)
-		{
-			//destroying = false;
-			//cout << "(CAT) x:" << pos.x << " z: " << pos.z << endl;
-			destroyed = true;
-		}
-	}
-
-	void move(double ftime)
-	{	
-		/*
-		if (pos.x > 12.5 && vel.x > 0)
-			vel.x = -vel.x;
-		if (pos.x < -12.5 && vel.x < 0)
-			vel.x = -vel.x;
-		if (pos.z > 12.5 && vel.z > 0)
-			vel.z = -vel.z;
-		if (pos.z < -12.5 && vel.z < 0)
-			vel.z = -vel.z;
-			*/
-		rot = atan(vel.z / vel.x);
-		if (vel.z < 0)
-			rot += radians(180.f);
-		
-		glm::mat4 R = glm::rotate(glm::mat4(1), rot, glm::vec3(0.0f, 1.0f, 0.0f));
-		R = formRotationMatrix(ftime);
-		vec4 dir = vec4(vel, 1);
-
-		if (pos.x + dir.x > 12.5 || pos.x + dir.x < -12.5) {
-			pos = pos;
-			vel.x = -vel.x;
-		}
-		else if (pos.z + dir.z > 12.5 || pos.z + dir.z < -12.5) {
-			pos = pos;
-			vel.z = -vel.z; 
-		}
-		else
-			pos += glm::vec3(dir.x, dir.y, dir.z);
-
-		glm::mat4 T = glm::translate(glm::mat4(1), pos);
-		matrix = T * R;
-	}
-
-	void process(vector <gameObject> others, int index, double ftime)
-	{
-		if (destroyed)
-			return;
-		if (destroying) {
-			destroy(ftime);
-			return;
-		}
-		else
-		{
-			for (int i = 0; i < others.size(); i++)
-			{
-				if (i == index)
-					continue;
-				else if (isColliding(others.at(i)))
-					continue;
-			}
-		}
-		move(ftime);
-	}
-
-	glm::mat4 formRotationMatrix(float frametime)
-    {
-        glm::vec3 dogMid = midpoint(shape);
-        glm::vec3 curPos = pos;
-
-        glm::vec3 dest = curPos + vel * frametime;
-
-        // vector in direction to look at
-        glm::vec3 forward = glm::normalize(dest - curPos);
-        glm::vec3 left = glm::normalize(glm::cross(vec3(0, 1, 0), forward));
-        glm::vec3 up = glm::cross(forward, left);
-        // dog originally points forward, e.g. in +z direction
-        // need to rotate dog to align with forward...
-        glm::mat4 rot = glm::mat4(vec4(left.x, left.y, left.z, 0), vec4(0, 1, 0, 0),
-            vec4(forward.x, forward.y, forward.z, 0), vec4(0, 0, 0, 1));
-
-        return rot;
-    }
-};
-
-class camera
-{
-public:
-
-	glm::vec3 pos, rot;
-	int w, a, s, d, p;
-	GLFWwindow* window;
-	float rad = 0.8f;
-	int score = 0;
-
-	camera()
-	{
-		w = a = s = d = p = 0;
-		pos = glm::vec3(0, -1, 0);
-		rot = glm::vec3(0, 0, 0);
-	}
-
-	bool isColliding(gameObject other)
-	{
-		float d = distance(-pos.x, -pos.y, -pos.z, other.pos.x, other.pos.y, other.pos.z);
-		if (d > rad + other.rad)
-			return false;
-		else if (d <= rad + other.rad && !other.destroying)
-		{
-			score++;
-			cout << "CATS BOOPED: " << score << endl;
-			//cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
-			other.destroying = true;
-			return true;
-		}
-		else
-			return false;
-	}
-
-	glm::mat4 process(double ftime)
-	{
-		if (p == 1)
-		{
-			//cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
-			p = 0;
-		}
-		float speed = 0;
-		double xpos, ypos;
-
-		if (w == 1 || a == 1)
-		{
-			speed = 6 * ftime;
-		}
-		else if (s == 1 || d == 1)
-		{
-			speed = -6 * ftime;
-		}
-		float yangle = 0;
-
-		glfwGetCursorPos(window, &xpos, &ypos);
-		xpos = xpos * 0.005;
-		ypos = ypos * 0.005;
-
-		glm::mat4 R = glm::rotate(glm::mat4(1), (float)xpos, glm::vec3(0, 1, 0));
-		glm::mat4 R2 = glm::rotate(glm::mat4(1), (float)ypos, glm::vec3(1, 0, 0));
-
-		vec4 dir = vec4(0, 0, 0, 1);
-
-		if (w == 1 || s == 1)
-			dir = glm::vec4(0, 0, speed, 1);
-		else if (a == 1 || d == 1)
-			dir = glm::vec4(speed, 0, 0, 1);
-
-		dir = dir * R;
-
-		if (pos.x + dir.x > 12.5 || pos.x + dir.x < -12.5 || pos.z + dir.z > 12.5 || pos.z + dir.z < -12.5)
-			pos = pos;
-		else
-			pos += glm::vec3(dir.x, dir.y, dir.z);
-
-		//cout << "x: " << pos.x << " z: " << pos.z << endl;
-		glm::mat4 T = glm::translate(glm::mat4(1), pos);
-
-		return R2 * R * T;
-	}
-};
-
-camera mycam;
-
 
 class gameManager
 {
@@ -290,7 +68,7 @@ public:
 
 	void spawnGameObject()
 	{
-		gameObject object = gameObject();
+		gameObject object = gameObject(shape);
 		objects.push_back(object);
 		count++;
 	}
@@ -300,22 +78,21 @@ public:
 		vector <int> destroyList; 
 		for (int i = 0; i < objects.size(); i++)
 		{
-			if (mycam.isColliding(objects.at(i)) && !objects.at(i).destroying) // CHECK COLLISION W/ PLAYER
+			if (mycam.isColliding(objects.at(i)) && !objects.at(i).getDestroying()) // CHECK COLLISION W/ PLAYER
 			{
-				objects.at(i).destroying = true;
+				objects.at(i).setDestroying(true);
 				count--;
 				cout << "CATS REMAINING: " << count << endl;
 				//score++;
 				//cout << "OBJECTS DESTROYED: " << score << endl;
 			}
 			objects.at(i).process(objects, i, ftime); // CHECK COLLISION W/ GAME OBJECTS
-			if (objects.at(i).destroyed) // DESTROY OBJECT
+			if (objects.at(i).getDestroyed()) // DESTROY OBJECT
 			{
 				if (std::find(destroyList.begin(), destroyList.end(), i) != destroyList.end())
 					destroyList.push_back(i);
 			}
 		}
-
 
 		// destroy list
 		if (destroyList.size() == 0)
@@ -338,15 +115,13 @@ public:
 	}
 };
 
-gameManager myManager;
-
-
 class Application : public EventCallbacks
 {
 
 public:
 
 	WindowManager * windowManager = nullptr;
+	std::shared_ptr<gameManager> myManager;
 
 	// Our shader program
 	std::shared_ptr<Program> prog, progL, heightshader;
@@ -370,39 +145,39 @@ public:
 		
 		if (key == GLFW_KEY_W && action == GLFW_PRESS)
 		{
-			mycam.w = 1;
+			mycam.setw(1);
 		}
 		if (key == GLFW_KEY_W && action == GLFW_RELEASE)
 		{
-			mycam.w = 0;
+			mycam.setw(0);
 		}
 		if (key == GLFW_KEY_S && action == GLFW_PRESS)
 		{
-			mycam.s = 1;
+			mycam.sets(1);
 		}
 		if (key == GLFW_KEY_S && action == GLFW_RELEASE)
 		{
-			mycam.s = 0;
+			mycam.sets(0);
 		}
 		if (key == GLFW_KEY_A && action == GLFW_PRESS)
 		{
-			mycam.a = 1;
+			mycam.seta(1);
 		}
 		if (key == GLFW_KEY_A && action == GLFW_RELEASE)
 		{
-			mycam.a = 0;
+			mycam.seta(0);
 		}
 		if (key == GLFW_KEY_D && action == GLFW_PRESS)
 		{
-			mycam.d = 1;
+			mycam.setd(1);
 		}
 		if (key == GLFW_KEY_D && action == GLFW_RELEASE)
 		{
-			mycam.d = 0;
+			mycam.setd(0);
 		}
 		if (key == GLFW_KEY_P && action == GLFW_PRESS)
 		{
-			mycam.p = 1;
+			mycam.setp(1);
 		}
 	}
 
@@ -434,6 +209,38 @@ public:
 			glBufferSubData(GL_ARRAY_BUFFER, sizeof(float)*6, sizeof(float)*2, newPt);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
+	}
+
+	void cursorCallback(GLFWwindow* window, double xpos, double ypos) 
+	{
+		if (mycam.isFirstMouse()) {
+			lastX = xpos;
+			lastY = ypos;
+			mycam.toggleFirstMouse();
+		}
+
+		float xoffset = xpos - lastX;
+		float yoffset = lastY - ypos;
+		lastX = xpos;
+		lastY = ypos;
+
+		float sensitivity = 0.5f;
+		xoffset *= sensitivity;
+		yoffset *= sensitivity;
+
+		yaw += xoffset;
+		pitch += yoffset;
+
+		if (pitch > 89.0f)
+			pitch = 89.0f;
+		if (pitch < -89.0f)
+			pitch = -89.0f;
+
+		glm::vec3 direction;
+		direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+		direction.y = sin(glm::radians(pitch));
+		direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+		mycam.setFront(glm::normalize(direction));
 	}
 
 	//if the window is resized, capture the new size and reset the viewport
@@ -514,6 +321,10 @@ public:
 		shape->loadMesh(resourceDirectory + "/Cat_Low.obj");
 		shape->resize();
 		shape->init();
+
+		// have to initialize after mesh or shape is nullptr
+		myManager = make_shared<gameManager>();
+
 
 		int width, height, channels;
 		char filepath[1000];
@@ -645,7 +456,6 @@ public:
 		heightshader->addAttribute("vertTex");
 	}
 
-
 	/****DRAW
 	This is the most important function in your program - this is where you
 	will actually issue the commands to draw any geometry you have set up to
@@ -654,7 +464,7 @@ public:
 	void render()
 	{
 		double frametime = get_last_elapsed_time();
-		myManager.process(frametime);
+		myManager->process(frametime);
 
 		// Get current frame buffer size.
 		int width, height;
@@ -702,21 +512,21 @@ public:
 		glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, &P[0][0]);
 		glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, &V[0][0]);
 		glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-		glUniform3fv(progL->getUniform("campos"), 1, &mycam.pos[0]);
+		glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Texture);
 
 		glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
 		glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
 
-		for (int i = 0; i < myManager.objects.size(); i++)
+		for (int i = 0; i < myManager->objects.size(); i++)
 		{
-			gameObject currObj = myManager.objects.at(i);
-			vec3 currPos = currObj.pos;
-			S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.rad));
+			gameObject currObj = myManager->objects.at(i);
+			vec3 currPos = currObj.getPos();
+			S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
 			T = glm::translate(glm::mat4(1.0f), currPos);
-			glm::mat4 R = glm::rotate(glm::mat4(1), currObj.rot, glm::vec3(0, 1, 0));
-			M = myManager.objects.at(i).matrix * S;
+			glm::mat4 R = glm::rotate(glm::mat4(1), currObj.getRot(), glm::vec3(0, 1, 0));
+			M = myManager->objects.at(i).getMatrix() * S;
 			glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 			shape->draw(progL, false);
 		}
@@ -732,12 +542,12 @@ public:
 		glUniformMatrix4fv(heightshader->getUniform("V"), 1, GL_FALSE, &V[0][0]);
 		
 		
-		vec3 offset = mycam.pos;
+		vec3 offset = mycam.getPos();
 		offset.y = 0;
 		offset.x = 0; // (int)offset.x;
 		offset.z = 0; // (int)offset.z;
 		glUniform3fv(heightshader->getUniform("camoff"), 1, &offset[0]);
-		glUniform3fv(heightshader->getUniform("campos"), 1, &mycam.pos[0]);
+		glUniform3fv(heightshader->getUniform("campos"), 1, &mycam.getPos()[0]);
 		glBindVertexArray(VertexArrayID);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferIDBox);
 		glActiveTexture(GL_TEXTURE0);
@@ -749,6 +559,8 @@ public:
 		heightshader->unbind();
 
 	}
+
+
 
 };
 //******************************************************************************************
@@ -768,13 +580,14 @@ int main(int argc, char **argv)
 	windowManager->init(1920, 1080);
 	windowManager->setEventCallbacks(application);
 	application->windowManager = windowManager;
-	mycam.window = windowManager->getHandle();
+	mycam.setWindow(windowManager->getHandle());
 
 	/* This is the code that will likely change program to program as you
 		may need to initialize or set up different data and state */
 	// Initialize scene.
 	application->init(resourceDir);
 	application->initGeom();
+
 
 	// Loop until the user closes the window.
 	while(! glfwWindowShouldClose(windowManager->getHandle()))
