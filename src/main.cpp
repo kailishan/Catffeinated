@@ -57,16 +57,16 @@ public:
 	int framecount = 0;
 	vector <gameObject> objects;
 
-	gameManager()
+	gameManager(shared_ptr<Shape> shape)
 	{
 		srand(glfwGetTime());
 		while (count <= 14)
 		{
-			spawnGameObject();
+			spawnGameObject(shape);
 		}
 	}
 
-	void spawnGameObject()
+	void spawnGameObject(shared_ptr<Shape> shape)
 	{
 		gameObject object = gameObject(shape);
 		objects.push_back(object);
@@ -109,7 +109,7 @@ public:
 			count++;
 			cout << "CATS REMAINING: " << count << endl;
 			framecount = 0;
-			spawnGameObject();
+			spawnGameObject(shape);
 		}
 
 	}
@@ -323,7 +323,7 @@ public:
 		shape->init();
 
 		// have to initialize after mesh or shape is nullptr
-		myManager = make_shared<gameManager>();
+		myManager = make_shared<gameManager>(shape);
 
 
 		int width, height, channels;

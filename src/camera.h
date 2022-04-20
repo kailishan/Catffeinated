@@ -58,5 +58,4 @@ class camera
     GLFWwindow* window;
     float rad = 0.8f;
     int score = 0;
-
 };
