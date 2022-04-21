@@ -507,7 +507,9 @@ public:
 		// Draw the box using GLSL.
 		progL->bind();
 
+		// TODO set to glm lookAt
 		V = mycam.process(frametime);
+		mycam.processKeyboard(frametime);
 		//send the matrices to the shaders
 		glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, &P[0][0]);
 		glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, &V[0][0]);

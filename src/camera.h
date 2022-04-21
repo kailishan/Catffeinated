@@ -24,6 +24,7 @@ class camera
     }
 
     bool isColliding(gameObject other);
+    void processKeyboard(double ftime);
     glm::mat4 process(double ftime);
 
     bool isFirstMouse() { return firstMouse; }
