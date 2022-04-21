@@ -6,6 +6,17 @@ void gameManager::spawnGameObject(std::shared_ptr<Shape> shape) {
   count++;
 }
 
+// temp kibble code
+void gameManager::spawnStaticGameObject(std::shared_ptr<Shape> shape) {
+    gameObject object = gameObject(shape);
+    object.vel = 0;
+    object.rad = 0.1;
+    object.isStatic = true;
+    object.setMesh(object.kibble);
+    objects.push_back(object);
+    count++;
+}
+
 void gameManager::process(camera mycam, double ftime) {
   std::vector<int> destroyList;
   for (int i = 0; i < objects.size(); i++) {

@@ -12,10 +12,12 @@ public:
     srand(glfwGetTime());
     while (count <= 14) {
       spawnGameObject(curShape);
+      spawnStaticGameObject(shape);
     }
   }
 
   void spawnGameObject(std::shared_ptr<Shape> shape);
+  void spawnStaticGameObject(std::shared_ptr<Shape> shape);
   void process(camera mycam, double ftime);
 
   std::vector<gameObject> getObjects() { return objects; }

@@ -92,7 +92,8 @@ void gameObject::process(std::vector<gameObject> others, int index,
         continue;
     }
   }
-  move(ftime);
+  if (!isStatic)
+    move(ftime);
 }
 
 glm::mat4 gameObject::formRotationMatrix(float frametime) {

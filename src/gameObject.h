@@ -25,8 +25,14 @@ public:
   void setMesh(std::shared_ptr<Shape> newMesh) { mesh = newMesh; }
   void setDestroying(bool newVal) { destroying = newVal; }
 
+  //temp
+  std::shared_ptr<Shape> kibble;
+  //
+
 private:
   std::shared_ptr<Shape> mesh;
+
+  bool isStatic = false;
   glm::vec3 pos, vel;
   float rad, rot;
   bool destroying = false;
