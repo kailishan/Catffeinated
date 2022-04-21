@@ -423,6 +423,7 @@ public:
     glBindTexture(GL_TEXTURE_2D, Texture);
 
     glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
+    glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
     glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
 
     for (int i = 0; i < myManager->getObjects().size(); i++) {
@@ -430,6 +431,7 @@ public:
       vec3 currPos = currObj.getPos();
       if (!currObj.getIsStatic()) {
         // transform cats
+        glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
         S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
         T = glm::translate(glm::mat4(1.0f), currPos);
         glm::mat4 R =
@@ -437,11 +439,12 @@ public:
         M = myManager->getObjects().at(i).getMatrix() * S;
       }
       else {
+        glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
         // transform spheres
         S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
-        currPos.y = 5.0f;
+        currPos.y = 0.1f;
         T = glm::translate(glm::mat4(1.0f), currPos);
-        M = myManager->getObjects().at(i).getMatrix() * S;
+        M = T * S * myManager->getObjects().at(i).getMatrix();
       }
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
       // draw object's mesh; this helps generalize

@@ -14,7 +14,7 @@ bool camera::isColliding(gameObject other) {
     return false;
   } else if (d <= rad + other.getRad() && !other.getDestroying()) {
     score++;
-    std::cout << "CATS BOOPED: " << score << std::endl;
+    std::cout << "TOUCHING SOMETHING: " << score << std::endl;
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
     other.setDestroying(true);
     return true;
