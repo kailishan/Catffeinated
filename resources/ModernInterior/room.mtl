@@ -1,0 +1,183 @@
+# File produced by Open Asset Import Library (http://www.assimp.sf.net)
+# (assimp v4.1.0)
+
+newmtl Light_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd _id.jpg
+
+newmtl RoomVase_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./concreteStair.png
+
+newmtl Shadow_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./LightAndShadow.png
+
+newmtl Trunk_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./palmTrunk.png
+
+newmtl WindowGlass_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./WindowGlass.png
+
+newmtl alumiForward_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./alumiFrame.png
+
+newmtl fourColors_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./concreteStair.png
+
+newmtl furniture_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./furniture.png
+
+newmtl gardenFloor_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./gardenFloor.png
+
+newmtl gardenVase_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./concreteStair.png
+
+newmtl object_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./concreteStair.png
+
+newmtl palmTrunk_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./palmTrunk.png
+
+newmtl plantInside_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./plantInside.png
+
+newmtl plantOutside_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./plantOutside.png
+
+newmtl stair_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./concreteStair.png
+
+newmtl tennjyou_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./ceil.png
+
+newmtl wall_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./concrete.png
+
+newmtl woodenFloor_mat
+Kd 1 1 1
+Ka 0 0 0
+Ks 1 1 1
+Ke 0 0 0
+Ni 1
+Ns 10
+illum 2
+map_Kd ./woodenFloor.png
+
