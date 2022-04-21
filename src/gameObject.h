@@ -22,16 +22,18 @@ public:
   bool getDestroyed() { return destroyed; }
   bool getIsStatic() { return isStatic; }
   glm::mat4 getMatrix() { return matrix; }
+  int getObjectType() { return objectType; }
 
   void setMesh(std::shared_ptr<Shape> newMesh) { mesh = newMesh; }
   void setDestroying(bool newVal) { destroying = newVal; }
   void setVelocity(glm::vec3 newVel) { vel = newVel; }
   void setRadius(float newRad) { rad = newRad; }
   void setIsStatic(bool newVal) { isStatic = newVal; }
+  void setObjectType(int type) { objectType = type; };
   
 private:
   std::shared_ptr<Shape> mesh;
-
+  int objectType;
   bool isStatic = false;
   glm::vec3 pos, vel;
   float rad, rot;

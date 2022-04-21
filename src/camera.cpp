@@ -12,30 +12,70 @@ bool camera::isColliding(gameObject other) {
   d = glm::distance(pos, other.getPos());
   if (d > rad + other.getRad()) {
     return false;
-  } else if (d <= rad + other.getRad() && !other.getDestroying()) {
+  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 1) {
     score++;
     std::cout << "TOUCHING SOMETHING: " << score << std::endl;
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
     other.setDestroying(true);
     return true;
+  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 0)
+  {
+    takeDamage();
+    return false;
   } else
     return false;
 }
 
 /* change camera position wrt keyboard input */
 void camera::processKeyboard(double ftime) {
+  incrementFrames();
   float cameraSpeed = 5.0f * ftime;
+  glm::vec3 nextPos = pos;
+
 
   if (w)
-    pos += cameraSpeed * front;
+    nextPos += cameraSpeed * front;
   if (s)
-    pos -= cameraSpeed * front;
+    nextPos -= cameraSpeed * front;
   if (a)
-    pos -= glm::normalize(glm::cross(front, up)) * cameraSpeed;
+    nextPos -= glm::normalize(glm::cross(front, up)) * cameraSpeed;
   if (d)
-    pos += glm::normalize(glm::cross(front, up)) * cameraSpeed;
+    nextPos += glm::normalize(glm::cross(front, up)) * cameraSpeed;
+
+
+  if (nextPos.x > 12.5 || nextPos.x < -12.5 || nextPos.z > 12.5 ||
+      nextPos.z < -12.5)
+      pos = pos;
+  else
+      pos = nextPos;
 
   pos.y = 1.0f;
+}
+
+
+int camera::getHealth()
+{
+    return playerHealth;
+}
+
+void camera::takeDamage()
+{
+  if (dt > 3.0f) {
+    dt = 0.0f;
+    decrementHealth();
+    std::cout << "Health: " << playerHealth << std::endl;
+  }
+  /*
+    if (invinFrames > 150)
+    {
+        resetFrames();
+        decrementHealth();
+        std::cout << "Health: " << playerHealth << std::endl;
+        //std::cout << "OUCH" << std::endl;
+    }
+    */
+    if (playerHealth == 0)
+        exit(0);
 }
 
 void camera::processCursor(float xoffset, float yoffset) {
