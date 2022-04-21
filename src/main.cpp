@@ -10,6 +10,7 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "MatrixStack.h"
 #include "Program.h"
 #include "camera.h"
+#include "gameManager.h"
 #include "gameObject.h"
 #include "math.h"
 #include "stb_image.h"
@@ -22,10 +23,7 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 using namespace std;
 using namespace glm;
 
-shared_ptr<Shape> shape;
 camera mycam;
-float deltaTimeCamera = 0.0f;
-float lastFrame = 0.0f;
 
 double get_last_elapsed_time() {
   static double lasttime = glfwGetTime();
@@ -35,82 +33,15 @@ double get_last_elapsed_time() {
   return difference;
 }
 
-glm::vec3 midpoint(shared_ptr<Shape> shape) {
-  glm::vec3 midpoint;
-  midpoint.x = (shape->min.x + shape->max.x) / 2;
-  midpoint.y = (shape->min.y + shape->max.y) / 2;
-  midpoint.z = (shape->min.z + shape->max.z) / 2;
-
-  return midpoint;
-}
-
-class gameManager {
-public:
-  int maxObj = 15;
-  int count = 0;
-  int bound = 12.5; // min/max x/y
-  int score = 0;
-  int framecount = 0;
-  vector<gameObject> objects;
-
-  gameManager(shared_ptr<Shape> shape) {
-    srand(glfwGetTime());
-    while (count <= 14) {
-      spawnGameObject(shape);
-    }
-  }
-
-  void spawnGameObject(shared_ptr<Shape> shape) {
-    gameObject object = gameObject(shape);
-    objects.push_back(object);
-    count++;
-  }
-
-  void process(double ftime) {
-    vector<int> destroyList;
-    for (int i = 0; i < objects.size(); i++) {
-      if (mycam.isColliding(objects.at(i)) &&
-          !objects.at(i).getDestroying()) // CHECK COLLISION W/ PLAYER
-      {
-        objects.at(i).setDestroying(true);
-        count--;
-        cout << "CATS REMAINING: " << count << endl;
-        // score++;
-        // cout << "OBJECTS DESTROYED: " << score << endl;
-      }
-      objects.at(i).process(objects, i,
-                            ftime);     // CHECK COLLISION W/ GAME OBJECTS
-      if (objects.at(i).getDestroyed()) // DESTROY OBJECT
-      {
-        if (std::find(destroyList.begin(), destroyList.end(), i) !=
-            destroyList.end())
-          destroyList.push_back(i);
-      }
-    }
-
-    // destroy list
-    if (destroyList.size() == 0)
-      return;
-    for (int i = destroyList.size() - 1; i >= 0; i--) {
-      objects.erase(objects.begin() + i);
-      count--;
-    }
-
-    framecount++;
-    if (count < 10 && framecount > 300) {
-      count++;
-      cout << "CATS REMAINING: " << count << endl;
-      framecount = 0;
-      spawnGameObject(shape);
-    }
-  }
-};
-
 class Application : public EventCallbacks {
 
 public:
   WindowManager *windowManager = nullptr;
   std::shared_ptr<gameManager> myManager;
+
+  // shapes to draw
+  shared_ptr<Shape> cat;
+
 
   // Our shader program
   std::shared_ptr<Program> prog, progL, heightshader;
@@ -272,15 +203,15 @@ public:
     init_mesh();
 
     string resourceDirectory = "../resources";
-    // Initialize mesh.
-    shape = make_shared<Shape>();
+    // Initialize cat.
+    cat = make_shared<Shape>();
     // shape->loadMesh(resourceDirectory + "/t800.obj");
-    shape->loadMesh(resourceDirectory + "/Cat_Low.obj");
-    shape->resize();
-    shape->init();
+    cat->loadMesh(resourceDirectory + "/Cat_Low.obj");
+    cat->resize();
+    cat->init();
 
     // have to initialize after mesh or shape is nullptr
-    myManager = make_shared<gameManager>(shape);
+    myManager = make_shared<gameManager>(cat);
 
     int width, height, channels;
     char filepath[1000];
@@ -354,6 +285,7 @@ public:
 
   // General OGL initialization - set OGL state here
   void init(const std::string &resourceDirectory) {
+
     GLSL::checkVersion();
 
     // Set background color.
@@ -424,7 +356,7 @@ public:
   ********/
   void render() {
     double frametime = get_last_elapsed_time();
-    myManager->process(frametime);
+    myManager->process(mycam, frametime);
 
     // Get current frame buffer size.
     int width, height;
@@ -487,16 +419,17 @@ public:
     glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
     glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
 
-    for (int i = 0; i < myManager->objects.size(); i++) {
-      gameObject currObj = myManager->objects.at(i);
+    for (int i = 0; i < myManager->getObjects().size(); i++) {
+      gameObject currObj = myManager->getObjects().at(i);
       vec3 currPos = currObj.getPos();
       S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
       T = glm::translate(glm::mat4(1.0f), currPos);
       glm::mat4 R =
           glm::rotate(glm::mat4(1), currObj.getRot(), glm::vec3(0, 1, 0));
-      M = myManager->objects.at(i).getMatrix() * S;
+      M = myManager->getObjects().at(i).getMatrix() * S;
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      shape->draw(progL, false);
+      // draw object's mesh; this helps generalize
+      currObj.getMesh()->draw(progL, false);
     }
     // shape->draw(prog,FALSE);
 

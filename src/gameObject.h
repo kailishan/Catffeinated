@@ -14,6 +14,7 @@ public:
   void destroy(double ftime);
   void move(double ftime);
   void process(std::vector<gameObject> others, int index, double ftime);
+  std::shared_ptr<Shape> getMesh() { return mesh; }
   glm::vec3 getPos() { return pos; }
   float getRad() { return rad; }
   float getRot() { return rot; }

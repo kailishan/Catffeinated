@@ -59,6 +59,7 @@ void camera::processCursor(float xoffset, float yoffset) {
   front = glm::normalize(direction);
 }
 
+// currently unused
 glm::mat4 camera::process(double ftime) {
   if (p == 1) {
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;

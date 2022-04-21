@@ -68,5 +68,7 @@ private:
   int p = 0;
   GLFWwindow *window;
   float rad = 1.0f;
+
+  // This should probably be in a different class. Okay for now
   int score = 0;
 };
