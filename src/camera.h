@@ -5,6 +5,7 @@
 
 #include "WindowManager.h"
 #include "gameObject.h"
+#include "gameManager.h"
 
 class camera {
 public:
@@ -33,6 +34,7 @@ public:
   glm::vec3 getUp() { return up; }
   float getLastX() { return lastX; }
   float getLastY() { return lastY; }
+  gameManager* getManager() { return manager; }
   int wkey() { return w; }
   int akey() { return a; }
   int skey() { return s; }
@@ -48,8 +50,10 @@ public:
   void sets(int newS) { s = newS; }
   void setd(int newD) { d = newD; }
   void setp(int newP) { p = newP; }
+  void setManager(gameManager* m) { manager = m; }
 
 private:
+  gameManager* manager;
   glm::vec3 up = glm::vec3(0, 1, 0);
   glm::vec3 pos, rot, front;
 

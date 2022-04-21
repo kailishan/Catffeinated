@@ -358,6 +358,7 @@ public:
 
   void initGame() { 
     myManager = make_shared<gameManager>(cat, sphere);
+    //mycam.setManager(myManager.get());
   }
 
   /****DRAW

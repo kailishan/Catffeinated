@@ -2,6 +2,7 @@
 
 void gameManager::spawnGameObject(std::shared_ptr<Shape> shape) {
   gameObject object = gameObject(shape);
+  object.setObjectType(0);
   objects.push_back(object);
   count++;
 }
@@ -9,12 +10,25 @@ void gameManager::spawnGameObject(std::shared_ptr<Shape> shape) {
 // temp kibble code
 void gameManager::spawnStaticGameObject(std::shared_ptr<Shape> shape) {
   gameObject object = gameObject(shape);
+  object.setObjectType(1);
   object.setVelocity(glm::vec3(0, 0, 0));
   object.setRadius(0.1f);
   object.setIsStatic(true);
   object.setMesh(shape);
   objects.push_back(object);
   count++;
+}
+
+int gameManager::getHealth()
+{
+    return playerHealth;
+}
+
+void gameManager::takeDamage()
+{
+    playerHealth--;
+    if (playerHealth == 0)
+        exit(0);
 }
 
 void gameManager::process(camera mycam, double ftime) {

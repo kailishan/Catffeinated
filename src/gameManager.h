@@ -20,6 +20,8 @@ public:
   void spawnGameObject(std::shared_ptr<Shape> shape);
   void spawnStaticGameObject(std::shared_ptr<Shape> shape);
   void process(camera mycam, double ftime);
+  int getHealth();
+  void takeDamage();
 
   std::vector<gameObject> getObjects() { return objects; }
 
@@ -28,6 +30,7 @@ public:
   //
 
  private:
+  int playerHealth = 5;
   int maxObj = 15;
   int count = 0;
   int bound = 12.5; // min/max x/y

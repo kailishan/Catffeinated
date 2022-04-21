@@ -12,12 +12,15 @@ bool camera::isColliding(gameObject other) {
   d = glm::distance(pos, other.getPos());
   if (d > rad + other.getRad()) {
     return false;
-  } else if (d <= rad + other.getRad() && !other.getDestroying()) {
+  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 0) {
     score++;
     std::cout << "TOUCHING SOMETHING: " << score << std::endl;
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
     other.setDestroying(true);
     return true;
+  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 1)
+  {
+    getManager()->takeDamage();
   } else
     return false;
 }
