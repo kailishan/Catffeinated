@@ -40,7 +40,7 @@ public:
   std::shared_ptr<gameManager> myManager;
 
   // shapes to draw
-  shared_ptr<Shape> cat, sphere;
+  shared_ptr<Shape> cat, sphere, room;
 
 
   // Our shader program
@@ -214,6 +214,11 @@ public:
     sphere->loadMesh(resourceDirectory + "/sphere.obj");
     sphere->resize();
     sphere->init();
+
+    room = make_shared<Shape>();
+    room->loadMesh(resourceDirectory + "/acroom/acroom.obj");
+    room->resize();
+    room->init();
 
     int width, height, channels;
     char filepath[1000];
@@ -406,6 +411,10 @@ public:
     // M =  TransZ * RotateY * RotateX * S;
     M = S * T;
 
+
+
+
+
     // Draw the box using GLSL.
     progL->bind();
 
@@ -447,6 +456,12 @@ public:
       // draw object's mesh; this helps generalize
       currObj.getMesh()->draw(progL, false);
     }
+
+    M = glm::mat4(1);
+    S = glm::scale(glm::mat4(1.0f), glm::vec3(10, 10, 10));
+    M = S;
+    glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+    room->draw(progL, false);
     // shape->draw(prog,FALSE);
 
     heightshader->bind();
