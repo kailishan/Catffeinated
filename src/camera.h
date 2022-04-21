@@ -34,11 +34,13 @@ public:
   float getLastX() { return lastX; }
   float getLastY() { return lastY; }
   int getIFrames() { return invinFrames; }
+  float getDt() { return dt; }
   int wkey() { return w; }
   int akey() { return a; }
   int skey() { return s; }
   int dkey() { return d; }
 
+  void setDt(float newDelta) { dt = newDelta; }
   void toggleFirstMouse() { firstMouse = false; }
   void setWindow(GLFWwindow *win) { window = win; }
   void setFront(glm::vec3 direction) { front = direction; }
@@ -60,6 +62,7 @@ public:
 private:
   int playerHealth = 5;
   int invinFrames = 150;
+  float dt = 0.0f;
   glm::vec3 up = glm::vec3(0, 1, 0);
   glm::vec3 pos, rot, front;
 

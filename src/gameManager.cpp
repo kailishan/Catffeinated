@@ -33,7 +33,7 @@ void gameManager::takeDamage()
 }
 */
 
-void gameManager::process(camera mycam, double ftime) {
+void gameManager::process(camera &mycam, double ftime) {
   std::vector<int> destroyList;
   for (int i = 0; i < objects.size(); i++) {
     if (mycam.isColliding(objects.at(i)) &&

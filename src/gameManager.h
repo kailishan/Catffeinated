@@ -19,7 +19,7 @@ public:
 
   void spawnGameObject(std::shared_ptr<Shape> shape);
   void spawnStaticGameObject(std::shared_ptr<Shape> shape);
-  void process(camera mycam, double ftime);
+  void process(camera &mycam, double ftime);
   //int getHealth();
   //void takeDamage();
 

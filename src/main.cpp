@@ -369,6 +369,7 @@ public:
   void render() {
     double frametime = get_last_elapsed_time();
     myManager->process(mycam, frametime);
+    mycam.setDt(mycam.getDt() + frametime);
 
     // Get current frame buffer size.
     int width, height;
@@ -412,10 +413,6 @@ public:
     glm::mat4 R = glm::mat4(1.0f);
     // M =  TransZ * RotateY * RotateX * S;
     M = S * T;
-
-
-
-
 
     // Draw the box using GLSL.
     progL->bind();
