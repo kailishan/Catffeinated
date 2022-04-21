@@ -40,7 +40,7 @@ public:
   std::shared_ptr<gameManager> myManager;
 
   // shapes to draw
-  shared_ptr<Shape> cat, sphere, room;
+  shared_ptr<Shape> cat, sphere, room, table;
 
 
   // Our shader program
@@ -219,6 +219,11 @@ public:
     room->loadMesh(resourceDirectory + "acroom/acroom.obj");
     room->resize();
     room->init();
+
+    table = make_shared<Shape>();
+    table->loadMesh(resourceDirectory + "../Table_Carre.obj");
+    table->resize();
+    table->init();
 
     int width, height, channels;
     char filepath[1000];
@@ -463,8 +468,14 @@ public:
     M = glm::mat4(1);
     S = glm::scale(glm::mat4(1.0f), glm::vec3(.05, .05, .05));
     //M = S;
+    glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
     glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
     room->draw(progL, false);
+
+    M = glm::mat4(1.0f);
+    glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+    table->draw(progL, false);
+
     // shape->draw(prog,FALSE);
 
     
