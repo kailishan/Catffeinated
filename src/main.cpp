@@ -370,6 +370,7 @@ public:
     double frametime = get_last_elapsed_time();
     myManager->process(mycam, frametime);
     mycam.setDt(mycam.getDt() + frametime);
+    cout << "delta time: " << mycam.getDt() << endl;
 
     // Get current frame buffer size.
     int width, height;

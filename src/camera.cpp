@@ -60,6 +60,12 @@ int camera::getHealth()
 
 void camera::takeDamage()
 {
+  if (dt > 3.0f) {
+    dt = 0.0f;
+    decrementHealth();
+    std::cout << "Health: " << playerHealth << std::endl;
+  }
+  /*
     if (invinFrames > 150)
     {
         resetFrames();
@@ -67,6 +73,7 @@ void camera::takeDamage()
         std::cout << "Health: " << playerHealth << std::endl;
         //std::cout << "OUCH" << std::endl;
     }
+    */
     if (playerHealth == 0)
         exit(0);
 }
