@@ -5,7 +5,6 @@
 
 #include "WindowManager.h"
 #include "gameObject.h"
-#include "gameManager.h"
 
 class camera {
 public:
@@ -35,7 +34,6 @@ public:
   float getLastX() { return lastX; }
   float getLastY() { return lastY; }
   int getIFrames() { return invinFrames; }
-  gameManager* getManager() { return manager; }
   int wkey() { return w; }
   int akey() { return a; }
   int skey() { return s; }
@@ -51,14 +49,16 @@ public:
   void sets(int newS) { s = newS; }
   void setd(int newD) { d = newD; }
   void setp(int newP) { p = newP; }
-  void setManager(gameManager* m) { manager = m; }
   
   void incrementFrames() { invinFrames++; }
   void resetFrames() { invinFrames = 0; }
 
+  int getHealth();
+  void takeDamage();
+
 private:
+  int playerHealth = 5;
   int invinFrames = 0;
-  gameManager* manager;
   glm::vec3 up = glm::vec3(0, 1, 0);
   glm::vec3 pos, rot, front;
 

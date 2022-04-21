@@ -19,6 +19,7 @@ void gameManager::spawnStaticGameObject(std::shared_ptr<Shape> shape) {
   count++;
 }
 
+/*
 int gameManager::getHealth()
 {
     return playerHealth;
@@ -30,6 +31,7 @@ void gameManager::takeDamage()
     if (playerHealth == 0)
         exit(0);
 }
+*/
 
 void gameManager::process(camera mycam, double ftime) {
   std::vector<int> destroyList;

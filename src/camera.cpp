@@ -12,16 +12,18 @@ bool camera::isColliding(gameObject other) {
   d = glm::distance(pos, other.getPos());
   if (d > rad + other.getRad()) {
     return false;
-  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 0) {
+  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 1) {
     score++;
     std::cout << "TOUCHING SOMETHING: " << score << std::endl;
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
     other.setDestroying(true);
     return true;
-  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 1 && getIFrames() > 300)
+  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 0)
   {
+    std::cout << "OUCH" << std::endl;
     resetFrames();
-    getManager()->takeDamage();
+    takeDamage();
+    return false;
   } else
     return false;
 }
@@ -40,6 +42,20 @@ void camera::processKeyboard(double ftime) {
     pos += glm::normalize(glm::cross(front, up)) * cameraSpeed;
 
   pos.y = 1.0f;
+}
+
+
+int camera::getHealth()
+{
+    return playerHealth;
+}
+
+void camera::takeDamage()
+{
+    playerHealth--;
+    std::cout << "Health: " << playerHealth << std::endl;
+    if (playerHealth == 0)
+        exit(0);
 }
 
 void camera::processCursor(float xoffset, float yoffset) {

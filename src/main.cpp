@@ -499,30 +499,31 @@ public:
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, Texture2);
 
-    T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 0.0f, -12.5f - 12.5f));
+    glm::mat4 R2 = glm::mat4(1.0f);
+
+    T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 2.0f, -12.5f));
     R = glm::rotate(glm::mat4(1.0f), radians(90.0f), glm::vec3(1, 0, 0));
     M = T * R;
     glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
     glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
         (void*)0);
-
-    T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 0.0f, -12.5f + 12.5f));
-    R = glm::rotate(glm::mat4(1.0f), radians(90.0f), glm::vec3(1, 0, 0));
-    M = T * R;
+    
+    //T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 0.0f, -12.5f));
+    //R = glm::rotate(glm::mat4(1.0f), radians(-90.0f), glm::vec3(1, 0, 0));
+    R2 = glm::rotate(mat4(1.0f), radians(90.0f), glm::vec3(0, 1, 0));
+    M = R2 * T * R;
+    glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+    glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
+        (void*)0);
+    
+    R2 = glm::rotate(mat4(1.0f), radians(180.0f), glm::vec3(0, 1, 0));
+    M = R2 * T * R;
     glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
     glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
         (void*)0);
 
-    T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f - 12.5f, 0.0f, -12.5f));
-    R = glm::rotate(glm::mat4(1.0f), radians(90.0f), glm::vec3(0, 0, 1));
-    M = T * R;
-    glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-    glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
-        (void*)0);
-
-    T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f + 12.5f, 0.0f, -12.5f));
-    R = glm::rotate(glm::mat4(1.0f), radians(90.0f), glm::vec3(0, 0, 1));
-    M = T * R;
+    R2 = glm::rotate(mat4(1.0f), radians(270.0f), glm::vec3(0, 1, 0));
+    M = R2 * T * R;
     glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
     glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
         (void*)0);
