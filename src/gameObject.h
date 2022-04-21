@@ -20,14 +20,16 @@ public:
   float getRot() { return rot; }
   bool getDestroying() { return destroying; }
   bool getDestroyed() { return destroyed; }
+  bool getIsStatic() { return isStatic; }
   glm::mat4 getMatrix() { return matrix; }
 
   void setMesh(std::shared_ptr<Shape> newMesh) { mesh = newMesh; }
   void setDestroying(bool newVal) { destroying = newVal; }
+  void setVelocity(glm::vec3 newVel) { vel = newVel; }
+  void setRadius(float newRad) { rad = newRad; }
+  void setIsStatic(bool newVal) { isStatic = newVal; }
+  
 
-  //temp
-  std::shared_ptr<Shape> kibble;
-  //
 
 private:
   std::shared_ptr<Shape> mesh;

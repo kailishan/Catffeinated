@@ -8,13 +8,13 @@ void gameManager::spawnGameObject(std::shared_ptr<Shape> shape) {
 
 // temp kibble code
 void gameManager::spawnStaticGameObject(std::shared_ptr<Shape> shape) {
-    gameObject object = gameObject(shape);
-    object.vel = 0;
-    object.rad = 0.1;
-    object.isStatic = true;
-    object.setMesh(object.kibble);
-    objects.push_back(object);
-    count++;
+  gameObject object = gameObject(shape);
+  object.setVelocity(glm::vec3(0, 0, 0));
+  object.setRadius(0.05);
+  object.setIsStatic(true);
+  object.setMesh(shape);
+  objects.push_back(object);
+  count++;
 }
 
 void gameManager::process(camera mycam, double ftime) {

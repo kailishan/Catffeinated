@@ -40,7 +40,7 @@ public:
   std::shared_ptr<gameManager> myManager;
 
   // shapes to draw
-  shared_ptr<Shape> cat;
+  shared_ptr<Shape> cat, sphere;
 
 
   // Our shader program
@@ -210,8 +210,10 @@ public:
     cat->resize();
     cat->init();
 
-    // have to initialize after mesh or shape is nullptr
-    myManager = make_shared<gameManager>(cat);
+    sphere = make_shared<Shape>();
+    sphere->loadMesh(resourceDirectory + "/sphere.obj");
+    sphere->resize();
+    sphere->init();
 
     int width, height, channels;
     char filepath[1000];
@@ -349,6 +351,10 @@ public:
     heightshader->addAttribute("vertTex");
   }
 
+  void initGame() { 
+    myManager = make_shared<gameManager>(cat, sphere);
+  }
+
   /****DRAW
   This is the most important function in your program - this is where you
   will actually issue the commands to draw any geometry you have set up to
@@ -422,11 +428,21 @@ public:
     for (int i = 0; i < myManager->getObjects().size(); i++) {
       gameObject currObj = myManager->getObjects().at(i);
       vec3 currPos = currObj.getPos();
-      S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
-      T = glm::translate(glm::mat4(1.0f), currPos);
-      glm::mat4 R =
-          glm::rotate(glm::mat4(1), currObj.getRot(), glm::vec3(0, 1, 0));
-      M = myManager->getObjects().at(i).getMatrix() * S;
+      if (!currObj.getIsStatic()) {
+        // transform cats
+        S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
+        T = glm::translate(glm::mat4(1.0f), currPos);
+        glm::mat4 R =
+            glm::rotate(glm::mat4(1), currObj.getRot(), glm::vec3(0, 1, 0));
+        M = myManager->getObjects().at(i).getMatrix() * S;
+      }
+      else {
+        // transform spheres
+        S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
+        currPos.y = 5.0f;
+        T = glm::translate(glm::mat4(1.0f), currPos);
+        M = myManager->getObjects().at(i).getMatrix() * S;
+      }
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
       // draw object's mesh; this helps generalize
       currObj.getMesh()->draw(progL, false);
@@ -488,6 +504,7 @@ int main(int argc, char **argv) {
   // Initialize scene.
   application->init(resourceDir);
   application->initGeom();
+  application->initGame();
 
   // Loop until the user closes the window.
   while (!glfwWindowShouldClose(windowManager->getHandle())) {

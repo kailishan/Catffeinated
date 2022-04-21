@@ -7,12 +7,13 @@
 
 class gameManager {
 public:
-  gameManager(std::shared_ptr<Shape> shape) {
+  gameManager(std::shared_ptr<Shape> shape, std::shared_ptr<Shape> shape2) {
+    kibble = shape2;
     curShape = shape;
     srand(glfwGetTime());
     while (count <= 14) {
       spawnGameObject(curShape);
-      spawnStaticGameObject(shape);
+      spawnStaticGameObject(kibble);
     }
   }
 
@@ -22,7 +23,11 @@ public:
 
   std::vector<gameObject> getObjects() { return objects; }
 
-  private:
+  //temp
+  std::shared_ptr<Shape> kibble;
+  //
+
+ private:
   int maxObj = 15;
   int count = 0;
   int bound = 12.5; // min/max x/y
