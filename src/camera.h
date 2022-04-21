@@ -34,6 +34,7 @@ public:
   glm::vec3 getUp() { return up; }
   float getLastX() { return lastX; }
   float getLastY() { return lastY; }
+  int getIFrames() { return invinFrames; }
   gameManager* getManager() { return manager; }
   int wkey() { return w; }
   int akey() { return a; }
@@ -51,8 +52,12 @@ public:
   void setd(int newD) { d = newD; }
   void setp(int newP) { p = newP; }
   void setManager(gameManager* m) { manager = m; }
+  
+  void incrementFrames() { invinFrames++; }
+  void resetFrames() { invinFrames = 0; }
 
 private:
+  int invinFrames = 0;
   gameManager* manager;
   glm::vec3 up = glm::vec3(0, 1, 0);
   glm::vec3 pos, rot, front;

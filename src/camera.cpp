@@ -18,8 +18,9 @@ bool camera::isColliding(gameObject other) {
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
     other.setDestroying(true);
     return true;
-  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 1)
+  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 1 && getIFrames() > 300)
   {
+    resetFrames();
     getManager()->takeDamage();
   } else
     return false;
@@ -64,6 +65,7 @@ void camera::processCursor(float xoffset, float yoffset) {
 
 // currently unused
 glm::mat4 camera::process(double ftime) {
+  incrementFrames();
   if (p == 1) {
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
     p = 0;
