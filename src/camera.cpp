@@ -8,9 +8,11 @@ float distance(float x1, float y1, float z1, float x2, float y2, float z2) {
 bool camera::isColliding(gameObject other) {
   float d = distance(-pos.x, -pos.y, -pos.z, other.getPos().x, other.getPos().y,
                      other.getPos().z);
-  if (d > rad + other.getRad())
+  // ?????????????????????????????????????????????
+  d = glm::distance(pos, other.getPos());
+  if (d > rad + other.getRad()) {
     return false;
-  else if (d <= rad + other.getRad() && !other.getDestroying()) {
+  } else if (d <= rad + other.getRad() && !other.getDestroying()) {
     score++;
     std::cout << "CATS BOOPED: " << score << std::endl;
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
@@ -22,16 +24,39 @@ bool camera::isColliding(gameObject other) {
 
 /* change camera position wrt keyboard input */
 void camera::processKeyboard(double ftime) {
-    float cameraSpeed = 2.5f * ftime;
+  float cameraSpeed = 5.0f * ftime;
 
-    if (w)
-        pos += cameraSpeed * front;
-    if (s)
-        pos -= cameraSpeed * front;
-    if (a)
-        pos -= glm::normalize(glm::cross(front, up)) * cameraSpeed;
-    if (d)
-        pos += glm::normalize(glm::cross(front, up)) * cameraSpeed;
+  if (w)
+    pos += cameraSpeed * front;
+  if (s)
+    pos -= cameraSpeed * front;
+  if (a)
+    pos -= glm::normalize(glm::cross(front, up)) * cameraSpeed;
+  if (d)
+    pos += glm::normalize(glm::cross(front, up)) * cameraSpeed;
+
+  pos.y = 1.0f;
+}
+
+void camera::processCursor(float xoffset, float yoffset) {
+  float sensitivity = 0.25f;
+
+  xoffset *= sensitivity;
+  yoffset *= sensitivity;
+
+  yaw += xoffset;
+  pitch += yoffset;
+
+  if (pitch > 89.0f)
+    pitch = 89.0f;
+  if (pitch < -89.0f)
+    pitch = -89.0f;
+
+  glm::vec3 direction;
+  direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+  direction.y = sin(glm::radians(pitch));
+  direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+  front = glm::normalize(direction);
 }
 
 glm::mat4 camera::process(double ftime) {
