@@ -29,8 +29,6 @@ public:
   void setRadius(float newRad) { rad = newRad; }
   void setIsStatic(bool newVal) { isStatic = newVal; }
   
-
-
 private:
   std::shared_ptr<Shape> mesh;
 

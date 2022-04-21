@@ -10,7 +10,7 @@ void gameManager::spawnGameObject(std::shared_ptr<Shape> shape) {
 void gameManager::spawnStaticGameObject(std::shared_ptr<Shape> shape) {
   gameObject object = gameObject(shape);
   object.setVelocity(glm::vec3(0, 0, 0));
-  object.setRadius(0.05);
+  object.setRadius(0.1f);
   object.setIsStatic(true);
   object.setMesh(shape);
   objects.push_back(object);
