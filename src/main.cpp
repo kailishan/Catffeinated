@@ -238,7 +238,7 @@ public:
                  GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     // texture 2
-    str = resourceDirectory + "/sky.jpg";
+    str = resourceDirectory + "/brickwall.jpg";
     strcpy(filepath, str.c_str());
     data = stbi_load(filepath, &width, &height, &channels, 4);
     glGenTextures(1, &Texture2);
@@ -409,6 +409,7 @@ public:
 
     glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f));
     glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    glm::mat4 R = glm::mat4(1.0f);
     // M =  TransZ * RotateY * RotateX * S;
     M = S * T;
 
@@ -493,6 +494,38 @@ public:
     glBindTexture(GL_TEXTURE_2D, Texture);
     glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
                    (void *)0);
+
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, Texture2);
+
+    T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 0.0f, -12.5f - 12.5f));
+    R = glm::rotate(glm::mat4(1.0f), radians(90.0f), glm::vec3(1, 0, 0));
+    M = T * R;
+    glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+    glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
+        (void*)0);
+
+    T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 0.0f, -12.5f + 12.5f));
+    R = glm::rotate(glm::mat4(1.0f), radians(90.0f), glm::vec3(1, 0, 0));
+    M = T * R;
+    glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+    glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
+        (void*)0);
+
+    T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f - 12.5f, 0.0f, -12.5f));
+    R = glm::rotate(glm::mat4(1.0f), radians(90.0f), glm::vec3(0, 0, 1));
+    M = T * R;
+    glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+    glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
+        (void*)0);
+
+    T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f + 12.5f, 0.0f, -12.5f));
+    R = glm::rotate(glm::mat4(1.0f), radians(90.0f), glm::vec3(0, 0, 1));
+    M = T * R;
+    glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+    glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
+        (void*)0);
 
     heightshader->unbind();
     
