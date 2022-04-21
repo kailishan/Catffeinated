@@ -49,7 +49,8 @@ public:
   void sets(int newS) { s = newS; }
   void setd(int newD) { d = newD; }
   void setp(int newP) { p = newP; }
-  
+
+  void decrementHealth() { playerHealth = playerHealth - 1; }
   void incrementFrames() { invinFrames++; }
   void resetFrames() { invinFrames = 0; }
 
@@ -58,7 +59,7 @@ public:
 
 private:
   int playerHealth = 5;
-  int invinFrames = 0;
+  int invinFrames = 150;
   glm::vec3 up = glm::vec3(0, 1, 0);
   glm::vec3 pos, rot, front;
 
