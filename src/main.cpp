@@ -439,7 +439,7 @@ public:
 
 
     // TODO set to glm lookAt
-    V = glm::lookAt(mycam.getPos() - mycam.getFront() * vec3(2.0), mycam.getPos() + mycam.getFront(),
+    V = glm::lookAt(mycam.getPos() - mycam.getFront() * vec3(1.5), mycam.getPos() + mycam.getFront(),
                     mycam.getUp());
     mycam.processKeyboard(frametime);
     // V = mycam.process(frametime);
@@ -457,8 +457,9 @@ public:
     glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
     glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
 
-
-    M = glm::translate(glm::mat4(1.0f), mycam.getPos());
+    T = glm::translate(glm::mat4(1.0f), vec3(mycam.getPos().x, mycam.getPos().y - 0.5, mycam.getPos().z));
+    S = glm::scale(glm::mat4(1.0f), glm::vec3(0.5));
+    M = T * S;
     glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
     // draw object's mesh; this helps generalize
     cat->draw(progL, false);
