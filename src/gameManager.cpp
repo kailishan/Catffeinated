@@ -39,9 +39,11 @@ void gameManager::process(camera &mycam, double ftime) {
     if (mycam.isColliding(objects.at(i)) &&
         !objects.at(i).getDestroying()) // CHECK COLLISION W/ PLAYER
     {
+
+      spawnStaticGameObject(objects.at(i).getMesh());
       objects.at(i).setDestroying(true);
       count--;
-      std::cout << "CATS REMAINING: " << count << std::endl;
+      //std::cout << "CATS REMAINING: " << count << std::endl;
       // score++;
       // cout << "OBJECTS DESTROYED: " << score << endl;
     }
@@ -64,10 +66,10 @@ void gameManager::process(camera &mycam, double ftime) {
   }
 
   framecount++;
-  if (count < 10 && framecount > 300) {
+  if (count < 15 && framecount > 150) {
     count++;
-    std::cout << "CATS REMAINING: " << count << std::endl;
+    //std::cout << "CATS REMAINING: " << count << std::endl;
     framecount = 0;
-    spawnGameObject(curShape);
+    spawnStaticGameObject(curShape);
   }
 }

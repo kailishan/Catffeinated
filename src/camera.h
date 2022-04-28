@@ -35,10 +35,13 @@ public:
   float getLastY() { return lastY; }
   int getIFrames() { return invinFrames; }
   float getDt() { return dt; }
+  glm::mat4 getModel() { return cammodel; }
   int wkey() { return w; }
   int akey() { return a; }
   int skey() { return s; }
   int dkey() { return d; }
+  int zkey() { return z; }
+
 
   void setDt(float newDelta) { dt = newDelta; }
   void toggleFirstMouse() { firstMouse = false; }
@@ -51,15 +54,19 @@ public:
   void sets(int newS) { s = newS; }
   void setd(int newD) { d = newD; }
   void setp(int newP) { p = newP; }
+  void setz(int newZ) { z = newZ; }
 
   void decrementHealth() { playerHealth = playerHealth - 1; }
   void incrementFrames() { invinFrames++; }
   void resetFrames() { invinFrames = 0; }
+  void changeZMode() { zMode = !zMode; }
 
   int getHealth();
   void takeDamage();
 
 private:
+  glm::mat4 cammodel;
+  bool zMode = false;
   int playerHealth = 5;
   int invinFrames = 150;
   float dt = 0.0f;
@@ -79,6 +86,7 @@ private:
   int s = 0;
   int d = 0;
   int p = 0;
+  int z = 0;
   GLFWwindow *window;
   float rad = 1.0f;
 
