@@ -14,7 +14,7 @@ bool camera::isColliding(gameObject other) {
     return false;
   } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 1) {
     score++;
-    std::cout << "TOUCHING SOMETHING: " << score << std::endl;
+    std::cout << "Kibble Collected: " << score << std::endl;
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
     other.setDestroying(true);
     return true;
@@ -41,6 +41,15 @@ void camera::processKeyboard(double ftime) {
     nextPos -= glm::normalize(glm::cross(front, up)) * cameraSpeed;
   if (d)
     nextPos += glm::normalize(glm::cross(front, up)) * cameraSpeed;
+  if (z && dt > 1.0)
+  {
+      dt = 0.0;
+      changeZMode();
+      if (zMode)
+          std::cout << "Zoe Mode: ON" << std::endl;
+      else
+          std::cout << "Zoe Mode: OFF" << std::endl;
+  }
 
 
   if (nextPos.x > 12.5 || nextPos.x < -12.5 || nextPos.z > 12.5 ||
@@ -60,7 +69,7 @@ int camera::getHealth()
 
 void camera::takeDamage()
 {
-  if (dt > 3.0f) {
+  if (dt > 3.0f && !zMode) {
     dt = 0.0f;
     decrementHealth();
     std::cout << "Health: " << playerHealth << std::endl;
@@ -96,6 +105,9 @@ void camera::processCursor(float xoffset, float yoffset) {
   direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
   direction.y = sin(glm::radians(pitch));
   direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+  modeldirection = direction;
+
   front = glm::normalize(direction);
 }
 
@@ -140,5 +152,6 @@ glm::mat4 camera::process(double ftime) {
   // cout << "x: " << pos.x << " z: " << pos.z << endl;
   glm::mat4 T = glm::translate(glm::mat4(1), pos);
 
+  cammodel = R2;
   return R2 * R * T;
 }

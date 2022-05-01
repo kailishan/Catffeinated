@@ -88,7 +88,21 @@ public:
     }
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
       mycam.setp(1);
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
+    if (key == GLFW_KEY_P && action == GLFW_RELEASE) {
+        mycam.setp(0);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+
+    if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
+        mycam.setz(1);
+    }
+    if (key == GLFW_KEY_Z && action == GLFW_RELEASE) {
+        mycam.setz(0);
+    }
+
   }
 
   // callback for the mouse when clicked move the triangle when helper functions
@@ -422,8 +436,10 @@ public:
     // Draw the box using GLSL.
     progL->bind();
 
+
+
     // TODO set to glm lookAt
-    V = glm::lookAt(mycam.getPos(), mycam.getPos() + mycam.getFront(),
+    V = glm::lookAt(mycam.getPos() - mycam.getFront() * vec3(1.5), mycam.getPos() + mycam.getFront(),
                     mycam.getUp());
     mycam.processKeyboard(frametime);
     // V = mycam.process(frametime);
@@ -435,9 +451,25 @@ public:
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, Texture);
 
+
+
     glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
     glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
     glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
+
+    static float fcount = 0.0;
+    fcount += 0.01;
+
+    T = glm::translate(glm::mat4(1.0f), vec3(mycam.getPos().x, mycam.getPos().y - 0.5, mycam.getPos().z));
+    S = glm::scale(glm::mat4(1.0f), glm::vec3(0.5));
+    R = glm::rotate(glm::mat4(1.0f), atan(mycam.getFront().z/mycam.getFront().x), vec3(0, 1, 0));
+    //M = glm::lookAt(mycam.getPos(), mycam.getPos() + mycam.getFront(), mycam.getUp());
+    //glm::mat4 RT = glm::lookAt(-mycam.getPos(), -mycam.getPos() + mycam.getFront().x + mycam.getFront().z,
+    //    mycam.getUp());
+    M = T * S * R;
+    glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+    // draw object's mesh; this helps generalize
+    cat->draw(progL, false);
 
     for (int i = 0; i < myManager->getObjects().size(); i++) {
       gameObject currObj = myManager->getObjects().at(i);
@@ -553,7 +585,7 @@ int main(int argc, char **argv) {
   /* your main will always include a similar set up to establish your window
           and GL context, etc. */
   WindowManager *windowManager = new WindowManager();
-  windowManager->init(1920, 1080);
+  windowManager->init(1920, 18080);
   windowManager->setEventCallbacks(application);
 
   // allows cursor to remain within window while also hiding it
