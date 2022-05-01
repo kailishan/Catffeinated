@@ -462,8 +462,11 @@ public:
 
     T = glm::translate(glm::mat4(1.0f), vec3(mycam.getPos().x, mycam.getPos().y - 0.5, mycam.getPos().z));
     S = glm::scale(glm::mat4(1.0f), glm::vec3(0.5));
-    R = glm::rotate(glm::mat4(1.0f), atan(mycam.getModelDirection().z/mycam.getModelDirection().x), vec3(0, 1, 0));
-    M = T * S;
+    R = glm::rotate(glm::mat4(1.0f), atan(mycam.getFront().z/mycam.getFront().x), vec3(0, 1, 0));
+    //M = glm::lookAt(mycam.getPos(), mycam.getPos() + mycam.getFront(), mycam.getUp());
+    //glm::mat4 RT = glm::lookAt(-mycam.getPos(), -mycam.getPos() + mycam.getFront().x + mycam.getFront().z,
+    //    mycam.getUp());
+    M = T * S * R;
     glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
     // draw object's mesh; this helps generalize
     cat->draw(progL, false);
