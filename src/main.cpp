@@ -457,8 +457,12 @@ public:
     glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
     glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
 
+    static float fcount = 0.0;
+    fcount += 0.01;
+
     T = glm::translate(glm::mat4(1.0f), vec3(mycam.getPos().x, mycam.getPos().y - 0.5, mycam.getPos().z));
     S = glm::scale(glm::mat4(1.0f), glm::vec3(0.5));
+    R = glm::rotate(glm::mat4(1.0f), atan(mycam.getModelDirection().z/mycam.getModelDirection().x), vec3(0, 1, 0));
     M = T * S;
     glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
     // draw object's mesh; this helps generalize

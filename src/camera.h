@@ -36,6 +36,7 @@ public:
   int getIFrames() { return invinFrames; }
   float getDt() { return dt; }
   glm::mat4 getModel() { return cammodel; }
+  glm::vec3 getModelDirection() { return modeldirection; }
   int wkey() { return w; }
   int akey() { return a; }
   int skey() { return s; }
@@ -65,6 +66,7 @@ public:
   void takeDamage();
 
 private:
+  glm::vec3 modeldirection;
   glm::mat4 cammodel;
   bool zMode = false;
   int playerHealth = 5;

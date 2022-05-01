@@ -105,6 +105,9 @@ void camera::processCursor(float xoffset, float yoffset) {
   direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
   direction.y = sin(glm::radians(pitch));
   direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+
+  modeldirection = direction;
+
   front = glm::normalize(direction);
 }
 
@@ -149,6 +152,6 @@ glm::mat4 camera::process(double ftime) {
   // cout << "x: " << pos.x << " z: " << pos.z << endl;
   glm::mat4 T = glm::translate(glm::mat4(1), pos);
 
-  cammodel = R2 * R * T;
+  cammodel = R2;
   return R2 * R * T;
 }
