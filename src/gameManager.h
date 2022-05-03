@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include "camera.h"
 #include "gameObject.h"
 #include "GLFW/glfw3.h"

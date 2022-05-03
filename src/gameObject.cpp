@@ -55,7 +55,7 @@ void gameObject::move(double ftime) {
       vel.z = -vel.z;
   if (pos.z < -12.5 && vel.z < 0)
       vel.z = -vel.z;
-      */
+  */
   rot = atan(vel.z / vel.x);
   if (vel.z < 0)
     rot += glm::radians(180.f);
