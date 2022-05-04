@@ -94,6 +94,13 @@ void gameObject::process(std::vector<gameObject> others, int index,
   }
   if (!isStatic)
     move(ftime);
+  else { // KIBBLE SPIN
+    glm::mat4 R = glm::rotate(glm::mat4(1), (float)ftime, glm::vec3(0.0f, 1.0f, 0.0f));
+    R = formRotationMatrix(ftime);
+    matrix = R;
+    //matrix = glm::rotate(glm::mat4(1.0f), (float)ftime, glm::vec3(0.0f, 1.0f, 0.0f));
+  }
+
 }
 
 glm::mat4 gameObject::formRotationMatrix(float frametime) {

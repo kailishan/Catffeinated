@@ -40,7 +40,7 @@ public:
   std::shared_ptr<gameManager> myManager;
 
   // shapes to draw
-  shared_ptr<Shape> cat, sphere, room, table;
+  shared_ptr<Shape> cat, sphere, room, table, heart;
 
 
   // Our shader program
@@ -116,7 +116,7 @@ public:
 
       // change this to be the points converted to WORLD
       // THIS IS BROKEN< YOU GET TO FIX IT - yay!
-      newPt[0] = 0;
+      /*newPt[0] = 0;
       newPt[1] = 0;
 
       std::cout << "converted:" << newPt[0] << " " << newPt[1] << std::endl;
@@ -124,7 +124,7 @@ public:
       // update the vertex array with the updated points
       glBufferSubData(GL_ARRAY_BUFFER, sizeof(float) * 6, sizeof(float) * 2,
                       newPt);
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glBindBuffer(GL_ARRAY_BUFFER, 0);*/
     }
   }
 
@@ -238,6 +238,12 @@ public:
     table->loadMesh(resourceDirectory + "../Table_Carre.obj");
     table->resize();
     table->init();
+
+    heart = make_shared<Shape>();
+    heart->loadMesh(resourceDirectory + "/heart.obj");
+    heart->resize();
+    heart->init();
+
 
     int width, height, channels;
     char filepath[1000];
@@ -376,7 +382,7 @@ public:
   }
 
   void initGame() { 
-    myManager = make_shared<gameManager>(cat, sphere);
+    myManager = make_shared<gameManager>(cat, heart);
     //mycam.setManager(myManager.get());
   }
 
@@ -400,8 +406,7 @@ public:
     glClearColor(0.8f, 0.8f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Create the matrix stacks - please leave these alone for now
-
+    // Create the matrix stacks
     glm::mat4 V, M, P; // View, Model and Perspective matrix
     V = glm::mat4(1);
     M = glm::mat4(1);
@@ -433,9 +438,9 @@ public:
     // M =  TransZ * RotateY * RotateX * S;
     M = S * T;
 
+
     // Draw the box using GLSL.
     progL->bind();
-
 
 
     // TODO set to glm lookAt
@@ -492,7 +497,10 @@ public:
         S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
         currPos.y = 0.1f;
         T = glm::translate(glm::mat4(1.0f), currPos);
-        M = T * S * myManager->getObjects().at(i).getMatrix();
+        // kibble rotation
+        R = glm::rotate(glm::mat4(1), w*3, glm::vec3(0.0f, 1.0f, 0.0f));
+        M = T * R * S;
+        //M = T * S * myManager->getObjects().at(i).getMatrix();
       }
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
       // draw object's mesh; this helps generalize
