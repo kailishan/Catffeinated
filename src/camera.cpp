@@ -96,10 +96,11 @@ void camera::processCursor(float xoffset, float yoffset) {
   yaw += xoffset;
   pitch += yoffset;
 
-  if (pitch > 89.0f)
-    pitch = 89.0f;
-  if (pitch < -89.0f)
-    pitch = -89.0f;
+  // previously 89.0f
+  if (pitch > 20.0f)
+    pitch = 20.0f;
+  if (pitch < -20.0f)
+    pitch = -20.0f;
 
   glm::vec3 direction;
   direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
