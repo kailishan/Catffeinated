@@ -235,7 +235,8 @@ public:
     sphere->init();
 
     room = make_shared<Shape>();
-    room->loadMesh(resourceDirectory + "/acroom/acroom.obj");
+    string mtlPath = resourceDirectory + "/acroom/acroom .mtl";
+    room->loadMesh(resourceDirectory + "/acroom/acroom .obj", &mtlPath);
     room->resize();
     room->init();
 
@@ -489,11 +490,12 @@ public:
 
       // draw room
       M = glm::mat4(1);
-      S = glm::scale(glm::mat4(1.0f), glm::vec3(.05, .05, .05));
-      //M = S;
+      S = glm::scale(glm::mat4(1.0f), glm::vec3(12.5, 12.5, 12.5));
+      T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
+      M = T * S;
       glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      room->draw(progL, false);
+      room->draw(progL, true);
 
       M = glm::mat4(1.0f);
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
@@ -501,7 +503,7 @@ public:
 
       // shape->draw(prog,FALSE);
 
-
+      /*
       heightshader->bind();
       // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       // glm::mat4 TransY = glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f,
@@ -560,7 +562,7 @@ public:
           (void*)0);
 
       heightshader->unbind();
-
+      */
 
 
       prog->unbind();
