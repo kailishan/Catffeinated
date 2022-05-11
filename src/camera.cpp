@@ -14,6 +14,10 @@ bool camera::isColliding(gameObject other) {
     return false;
   } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 1) {
     score++;
+    if ((score > 0) && (score % 10 == 0)) {
+      speedBoost = 3;
+      std::cout << "speed boost activated" << std::endl;
+    }
     std::cout << "Kibble Collected: " << score << std::endl;
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
     other.setDestroying(true);
@@ -29,8 +33,15 @@ bool camera::isColliding(gameObject other) {
 /* change camera position wrt keyboard input */
 void camera::processKeyboard(double ftime) {
   incrementFrames();
-  float cameraSpeed = 5.0f * ftime;
+  float cameraSpeed = 5.0f * ftime * speedBoost;
   glm::vec3 nextPos = pos;
+
+  if (speedBoost > 1) {
+    speedBoost -= 0.1;
+    std::cout << "speed boost = " << speedBoost << std::endl;
+  }
+  else
+    speedBoost = 1;
 
 
   if (w)
