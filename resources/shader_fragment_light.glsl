@@ -12,7 +12,7 @@ void main()
 {
 	// Diffuse
 	vec3 norm = normalize(vertex_normal);
-	vec3 Lp = vec3(0, 0, 100);
+	vec3 Lp = vec3(0, 0, 10);
 	vec3 Ld = normalize(Lp - vertex_pos);
 	float diff = clamp(dot(norm, Ld), 0, 1);
 
