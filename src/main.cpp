@@ -255,6 +255,7 @@ public:
     char filepath[1000];
 
     // texture 1
+    /*
     string str = resourceDirectory + "/woodfloor.jpg";
     strcpy(filepath, str.c_str());
     unsigned char *data = stbi_load(filepath, &width, &height, &channels, 4);
@@ -267,11 +268,11 @@ public:
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glGenerateMipmap(GL_TEXTURE_2D);*/
     // texture 2
-    str = resourceDirectory + "/brickwall.jpg";
+    string str = resourceDirectory + "/brickwall.jpg";
     strcpy(filepath, str.c_str());
-    data = stbi_load(filepath, &width, &height, &channels, 4);
+    unsigned char *data = stbi_load(filepath, &width, &height, &channels, 4);
     glGenTextures(1, &Texture2);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, Texture2);
@@ -302,16 +303,14 @@ public:
     // set the 2 textures to the correct samplers in the fragment shader:
     GLuint Tex1Location = glGetUniformLocation(
         prog->pid, "tex"); // tex, tex2... sampler in the fragment shader
-    GLuint Tex2Location = glGetUniformLocation(prog->pid, "tex2");
     // Then bind the uniform samplers to texture units:
     glUseProgram(prog->pid);
     glUniform1i(Tex1Location, 0);
-    glUniform1i(Tex2Location, 1);
 
     Tex1Location = glGetUniformLocation(
         heightshader->pid,
         "tex"); // tex, tex2... sampler in the fragment shader
-    Tex2Location = glGetUniformLocation(heightshader->pid, "tex2");
+    GLuint Tex2Location = glGetUniformLocation(heightshader->pid, "tex2");
     // Then bind the uniform samplers to texture units:
     glUseProgram(heightshader->pid);
     glUniform1i(Tex1Location, 0);
@@ -405,6 +404,23 @@ public:
       return Cam;
   }
 
+  /* TODO fix */
+  mat4 SetOrthoMatrix(shared_ptr<Program> curShade) {
+      mat4 ortho = mat4(1.0);
+      ortho = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+
+      glUniformMatrix4fv(curShade->getUniform("LP"), 1, GL_FALSE, value_ptr(ortho));
+      return ortho;
+  }
+
+  /* TODO fix */
+  mat4 SetLightView(shared_ptr<Program> curShade, vec3 pos, vec3 LA, vec3 up) {
+      //mat4 Cam = mat4(1.0);
+      mat4 Cam = glm::lookAt(pos, LA, up);
+      glUniformMatrix4fv(curShade->getUniform("LV"), 1, GL_FALSE, value_ptr(Cam));
+      return Cam;
+  }
+
   /****DRAW
   This is the most important function in your program - this is where you
   will actually issue the commands to draw any geometry you have set up to
@@ -425,7 +441,6 @@ public:
       static float w = 0.0;
       w += 1.0 * frametime; // rotation angle
 
-      prog->bind();
       //set up all the matrices
 
 
@@ -488,18 +503,25 @@ public:
           currObj.getMesh()->draw(progL, false);
       }
 
+      
       // draw room
+      prog->bind();
+
       M = glm::mat4(1);
       S = glm::scale(glm::mat4(1.0f), glm::vec3(12.5, 12.5, 12.5));
       T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
       M = T * S;
-      glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
-      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      room->draw(progL, true);
+      glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+      glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+      glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      room->draw(prog, false);
 
+      prog->unbind();
+
+      /*
       M = glm::mat4(1.0f);
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      table->draw(progL, false);
+      table->draw(progL, false);*/
 
       // shape->draw(prog,FALSE);
 
@@ -564,8 +586,6 @@ public:
       heightshader->unbind();
       */
 
-
-      prog->unbind();
       assert(glGetError() == GL_NO_ERROR);
   }
 

@@ -31,6 +31,7 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
     cerr << errStr << endl;
   } else if (shapes.size()) {
     obj_count = shapes.size();
+    //cout << shapes.size() << endl;
     posBuf = new std::vector<float>[shapes.size()];
     norBuf = new std::vector<float>[shapes.size()];
     texBuf = new std::vector<float>[shapes.size()];
@@ -60,32 +61,35 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
     }
   }
   // material:
-  for (int i = 0; i < objMaterials.size(); i++)
-    if (objMaterials[i].diffuse_texname.size() > 0) {
-      char filepath[1000];
-      int width, height, channels;
-      string filename = objMaterials[i].ambient_texname;
-      int subdir = filename.rfind("\\");
-      if (subdir > 0)
-        filename = filename.substr(subdir + 1);
-      string str = *mtlpath + filename;
-      strcpy(filepath, str.c_str());
-      // stbi_load(char const *filename, int *x, int *y, int *comp, int
-      // req_comp)
+  for (int i = 0; i < objMaterials.size(); i++) {
+      if (objMaterials[i].diffuse_texname.size() > 0) {
+          cout << i << endl;
+          char filepath[1000];
+          int width, height, channels;
+          string filename = objMaterials[i].ambient_texname;
+          int subdir = filename.rfind("\\");
+          if (subdir > 0)
+              filename = filename.substr(subdir + 1);
+          string str = *mtlpath + filename;
+          cout << str << endl;
+          strcpy(filepath, str.c_str());
+          // stbi_load(char const *filename, int *x, int *y, int *comp, int
+          // req_comp)
 
-      unsigned char *data = loadimage(filepath, &width, &height, &channels, 4);
-      glGenTextures(1, &textureIDs[i]);
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, textureIDs[i]);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
-                   GL_UNSIGNED_BYTE, data);
-      glGenerateMipmap(GL_TEXTURE_2D);
-      // delete[] data;
-    }
+          unsigned char* data = loadimage(filepath, &width, &height, &channels, 4);
+          glGenTextures(1, &textureIDs[i]);
+          glActiveTexture(GL_TEXTURE0);
+          glBindTexture(GL_TEXTURE_2D, textureIDs[i]);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+              GL_UNSIGNED_BYTE, data);
+          glGenerateMipmap(GL_TEXTURE_2D);
+          // delete[] data;
+      }
+  }
 
   int z;
   z = 0;
@@ -245,6 +249,7 @@ void Shape::draw(const shared_ptr<Program> prog,
   for (int i = 0; i < obj_count; i++)
 
   {
+    //cout << i << endl;
     int h_pos, h_nor, h_tex;
     h_pos = h_nor = h_tex = -1;
 
