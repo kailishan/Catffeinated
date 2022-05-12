@@ -17,7 +17,7 @@ bool camera::isColliding(gameObject other) {
     std::cout << "Kibble Collected: " << score << std::endl;
     if ((score > 0) && (score % 10 == 0)) {
       speedBoost = 2;
-      std::cout << "speed boost activated" << std::endl;
+      //std::cout << "speed boost activated" << std::endl;
     }
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
     other.setDestroying(true);

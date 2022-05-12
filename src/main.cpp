@@ -433,8 +433,13 @@ public:
     glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
     glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
     glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
+
     glm::vec4 red = glm::vec4(1, 0.302, 0.302, 1);
-    glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
+    glm::vec4 green = glm::vec4(0.302, 1, 0.302, 1);
+    if (mycam.getSpeedBoost() > 1.0f)
+      glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
+    else
+      glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
 
     glm::vec3 pos = mycam.getPos();
     pos.y += 2.5f;
@@ -646,7 +651,7 @@ public:
         1000.0f); // so much type casting... GLM metods are quite funny ones
 
     // animation with the model matrix:
-    static float w = 0.0;
+    /*static float w = 0.0;
     w += 1.0 * frametime; // rotation angle
     float trans = 0;      // sin(t) * 2;
     glm::mat4 RotateY =
@@ -655,7 +660,7 @@ public:
     glm::mat4 RotateX =
         glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 0.0f, 0.0f));
     glm::mat4 TransZ =
-        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3 + trans));
+        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3 + trans));*/
 
     glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f));
     glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
@@ -667,7 +672,7 @@ public:
         mycam.getUp());
     mycam.processKeyboard(frametime);
 
-    drawScene(P, V);
+    drawScene(P, V); /* 3RD PERSON CAMERA */
 
     /* draw the complete scene from a top down camera */
     mat4 OrthoProj = GetOrthoMatrix();
@@ -679,11 +684,11 @@ public:
     //cout << glm::to_string(TopView) << endl;
     glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(0, height-180, 320, 180);
-    drawScene(P, TopView);
+    drawScene(P, TopView); /* MINI MAP */
 
     glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(width-640, height-180, 640, 180);
-    drawHealth(P, TopView);
+    drawHealth(P, TopView); /* HEALTH */
   }
 };
 
