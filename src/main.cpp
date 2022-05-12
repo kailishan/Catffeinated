@@ -255,7 +255,6 @@ public:
     char filepath[1000];
 
     // texture 1
-    /*
     string str = resourceDirectory + "/woodfloor.jpg";
     strcpy(filepath, str.c_str());
     unsigned char *data = stbi_load(filepath, &width, &height, &channels, 4);
@@ -268,11 +267,11 @@ public:
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);*/
+    glGenerateMipmap(GL_TEXTURE_2D);
     // texture 2
-    string str = resourceDirectory + "/brickwall.jpg";
+    str = resourceDirectory + "/brickwall.jpg";
     strcpy(filepath, str.c_str());
-    unsigned char *data = stbi_load(filepath, &width, &height, &channels, 4);
+    data = stbi_load(filepath, &width, &height, &channels, 4);
     glGenTextures(1, &Texture2);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, Texture2);
@@ -387,7 +386,7 @@ public:
   }
 
   void initGame() { 
-    myManager = make_shared<gameManager>(cat, heart);
+    myManager = make_shared<gameManager>(cat, heart, &mycam);
     //mycam.setManager(myManager.get());
   }
 
@@ -507,21 +506,21 @@ public:
       cat->draw(progL, false);
 
       for (int i = 0; i < myManager->getObjects().size(); i++) {
-          gameObject currObj = myManager->getObjects().at(i);
-          vec3 currPos = currObj.getPos();
-          if (!currObj.getIsStatic()) {
+          std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
+          vec3 currPos = currObj->getPos();
+          if (!currObj->getIsStatic()) {
               // transform cats
               glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
-              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
+              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
               T = glm::translate(glm::mat4(1.0f), currPos);
               glm::mat4 R =
-                  glm::rotate(glm::mat4(1), currObj.getRot(), glm::vec3(0, 1, 0));
-              M = myManager->getObjects().at(i).getMatrix() * S;
+                  glm::rotate(glm::mat4(1), currObj->getRot(), glm::vec3(0, 1, 0));
+              M = myManager->getObjects().at(i)->getMatrix() * S;
           }
           else {
               glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
               // transform spheres
-              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
+              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
               currPos.y = 0.1f;
               T = glm::translate(glm::mat4(1.0f), currPos);
               // kibble rotation
@@ -531,11 +530,12 @@ public:
           }
           glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
           // draw object's mesh; this helps generalize
-          currObj.getMesh()->draw(progL, false);
+          currObj->getMesh()->draw(progL, false);
       }
 
       
       // draw room
+      /*
       prog->bind();
 
       M = glm::mat4(1);
@@ -548,6 +548,7 @@ public:
       room->draw(prog, false);
 
       prog->unbind();
+      */
 
       /*
       M = glm::mat4(1.0f);
@@ -556,7 +557,6 @@ public:
 
       // shape->draw(prog,FALSE);
 
-      /*
       heightshader->bind();
       // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       // glm::mat4 TransY = glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f,
@@ -614,7 +614,6 @@ public:
           (void*)0);
 
       heightshader->unbind();
-      */
 
       assert(glGetError() == GL_NO_ERROR);
   }

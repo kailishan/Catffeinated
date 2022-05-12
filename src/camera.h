@@ -22,7 +22,7 @@ public:
     front = glm::vec3(0, -1, -6);
   }
 
-  bool isColliding(gameObject other);
+  bool isColliding(std::shared_ptr<gameObject> other);
   void processKeyboard(double ftime);
   void processCursor(float xoffset, float yoffset);
   glm::mat4 process(double ftime);
