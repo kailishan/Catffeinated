@@ -2,8 +2,8 @@
 
 void gameManager::spawnGameObject(std::shared_ptr<Shape> shape)
 {
-  gameObject object = gameObject(shape);
-  object.setObjectType(0);
+  std::shared_ptr<gameObject> object = std::make_shared<gameObject>(shape);
+  object->setObjectType(0);
   objects.push_back(object);
   count++;
 }
@@ -11,12 +11,12 @@ void gameManager::spawnGameObject(std::shared_ptr<Shape> shape)
 // temp kibble code
 void gameManager::spawnStaticGameObject(std::shared_ptr<Shape> shape)
 {
-  gameObject object = gameObject(shape);
-  object.setObjectType(1);
-  object.setVelocity(glm::vec3(0, 0, 0));
-  object.setRadius(0.1f);
-  object.setIsStatic(true);
-  object.setMesh(shape);
+  std::shared_ptr<gameObject> object = std::make_shared<gameObject>(shape);
+  object->setObjectType(1);
+  object->setVelocity(glm::vec3(0, 0, 0));
+  object->setRadius(0.1f);
+  object->setIsStatic(true);
+  object->setMesh(shape);
   objects.push_back(object);
   count++;
 }
@@ -41,18 +41,18 @@ void gameManager::process(camera &mycam, double ftime)
   for (int i = 0; i < objects.size(); i++)
   {
     if (mycam.isColliding(objects.at(i)) &&  // CHECK COLLISION W/ PLAYER
-        !objects.at(i).getDestroying())      // IF DESTROYING
+        !objects.at(i)->getDestroying())      // IF DESTROYING
     {
-      spawnStaticGameObject(objects.at(i).getMesh());
-      objects.at(i).setDestroying(true);
+      spawnStaticGameObject(objects.at(i)->getMesh());
+      objects.at(i)->setDestroying(true);
       count--;
       //std::cout << "CATS REMAINING: " << count << std::endl;
       //score++;
       //cout << "OBJECTS DESTROYED: " << score << endl;
     }
 
-    objects.at(i).process(objects, i,ftime); // CHECK COLLISION W/ GAME OBJECTS
-    if (objects.at(i).getDestroyed()) // DESTROY OBJECT
+    objects.at(i)->process(objects, i,ftime); // CHECK COLLISION W/ GAME OBJECTS
+    if (objects.at(i)->getDestroyed()) // DESTROY OBJECT
     {
       //if (std::find(destroyList.begin(), destroyList.end(), i) !=
       //    destroyList.end())

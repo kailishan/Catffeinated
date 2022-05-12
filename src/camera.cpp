@@ -5,14 +5,14 @@ float distance(float x1, float y1, float z1, float x2, float y2, float z2) {
   return d;
 }
 
-bool camera::isColliding(gameObject other) {
-  float d = distance(-pos.x, -pos.y, -pos.z, other.getPos().x, other.getPos().y,
-                     other.getPos().z);
+bool camera::isColliding(std::shared_ptr<gameObject> other) {
+  float d = distance(-pos.x, -pos.y, -pos.z, other->getPos().x, other->getPos().y,
+                     other->getPos().z);
   // ?????????????????????????????????????????????
-  d = glm::distance(pos, other.getPos());
-  if (d > rad + other.getRad()) {
+  d = glm::distance(pos, other->getPos());
+  if (d > rad + other->getRad()) {
     return false;
-  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 1) {
+  } else if (d <= rad + other->getRad() && !other->getDestroying() && other->getObjectType() == 1) {
     score++;
     if ((score > 0) && (score % 10 == 0)) {
       speedBoost = 3;
@@ -20,9 +20,9 @@ bool camera::isColliding(gameObject other) {
     }
     std::cout << "Kibble Collected: " << score << std::endl;
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
-    other.setDestroying(true);
+    other->setDestroying(true);
     return true;
-  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 0)
+  } else if (d <= rad + other->getRad() && !other->getDestroying() && other->getObjectType() == 0)
   {
     takeDamage();
     return false;

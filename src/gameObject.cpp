@@ -20,13 +20,13 @@ gameObject::gameObject(std::shared_ptr<Shape> shape) {
   std::cout << "x: " << pos.x << " z: " << pos.z << std::endl;
 }
 
-bool gameObject::isColliding(gameObject other) {
-  if (destroying || other.destroying)
+bool gameObject::isColliding(std::shared_ptr<gameObject> other) {
+  if (destroying || other->destroying)
     return false;
-  float d = glm::distance(pos, other.pos);
-  if (d > rad + other.rad)
+  float d = glm::distance(pos, other->pos);
+  if (d > rad + other->rad)
     return false;
-  else if (d <= rad + other.rad && !other.destroying) {
+  else if (d <= rad + other->rad && !other->destroying) {
     vel.x = -vel.x;
     vel.z = -vel.z;
     return true;
@@ -77,7 +77,7 @@ void gameObject::move(double ftime) {
   matrix = T * R;
 }
 
-void gameObject::process(std::vector<gameObject> others, int index,
+void gameObject::process(std::vector<std::shared_ptr<gameObject>> others, int index,
                          double ftime) {
   if (destroyed)
     return;

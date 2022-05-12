@@ -24,7 +24,7 @@ public:
   //int getHealth();
   //void takeDamage();
 
-  std::vector<gameObject> getObjects() { return objects; }
+  std::vector<std::shared_ptr<gameObject>> getObjects() { return objects; }
 
   //temp
   std::shared_ptr<Shape> kibble;
@@ -38,5 +38,5 @@ public:
   int score = 0;
   int framecount = 0;
   std::shared_ptr<Shape> curShape;
-  std::vector<gameObject> objects;
+  std::vector<std::shared_ptr<gameObject>> objects;
 };

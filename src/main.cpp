@@ -478,21 +478,21 @@ public:
       cat->draw(progL, false);
 
       for (int i = 0; i < myManager->getObjects().size(); i++) {
-          gameObject currObj = myManager->getObjects().at(i);
-          vec3 currPos = currObj.getPos();
-          if (!currObj.getIsStatic()) {
+          std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
+          vec3 currPos = currObj->getPos();
+          if (!currObj->getIsStatic()) {
               // transform cats
               glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
-              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
+              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
               T = glm::translate(glm::mat4(1.0f), currPos);
               glm::mat4 R =
-                  glm::rotate(glm::mat4(1), currObj.getRot(), glm::vec3(0, 1, 0));
-              M = myManager->getObjects().at(i).getMatrix() * S;
+                  glm::rotate(glm::mat4(1), currObj->getRot(), glm::vec3(0, 1, 0));
+              M = myManager->getObjects().at(i)->getMatrix() * S;
           }
           else {
               glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
               // transform spheres
-              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
+              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
               currPos.y = 0.1f;
               T = glm::translate(glm::mat4(1.0f), currPos);
               // kibble rotation
@@ -502,7 +502,7 @@ public:
           }
           glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
           // draw object's mesh; this helps generalize
-          currObj.getMesh()->draw(progL, false);
+          currObj->getMesh()->draw(progL, false);
       }
 
       
