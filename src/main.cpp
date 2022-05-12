@@ -387,7 +387,7 @@ public:
   }
 
   void initGame() { 
-    myManager = make_shared<gameManager>(cat, heart);
+    myManager = make_shared<gameManager>(cat, heart, &mycam);
     //mycam.setManager(myManager.get());
   }
 

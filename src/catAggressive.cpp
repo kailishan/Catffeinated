@@ -51,7 +51,7 @@ glm::mat4 catAggressive::formRotationMatrix(float frametime) {
   glm::vec3 curPos = pos;
 
   glm::vec3 dest = player->getPos();
-  dest.y = 0.5f;
+  dest.y = curPos.y;
 
   // vector in direction to look at
   glm::vec3 forward = glm::normalize(dest - curPos);
