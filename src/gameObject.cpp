@@ -8,6 +8,7 @@ gameObject::gameObject(glm::vec3 position, float radius)
     rad = radius;
     vel = glm::vec3(0);
     rot = 0.0;
+    objectType = 2;
 }
 
 gameObject::gameObject(std::shared_ptr<Shape> shape) {
