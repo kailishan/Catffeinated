@@ -10,4 +10,5 @@ public:
 
 private:
   Spline splinepath[2];
+  glm::mat4 formRotationMatrix(float frametime, glm::vec3 oldPos);
 };

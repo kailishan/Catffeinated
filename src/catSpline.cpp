@@ -22,6 +22,8 @@ catSpline::catSpline(std::shared_ptr<Shape> shape) {
 }
 
 void catSpline::move(double ftime) {
+    glm::vec3 oldPos = pos;
+
     if (!splinepath[0].isDone()) {
       splinepath[0].update(ftime);
       pos = splinepath[0].getPosition();
@@ -37,7 +39,26 @@ void catSpline::move(double ftime) {
                              glm::vec3(pos.x - 1, pos.y, pos.z + 1), pos, 8);
     }
 
+    glm::mat4 R = formRotationMatrix(ftime, pos);
 
     glm::mat4 T = glm::translate(glm::mat4(1), pos);
-    matrix = T;
+    matrix = T * R;
 };
+
+glm::mat4 catSpline::formRotationMatrix(float frametime, glm::vec3 oldPos) {
+  glm::vec3 dest = pos * frametime;
+
+  dest.y = oldPos.y;
+
+  // vector in direction to look at
+  glm::vec3 forward = glm::normalize(dest - pos);
+  glm::vec3 left = glm::normalize(glm::cross(glm::vec3(0, 1, 0), forward));
+  glm::vec3 up = glm::cross(forward, left);
+  // dog originally points forward, e.g. in +z direction
+  // need to rotate dog to align with forward...
+  glm::mat4 rot = glm::mat4(
+      glm::vec4(left.x, left.y, left.z, 0), glm::vec4(0, 1, 0, 0),
+      glm::vec4(forward.x, forward.y, forward.z, 0), glm::vec4(0, 0, 0, 1));
+
+  return rot;
+}
