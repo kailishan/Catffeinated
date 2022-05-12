@@ -241,7 +241,7 @@ public:
     room->init();
 
     table = make_shared<Shape>();
-    table->loadMesh(resourceDirectory + "../Table_Carre.obj");
+    table->loadMesh(resourceDirectory + "/Table_Carre.obj");
     table->resize();
     table->init();
 
