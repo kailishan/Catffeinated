@@ -15,8 +15,11 @@ public:
     for (int i = 0; i < 2; i++) {
       spawnGameObject(curShape);
       spawnAggressive(curShape, player);
-      spawnSpline(curShape);
     }
+    spawnGameObject(curShape);
+    spawnGameObject(curShape);
+    spawnSpline(curShape);
+
     while (count <= 14) {
       spawnStaticGameObject(kibble);
     }
