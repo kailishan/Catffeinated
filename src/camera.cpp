@@ -20,7 +20,7 @@ bool camera::isColliding(std::shared_ptr<gameObject> other) {
       //std::cout << "speed boost activated" << std::endl;
     }
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
-    other->setDestroying(true);
+    //other->setDestroying(true);
     return true;
   } else if (d <= rad + other->getRad() && !other->getDestroying() && other->getObjectType() == 0)
   {

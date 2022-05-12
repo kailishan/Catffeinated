@@ -30,6 +30,7 @@ void gameManager::spawnSpline(std::shared_ptr<Shape> shape) {
 // temp kibble code
 void gameManager::spawnStaticGameObject(std::shared_ptr<Shape> shape)
 {
+  std::cout << "spawning... " << std::endl;
   std::shared_ptr<gameObject> object = std::make_shared<cat>(shape);
   object->setObjectType(1);
   object->setVelocity(glm::vec3(0, 0, 0));
@@ -54,14 +55,15 @@ void gameManager::takeDamage()
 }
 */
 
-void gameManager::process(camera &mycam, double ftime)
+void gameManager::process(camera *mycam, double ftime)
 {
   //std::vector<int> destroyList;
   for (int i = 0; i < objects.size(); i++)
   {
-    if (mycam.isColliding(objects.at(i)) &&  // CHECK COLLISION W/ PLAYER
+    if (mycam->isColliding(objects.at(i)) &&  // CHECK COLLISION W/ PLAYER
         !objects.at(i)->getDestroying())      // IF DESTROYING
     {
+      std::cout << "we in here" << std::endl;
       spawnStaticGameObject(objects.at(i)->getMesh());
       objects.at(i)->setDestroying(true);
       count--;
@@ -96,6 +98,6 @@ void gameManager::process(camera &mycam, double ftime)
     count++;
     //std::cout << "CATS REMAINING: " << count << std::endl;
     framecount = 0;
-    spawnStaticGameObject(curShape);
+    spawnStaticGameObject(kibble);
   }
 }

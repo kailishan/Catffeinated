@@ -624,7 +624,7 @@ public:
   void render() {
 
     double frametime = get_last_elapsed_time();
-    myManager->process(mycam, frametime);
+    myManager->process(&mycam, frametime);
     mycam.setDt(mycam.getDt() + frametime);
 
     // Get current frame buffer size.
