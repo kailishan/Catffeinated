@@ -12,13 +12,11 @@ public:
     kibble = shape2;
     curShape = shape;
     srand(glfwGetTime());
-    /*
     while (count <= 14) {
       spawnGameObject(curShape);
       spawnAggressive(curShape, player);
       spawnStaticGameObject(kibble);
     }
-    */
     spawnSpline(curShape);
   }
 

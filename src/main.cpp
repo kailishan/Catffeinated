@@ -486,7 +486,7 @@ public:
       glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
       glm::vec4 blue = glm::vec4(0.678, 0.847, 0.902, 1);
 
-      glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
+      glUniform4fv(progL->getUniform("objColor"), 1, &blue[0]);
 
       static float fcount = 0.0;
       fcount += 0.01;
