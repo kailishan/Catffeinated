@@ -25,6 +25,8 @@ using namespace std;
 using namespace glm;
 
 camera mycam;
+vector<gameObject> objects;
+
 
 double get_last_elapsed_time() {
   static double lasttime = glfwGetTime();
@@ -61,11 +63,44 @@ public:
   vec3 g_eye = vec3(0, 1, 0);
   vec3 g_lookAt = vec3(0, 1, -4);
 
+
+  void initRoomGeo()
+  {
+      objects.push_back(gameObject(vec3(5.75, 1, .75), 1));
+      objects.push_back(gameObject(vec3(5.75, 1, 3.25), 1));
+      objects.push_back(gameObject(vec3(5.75, 1, 5.75), 1));
+      objects.push_back(gameObject(vec3(5.75, 1, 8.25), 1));
+      objects.push_back(gameObject(vec3(5.75, 1, 10.75), 1));
+
+
+      objects.push_back(gameObject(vec3(10.75, 1, -1.75), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, .75), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 3.25), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 5.75), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 8.25), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 10.75), 1));
+
+      int x = -3.5;
+      int z = 5.75;
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x, 1, z = z + 2), 1));
+
+
+      x = -8.9;
+      z = 12.5;
+      objects.push_back(gameObject(vec3(x, 1, z), 1));
+      objects.push_back(gameObject(vec3(x + .75, 1, z), 1));
+  }
   void keyCallback(GLFWwindow *window, int key, int scancode, int action,
                    int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
       glfwSetWindowShouldClose(window, GL_TRUE);
     }
+
+
 
     if (key == GLFW_KEY_W && action == GLFW_PRESS) {
       mycam.setw(1);
@@ -106,6 +141,13 @@ public:
     }
     if (key == GLFW_KEY_Z && action == GLFW_RELEASE) {
         mycam.setz(0);
+    }
+
+    if (key == GLFW_KEY_L && action == GLFW_PRESS) {
+        ;
+    }
+    if (key == GLFW_KEY_L && action == GLFW_RELEASE) {
+        cout << mycam.getPos().x << " " << mycam.getPos().z << endl;
     }
 
   }
@@ -241,7 +283,7 @@ public:
     room->init();
 
     table = make_shared<Shape>();
-    table->loadMesh(resourceDirectory + "../Table_Carre.obj");
+    table->loadMesh(resourceDirectory + "/Table_Carre.obj");
     table->resize();
     table->init();
 
@@ -386,9 +428,9 @@ public:
     heightshader->addAttribute("vertTex");
   }
 
-  void initGame() { 
-    myManager = make_shared<gameManager>(cat, heart);
-    //mycam.setManager(myManager.get());
+  void initGame() {
+      myManager = make_shared<gameManager>(cat, heart);
+      //mycam.setManager(myManager.get());
   }
 
   mat4 GetOrthoMatrix() {
@@ -427,7 +469,7 @@ public:
   draw
   ********/
 
-  
+
   void drawScene(mat4 P, mat4 V) {
 
       //cout << glm::to_string(V) << endl;
@@ -456,8 +498,7 @@ public:
 
       glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
       glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
-      glm::vec4 blue = glm::vec4(0.678, 0.847, 0.902, 1);
-
+      glm::vec4 blue = glm::vec4(0.2588, 0.4, 0.9608, 1);
       glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
 
       static float fcount = 0.0;
@@ -476,6 +517,14 @@ public:
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
       // draw object's mesh; this helps generalize
       cat->draw(progL, false);
+
+      /*
+      for (int j = 0; j < objects.size(); j++) {
+          T = glm::translate(glm::mat4(1.0f), objects[j].getPos());
+          M = T;
+          glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+          cat->draw(progL, false);
+      }*/
 
       for (int i = 0; i < myManager->getObjects().size(); i++) {
           gameObject currObj = myManager->getObjects().at(i);
@@ -507,86 +556,19 @@ public:
 
       
       // draw room
-      prog->bind();
+      //prog->bind();
 
       M = glm::mat4(1);
       S = glm::scale(glm::mat4(1.0f), glm::vec3(12.5, 12.5, 12.5));
       T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
       M = T * S;
-      glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
-      glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
-      glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      room->draw(prog, false);
-
-      prog->unbind();
-
-      /*
-      M = glm::mat4(1.0f);
+      glUniform4fv(progL->getUniform("objColor"), 1, &blue[0]);
+      glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+      glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      table->draw(progL, false);*/
+      room->draw(progL, false);
 
-      // shape->draw(prog,FALSE);
-
-      /*
-      heightshader->bind();
-      // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-      // glm::mat4 TransY = glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f,
-      // -3.0f, -50)); M = TransY;
-      M = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 0.0f, -12.5f));
-      glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      glUniformMatrix4fv(heightshader->getUniform("P"), 1, GL_FALSE, value_ptr(P));
-      glUniformMatrix4fv(heightshader->getUniform("V"), 1, GL_FALSE, value_ptr(V));
-
-      vec3 offset = mycam.getPos();
-      offset.y = 0;
-      offset.x = 0; // (int)offset.x;
-      offset.z = 0; // (int)offset.z;
-      glUniform3fv(heightshader->getUniform("camoff"), 1, &offset[0]);
-      glUniform3fv(heightshader->getUniform("campos"), 1, &mycam.getPos()[0]);
-      glBindVertexArray(VertexArrayID);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferIDBox);
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, HeightTex);
-      glActiveTexture(GL_TEXTURE1);
-      glBindTexture(GL_TEXTURE_2D, Texture);
-      glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
-          (void*)0);
-
-
-      glActiveTexture(GL_TEXTURE1);
-      glBindTexture(GL_TEXTURE_2D, Texture2);
-
-      glm::mat4 R2 = glm::mat4(1.0f);
-
-      T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 2.0f, -12.5f));
-      R = glm::rotate(glm::mat4(1.0f), radians(90.0f), glm::vec3(1, 0, 0));
-      M = T * R;
-      glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
-          (void*)0);
-
-      //T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 0.0f, -12.5f));
-      //R = glm::rotate(glm::mat4(1.0f), radians(-90.0f), glm::vec3(1, 0, 0));
-      R2 = glm::rotate(mat4(1.0f), radians(90.0f), glm::vec3(0, 1, 0));
-      M = R2 * T * R;
-      glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
-          (void*)0);
-
-      R2 = glm::rotate(mat4(1.0f), radians(180.0f), glm::vec3(0, 1, 0));
-      M = R2 * T * R;
-      glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
-          (void*)0);
-
-      R2 = glm::rotate(mat4(1.0f), radians(270.0f), glm::vec3(0, 1, 0));
-      M = R2 * T * R;
-      glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
-          (void*)0);
-
-      heightshader->unbind();
-      */
+      //prog->unbind();
 
       assert(glGetError() == GL_NO_ERROR);
   }
@@ -643,7 +625,7 @@ public:
 
     V = glm::lookAt(mycam.getPos() - mycam.getFront() * vec3(1.5), mycam.getPos() + mycam.getFront(),
         mycam.getUp());
-    mycam.processKeyboard(frametime);
+    mycam.processKeyboard(frametime, &objects);
 
     drawScene(P, V);
 
@@ -673,7 +655,8 @@ int main(int argc, char **argv) {
   /* your main will always include a similar set up to establish your window
           and GL context, etc. */
   WindowManager *windowManager = new WindowManager();
-  windowManager->init(1920, 1080);
+  //windowManager->init(1920, 1080);
+  windowManager->init(960, 540);
   windowManager->setEventCallbacks(application);
 
   // allows cursor to remain within window while also hiding it
@@ -689,6 +672,7 @@ int main(int argc, char **argv) {
   application->init(resourceDir);
   application->initGeom();
   application->initGame();
+  application->initRoomGeo();
 
   // Loop until the user closes the window.
   while (!glfwWindowShouldClose(windowManager->getHandle())) {

@@ -781,7 +781,6 @@ bool LoadObj(std::vector<shape_t> &shapes, // [output]
              std::string &err,
              const char *filename, const char *mtl_basepath) {
 
-    
   shapes.clear();
 
   std::stringstream errss;

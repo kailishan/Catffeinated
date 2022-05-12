@@ -10,6 +10,7 @@
 class gameObject {
 public:
   gameObject(std::shared_ptr<Shape> shape);
+  gameObject(glm::vec3 posistion, float radius);
   bool isColliding(gameObject other);
   void destroy(double ftime);
   void move(double ftime);
@@ -32,8 +33,8 @@ public:
   void setObjectType(int type) { objectType = type; };
   
 private:
-  std::shared_ptr<Shape> mesh;
-  int objectType;
+  std::shared_ptr<Shape> mesh = NULL;
+  int objectType = NULL;
   bool isStatic = false;
   glm::vec3 pos, vel;
   float rad, rot;

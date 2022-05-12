@@ -15,8 +15,6 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
                      unsigned char *(loadimage)(char const *, int *, int *,
                                                 int *, int)) {
   // Load geometry
-  // Some obj files contain material information.
-  // We'll ignore them for this assignment.
   vector<tinyobj::shape_t> shapes;
   vector<tinyobj::material_t> objMaterials;
   string errStr;
@@ -49,7 +47,6 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
     for (int i = 0; i < obj_count; i++) {
       // load textures
       textureIDs[i] = 0;
-      // texture sky
       posBuf[i] = shapes[i].mesh.positions;
       norBuf[i] = shapes[i].mesh.normals;
       texBuf[i] = shapes[i].mesh.texcoords;
@@ -62,8 +59,8 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
   }
   // material:
   for (int i = 0; i < objMaterials.size(); i++) {
+      cout << objMaterials[i].name << endl;
       if (objMaterials[i].diffuse_texname.size() > 0) {
-          cout << i << endl;
           char filepath[1000];
           int width, height, channels;
           string filename = objMaterials[i].ambient_texname;
