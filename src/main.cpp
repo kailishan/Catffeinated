@@ -421,18 +421,47 @@ public:
       return Cam;
   }
 
+  void drawHealth(mat4 P, mat4 V) {
+
+    progL->bind();
+    
+    glm::mat4 M = glm::mat4(1.0f);
+    glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.35f, 0.5f, 0.35f));
+    glm::mat4 R = glm::rotate(glm::mat4(1.0f), -1.5708f, vec3(1, 0, 0));
+    glm::mat4 T = glm::mat4(1.0f);
+
+    glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+    glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+    glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
+    glm::vec4 red = glm::vec4(1, 0.302, 0.302, 1);
+    glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
+
+    glm::vec3 pos = mycam.getPos();
+    pos.y += 2.5f;
+    float offset = 1.75;
+
+    for (int i = 0; i < mycam.getHealth(); i++) {
+      T = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x + offset, pos.y, pos.z));
+      M = T * R * S;
+      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      heart->draw(progL, false); 
+      offset -= 0.8;
+    }
+
+    progL->unbind();
+  }
+
   /****DRAW
   This is the most important function in your program - this is where you
   will actually issue the commands to draw any geometry you have set up to
   draw
   ********/
-
-  
   void drawScene(mat4 P, mat4 V) {
 
       //cout << glm::to_string(V) << endl;
       double frametime = get_last_elapsed_time();
 
+      // set up all the matrices
       glm::mat4 M = glm::mat4(1);
       glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f));
       glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
@@ -441,9 +470,6 @@ public:
       static float w = 0.0;
       w += 1.0 * frametime; // rotation angle
 
-      //set up all the matrices
-
-
       progL->bind();
       glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
       glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
@@ -451,8 +477,6 @@ public:
       glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, Texture);
-
-
 
       glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
       glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
@@ -552,7 +576,6 @@ public:
       glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
           (void*)0);
 
-
       glActiveTexture(GL_TEXTURE1);
       glBindTexture(GL_TEXTURE_2D, Texture2);
 
@@ -592,9 +615,8 @@ public:
   }
 
 
-
-
   void render() {
+
     double frametime = get_last_elapsed_time();
     myManager->process(mycam, frametime);
     mycam.setDt(mycam.getDt() + frametime);
@@ -658,8 +680,13 @@ public:
     glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(0, height-180, 320, 180);
     drawScene(P, TopView);
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glViewport(width-640, height-180, 640, 180);
+    drawHealth(P, TopView);
   }
 };
+
 //******************************************************************************************
 int main(int argc, char **argv) {
   std::string resourceDir =
