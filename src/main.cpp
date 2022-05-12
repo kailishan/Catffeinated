@@ -25,6 +25,8 @@ using namespace std;
 using namespace glm;
 
 camera mycam;
+vector<gameObject> objects;
+
 
 double get_last_elapsed_time() {
   static double lasttime = glfwGetTime();
@@ -61,11 +63,44 @@ public:
   vec3 g_eye = vec3(0, 1, 0);
   vec3 g_lookAt = vec3(0, 1, -4);
 
+
+  void initRoomGeo()
+  {
+      objects.push_back(gameObject(vec3(5.75, 1, .75), 1));
+      objects.push_back(gameObject(vec3(5.75, 1, 3.25), 1));
+      objects.push_back(gameObject(vec3(5.75, 1, 5.75), 1));
+      objects.push_back(gameObject(vec3(5.75, 1, 8.25), 1));
+      objects.push_back(gameObject(vec3(5.75, 1, 10.75), 1));
+
+
+      objects.push_back(gameObject(vec3(10.75, 1, -1.75), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, .75), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 3.25), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 5.75), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 8.25), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 10.75), 1));
+
+      int x = -3.5;
+      int z = 5.75;
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x, 1, z = z + 2), 1));
+
+
+      x = -8.9;
+      z = 12.5;
+      objects.push_back(gameObject(vec3(x, 1, z), 1));
+      objects.push_back(gameObject(vec3(x + .75, 1, z), 1));
+  }
   void keyCallback(GLFWwindow *window, int key, int scancode, int action,
                    int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
       glfwSetWindowShouldClose(window, GL_TRUE);
     }
+
+
 
     if (key == GLFW_KEY_W && action == GLFW_PRESS) {
       mycam.setw(1);
@@ -106,6 +141,13 @@ public:
     }
     if (key == GLFW_KEY_Z && action == GLFW_RELEASE) {
         mycam.setz(0);
+    }
+
+    if (key == GLFW_KEY_L && action == GLFW_PRESS) {
+        ;
+    }
+    if (key == GLFW_KEY_L && action == GLFW_RELEASE) {
+        cout << mycam.getPos().x << " " << mycam.getPos().z << endl;
     }
 
   }
@@ -241,7 +283,7 @@ public:
     room->init();
 
     table = make_shared<Shape>();
-    table->loadMesh(resourceDirectory + "../Table_Carre.obj");
+    table->loadMesh(resourceDirectory + "/Table_Carre.obj");
     table->resize();
     table->init();
 
@@ -507,6 +549,14 @@ public:
       // draw object's mesh; this helps generalize
       cat->draw(progL, false);
 
+      /*
+      for (int j = 0; j < objects.size(); j++) {
+          T = glm::translate(glm::mat4(1.0f), objects[j].getPos());
+          M = T;
+          glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+          cat->draw(progL, false);
+      }*/
+
       for (int i = 0; i < myManager->getObjects().size(); i++) {
           std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
           vec3 currPos = currObj->getPos();
@@ -671,7 +721,7 @@ public:
 
     V = glm::lookAt(mycam.getPos() - mycam.getFront() * vec3(1.5), mycam.getPos() + mycam.getFront(),
         mycam.getUp());
-    mycam.processKeyboard(frametime);
+    mycam.processKeyboard(frametime, &objects);
 
     drawScene(P, V); /* 3RD PERSON CAMERA */
 
@@ -706,7 +756,8 @@ int main(int argc, char **argv) {
   /* your main will always include a similar set up to establish your window
           and GL context, etc. */
   WindowManager *windowManager = new WindowManager();
-  windowManager->init(1920, 1080);
+  //windowManager->init(1920, 1080);
+  windowManager->init(960, 540);
   windowManager->setEventCallbacks(application);
 
   // allows cursor to remain within window while also hiding it
@@ -722,6 +773,7 @@ int main(int argc, char **argv) {
   application->init(resourceDir);
   application->initGeom();
   application->initGame();
+  application->initRoomGeo();
 
   // Loop until the user closes the window.
   while (!glfwWindowShouldClose(windowManager->getHandle())) {

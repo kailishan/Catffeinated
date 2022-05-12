@@ -2,6 +2,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <vector>
 
 #include "WindowManager.h"
 #include "gameObject.h"
@@ -22,8 +23,8 @@ public:
     front = glm::vec3(0, -1, -6);
   }
 
-  bool isColliding(std::shared_ptr<gameObject> other);
-  void processKeyboard(double ftime);
+  bool isColliding(gameObject other);
+  void processKeyboard(double ftime, std::vector<gameObject> *objects);
   void processCursor(float xoffset, float yoffset);
   glm::mat4 process(double ftime);
 

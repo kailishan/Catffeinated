@@ -1,8 +1,39 @@
 #include "gameObject.h"
 
 
-bool gameObject::isColliding(std::shared_ptr<gameObject> other) {
-  if (destroying || other->destroying)
+
+gameObject::gameObject(glm::vec3 position, float radius)
+{
+    pos = position;
+    rad = radius;
+    vel = glm::vec3(0);
+    rot = 0.0;
+    objectType = 2;
+}
+
+gameObject::gameObject(std::shared_ptr<Shape> shape) {
+  mesh = shape;
+  // pos = glm::vec3(rand() % 25 - 12, 0, rand() % 25 - 12);
+  pos = glm::vec3((rand() % 25) - 12, 0.35, (rand() % 25) - 12);
+  // rot = glm::radians((float)(rand() % 361)); // y-axis
+  // vel = vec3(0, 0, 0); // random x and y velocity
+  float velocities[] = {0.05f, 0.025f, 0.0125f, -0.0125f, -0.025f, -0.05f};
+  vel = glm::vec3(velocities[rand() % 6], 0.0f, velocities[rand() % 6]);
+  rot = tan(vel.z / vel.x);
+  // vel = vec3(static_cast <float> (rand()) / static_cast <float> (1) *
+  // 0.00000000075, 0, static_cast <float> (rand()) / static_cast <float> (1) *
+  // 0.00000000075); // random x and y velocity
+  glm::vec3 posDirection = glm::normalize(pos);
+  glm::vec3 velDirection = glm::normalize(vel);
+  float angle = acos(glm::dot(posDirection, velDirection));
+
+  rad = .5;
+  std::cout << "x: " << pos.x << " z: " << pos.z << std::endl;
+}
+
+
+bool gameObject::isColliding(gameObject other) {
+  if (destroying || other.destroying)
     return false;
   float d = glm::distance(pos, other->pos);
   if (d > rad + other->rad)
