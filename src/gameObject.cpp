@@ -35,10 +35,10 @@ gameObject::gameObject(std::shared_ptr<Shape> shape) {
 bool gameObject::isColliding(gameObject other) {
   if (destroying || other.destroying)
     return false;
-  float d = glm::distance(pos, other.pos);
-  if (d > rad + other.rad)
+  float d = glm::distance(pos, other->pos);
+  if (d > rad + other->rad)
     return false;
-  else if (d <= rad + other.rad && !other.destroying) {
+  else if (d <= rad + other->rad && !other->destroying) {
     vel.x = -vel.x;
     vel.z = -vel.z;
     return true;
@@ -56,18 +56,8 @@ void gameObject::destroy(double ftime) {
     destroyed = true;
   }
 }
-
+/*
 void gameObject::move(double ftime) {
-  /*
-  if (pos.x > 12.5 && vel.x > 0)
-      vel.x = -vel.x;
-  if (pos.x < -12.5 && vel.x < 0)
-      vel.x = -vel.x;
-  if (pos.z > 12.5 && vel.z > 0)
-      vel.z = -vel.z;
-  if (pos.z < -12.5 && vel.z < 0)
-      vel.z = -vel.z;
-  */
   rot = atan(vel.z / vel.x);
   if (vel.z < 0)
     rot += glm::radians(180.f);
@@ -88,8 +78,9 @@ void gameObject::move(double ftime) {
   glm::mat4 T = glm::translate(glm::mat4(1), pos);
   matrix = T * R;
 }
+*/
 
-void gameObject::process(std::vector<gameObject> others, int index,
+void gameObject::process(std::vector<std::shared_ptr<gameObject>> others, int index,
                          double ftime) {
   if (destroyed)
     return;

@@ -297,7 +297,6 @@ public:
     char filepath[1000];
 
     // texture 1
-    /*
     string str = resourceDirectory + "/woodfloor.jpg";
     strcpy(filepath, str.c_str());
     unsigned char *data = stbi_load(filepath, &width, &height, &channels, 4);
@@ -306,21 +305,23 @@ public:
     glBindTexture(GL_TEXTURE_2D, Texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);*/
+    glGenerateMipmap(GL_TEXTURE_2D);
     // texture 2
-    string str = resourceDirectory + "/brickwall.jpg";
+    str = resourceDirectory + "/brickwall.jpg";
     strcpy(filepath, str.c_str());
-    unsigned char *data = stbi_load(filepath, &width, &height, &channels, 4);
+    data = stbi_load(filepath, &width, &height, &channels, 4);
     glGenTextures(1, &Texture2);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, Texture2);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, data);
@@ -428,9 +429,9 @@ public:
     heightshader->addAttribute("vertTex");
   }
 
-  void initGame() {
-      myManager = make_shared<gameManager>(cat, heart);
-      //mycam.setManager(myManager.get());
+  void initGame() { 
+    myManager = make_shared<gameManager>(cat, heart, &mycam);
+    //mycam.setManager(myManager.get());
   }
 
   mat4 GetOrthoMatrix() {
@@ -463,18 +464,52 @@ public:
       return Cam;
   }
 
+  void drawHealth(mat4 P, mat4 V) {
+
+    progL->bind();
+    
+    glm::mat4 M = glm::mat4(1.0f);
+    glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.35f, 0.5f, 0.35f));
+    glm::mat4 R = glm::rotate(glm::mat4(1.0f), -1.5708f, vec3(1, 0, 0));
+    glm::mat4 T = glm::mat4(1.0f);
+
+    glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+    glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+    glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
+
+    glm::vec4 red = glm::vec4(1, 0.302, 0.302, 1);
+    glm::vec4 green = glm::vec4(0.302, 1, 0.302, 1);
+    if (mycam.getSpeedBoost() > 1.0f)
+      glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
+    else
+      glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
+
+    glm::vec3 pos = mycam.getPos();
+    pos.y += 2.5f;
+    float offset = 1.75;
+
+    for (int i = 0; i < mycam.getHealth(); i++) {
+      T = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x + offset, pos.y, pos.z));
+      M = T * R * S;
+      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      heart->draw(progL, false); 
+      offset -= 0.8;
+    }
+
+    progL->unbind();
+  }
+
   /****DRAW
   This is the most important function in your program - this is where you
   will actually issue the commands to draw any geometry you have set up to
   draw
   ********/
-
-
   void drawScene(mat4 P, mat4 V) {
 
       //cout << glm::to_string(V) << endl;
       double frametime = get_last_elapsed_time();
 
+      // set up all the matrices
       glm::mat4 M = glm::mat4(1);
       glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f));
       glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
@@ -482,9 +517,6 @@ public:
 
       static float w = 0.0;
       w += 1.0 * frametime; // rotation angle
-
-      //set up all the matrices
-
 
       progL->bind();
       glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
@@ -494,12 +526,11 @@ public:
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, Texture);
 
-
-
       glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
       glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
-      glm::vec4 blue = glm::vec4(0.2588, 0.4, 0.9608, 1);
-      glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
+      glm::vec4 blue = glm::vec4(0.678, 0.847, 0.902, 1);
+
+      glUniform4fv(progL->getUniform("objColor"), 1, &blue[0]);
 
       static float fcount = 0.0;
       fcount += 0.01;
@@ -527,21 +558,21 @@ public:
       }*/
 
       for (int i = 0; i < myManager->getObjects().size(); i++) {
-          gameObject currObj = myManager->getObjects().at(i);
-          vec3 currPos = currObj.getPos();
-          if (!currObj.getIsStatic()) {
+          std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
+          vec3 currPos = currObj->getPos();
+          if (!currObj->getIsStatic()) {
               // transform cats
               glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
-              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
+              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
               T = glm::translate(glm::mat4(1.0f), currPos);
               glm::mat4 R =
-                  glm::rotate(glm::mat4(1), currObj.getRot(), glm::vec3(0, 1, 0));
-              M = myManager->getObjects().at(i).getMatrix() * S;
+                  glm::rotate(glm::mat4(1), currObj->getRot(), glm::vec3(0, 1, 0));
+              M = myManager->getObjects().at(i)->getMatrix() * S;
           }
           else {
               glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
               // transform spheres
-              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj.getRad()));
+              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
               currPos.y = 0.1f;
               T = glm::translate(glm::mat4(1.0f), currPos);
               // kibble rotation
@@ -551,34 +582,99 @@ public:
           }
           glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
           // draw object's mesh; this helps generalize
-          currObj.getMesh()->draw(progL, false);
+          currObj->getMesh()->draw(progL, false);
       }
 
       
       // draw room
-      //prog->bind();
+      /*
+      prog->bind();
 
       M = glm::mat4(1);
       S = glm::scale(glm::mat4(1.0f), glm::vec3(12.5, 12.5, 12.5));
       T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
       M = T * S;
-      glUniform4fv(progL->getUniform("objColor"), 1, &blue[0]);
-      glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
-      glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
-      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      room->draw(progL, false);
+      glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+      glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+      glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      room->draw(prog, false);
 
-      //prog->unbind();
+      prog->unbind();
+      */
+
+      /*
+      M = glm::mat4(1.0f);
+      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      table->draw(progL, false);*/
+
+      // shape->draw(prog,FALSE);
+
+      heightshader->bind();
+      // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      // glm::mat4 TransY = glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f,
+      // -3.0f, -50)); M = TransY;
+      M = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 0.0f, -12.5f));
+      glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      glUniformMatrix4fv(heightshader->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+      glUniformMatrix4fv(heightshader->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+
+      vec3 offset = mycam.getPos();
+      offset.y = 0;
+      offset.x = 0; // (int)offset.x;
+      offset.z = 0; // (int)offset.z;
+      glUniform3fv(heightshader->getUniform("camoff"), 1, &offset[0]);
+      glUniform3fv(heightshader->getUniform("campos"), 1, &mycam.getPos()[0]);
+      glBindVertexArray(VertexArrayID);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferIDBox);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, HeightTex);
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(GL_TEXTURE_2D, Texture);
+      glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
+          (void*)0);
+
+      glActiveTexture(GL_TEXTURE1);
+      glBindTexture(GL_TEXTURE_2D, Texture2);
+
+      glm::mat4 R2 = glm::mat4(1.0f);
+
+      T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 2.0f, -12.5f));
+      R = glm::rotate(glm::mat4(1.0f), radians(90.0f), glm::vec3(1, 0, 0));
+      M = T * R;
+      glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
+          (void*)0);
+
+      //T = glm::translate(glm::mat4(1.0f), glm::vec3(-12.5f, 0.0f, -12.5f));
+      //R = glm::rotate(glm::mat4(1.0f), radians(-90.0f), glm::vec3(1, 0, 0));
+      R2 = glm::rotate(mat4(1.0f), radians(90.0f), glm::vec3(0, 1, 0));
+      M = R2 * T * R;
+      glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
+          (void*)0);
+
+      R2 = glm::rotate(mat4(1.0f), radians(180.0f), glm::vec3(0, 1, 0));
+      M = R2 * T * R;
+      glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
+          (void*)0);
+
+      R2 = glm::rotate(mat4(1.0f), radians(270.0f), glm::vec3(0, 1, 0));
+      M = R2 * T * R;
+      glUniformMatrix4fv(heightshader->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
+          (void*)0);
+
+      heightshader->unbind();
 
       assert(glGetError() == GL_NO_ERROR);
   }
 
 
-
-
   void render() {
+
     double frametime = get_last_elapsed_time();
-    myManager->process(mycam, frametime);
+    myManager->process(&mycam, frametime);
     mycam.setDt(mycam.getDt() + frametime);
 
     // Get current frame buffer size.
@@ -606,7 +702,7 @@ public:
         1000.0f); // so much type casting... GLM metods are quite funny ones
 
     // animation with the model matrix:
-    static float w = 0.0;
+    /*static float w = 0.0;
     w += 1.0 * frametime; // rotation angle
     float trans = 0;      // sin(t) * 2;
     glm::mat4 RotateY =
@@ -615,7 +711,7 @@ public:
     glm::mat4 RotateX =
         glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 0.0f, 0.0f));
     glm::mat4 TransZ =
-        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3 + trans));
+        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3 + trans));*/
 
     glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f));
     glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
@@ -627,7 +723,7 @@ public:
         mycam.getUp());
     mycam.processKeyboard(frametime, &objects);
 
-    drawScene(P, V);
+    drawScene(P, V); /* 3RD PERSON CAMERA */
 
     /* draw the complete scene from a top down camera */
     mat4 OrthoProj = GetOrthoMatrix();
@@ -639,9 +735,14 @@ public:
     //cout << glm::to_string(TopView) << endl;
     glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(0, height-180, 320, 180);
-    drawScene(P, TopView);
+    drawScene(P, TopView); /* MINI MAP */
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glViewport(width-640, height-180, 640, 180);
+    drawHealth(P, TopView); /* HEALTH */
   }
 };
+
 //******************************************************************************************
 int main(int argc, char **argv) {
   std::string resourceDir =

@@ -13,8 +13,7 @@ public:
   gameObject(glm::vec3 posistion, float radius);
   bool isColliding(gameObject other);
   void destroy(double ftime);
-  void move(double ftime);
-  void process(std::vector<gameObject> others, int index, double ftime);
+  virtual void process(std::vector<std::shared_ptr<gameObject>> others, int index, double ftime);
   std::shared_ptr<Shape> getMesh() { return mesh; }
   glm::vec3 getPos() { return pos; }
   float getRad() { return rad; }
@@ -41,6 +40,6 @@ private:
   bool destroying = false;
   bool destroyed = false;
   glm::mat4 matrix = glm::mat4(1);
-  glm::mat4 formRotationMatrix(float frametime);
+  virtual glm::mat4 formRotationMatrix(float frametime);
   glm::vec3 midpoint(std::shared_ptr<Shape> shape);
 };

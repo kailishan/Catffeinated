@@ -5,22 +5,22 @@ float distance(float x1, float y1, float z1, float x2, float y2, float z2) {
   return d;
 }
 
-bool camera::isColliding(gameObject other) {
-  float d = distance(-pos.x, -pos.y, -pos.z, other.getPos().x, other.getPos().y,
-                     other.getPos().z);
+bool camera::isColliding(std::shared_ptr<gameObject> other) {
+  float d = distance(-pos.x, -pos.y, -pos.z, other->getPos().x, other->getPos().y,
+                     other->getPos().z);
   // ?????????????????????????????????????????????
-  d = glm::distance(pos, other.getPos());
-  if (d > rad + other.getRad()) {
+  d = glm::distance(pos, other->getPos());
+  if (d > rad + other->getRad()) {
     return false;
-  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 1) {
+  } else if (d <= rad + other->getRad() && !other->getDestroying() && other->getObjectType() == 1) {
     score++;
-    if ((score > 0) && (score % 10 == 0)) {
-      speedBoost = 3;
-      std::cout << "speed boost activated" << std::endl;
-    }
     std::cout << "Kibble Collected: " << score << std::endl;
+    if ((score > 0) && (score % 10 == 0)) {
+      speedBoost = 2;
+      //std::cout << "speed boost activated" << std::endl;
+    }
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
-    other.setDestroying(true);
+    //other->setDestroying(true);
     return true;
   } else if (d <= rad + other.getRad() &&  other.getObjectType() == 2) {
       return true;
@@ -40,21 +40,21 @@ void camera::processKeyboard(double ftime, std::vector<gameObject> *objects) {
   glm::vec3 prevPos = pos;
 
   if (speedBoost > 1) {
-    speedBoost -= 0.1;
-    std::cout << "speed boost = " << speedBoost << std::endl;
+    speedBoost -= 0.01;
+    //std::cout << "speed boost = " << speedBoost << std::endl;
   }
   else
     speedBoost = 1;
 
 
   if (w)
-    nextPos += cameraSpeed * front;
+    nextPos += cameraSpeed * front * speedBoost;
   if (s)
-    nextPos -= cameraSpeed * front;
+    nextPos -= cameraSpeed * front * speedBoost;
   if (a)
-    nextPos -= glm::normalize(glm::cross(front, up)) * cameraSpeed;
+    nextPos -= glm::normalize(glm::cross(front, up)) * cameraSpeed * speedBoost;
   if (d)
-    nextPos += glm::normalize(glm::cross(front, up)) * cameraSpeed;
+    nextPos += glm::normalize(glm::cross(front, up)) * cameraSpeed * speedBoost;
   if (z && dt > 1.0)
   {
       dt = 0.0;
