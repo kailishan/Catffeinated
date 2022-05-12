@@ -1,5 +1,6 @@
 #include "cat.h"
 #include "catAggressive.h"
+#include "catSpline.h"
 #include "gameManager.h"
 
 void gameManager::spawnGameObject(std::shared_ptr<Shape> shape)
@@ -14,6 +15,13 @@ void gameManager::spawnAggressive(std::shared_ptr<Shape> shape,
                                   camera *player) {
   std::shared_ptr<gameObject> object =
       std::make_shared<catAggressive>(shape, player);
+  object->setObjectType(0);
+  objects.push_back(object);
+  count++;
+}
+
+void gameManager::spawnSpline(std::shared_ptr<Shape> shape) {
+  std::shared_ptr<gameObject> object = std::make_shared<catSpline>(shape);
   object->setObjectType(0);
   objects.push_back(object);
   count++;
