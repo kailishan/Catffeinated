@@ -71,6 +71,28 @@ public:
       objects.push_back(gameObject(vec3(5.75, 1, 5.75), 1));
       objects.push_back(gameObject(vec3(5.75, 1, 8.25), 1));
       objects.push_back(gameObject(vec3(5.75, 1, 10.75), 1));
+
+
+      objects.push_back(gameObject(vec3(10.75, 1, -1.75), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, .75), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 3.25), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 5.75), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 8.25), 1));
+      objects.push_back(gameObject(vec3(10.75, 1, 10.75), 1));
+
+      int x = -3.5;
+      int z = 5.75;
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
+      objects.push_back(gameObject(vec3(x, 1, z = z + 2), 1));
+
+
+      x = -8.9;
+      z = 12.5;
+      objects.push_back(gameObject(vec3(x, 1, z), 1));
+      objects.push_back(gameObject(vec3(x + .75, 1, z), 1));
   }
   void keyCallback(GLFWwindow *window, int key, int scancode, int action,
                    int mods) {
@@ -496,12 +518,13 @@ public:
       // draw object's mesh; this helps generalize
       cat->draw(progL, false);
 
+      /*
       for (int j = 0; j < objects.size(); j++) {
           T = glm::translate(glm::mat4(1.0f), objects[j].getPos());
           M = T;
           glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
           cat->draw(progL, false);
-      }
+      }*/
 
       for (int i = 0; i < myManager->getObjects().size(); i++) {
           gameObject currObj = myManager->getObjects().at(i);
