@@ -1,40 +1,85 @@
-cmake_minimum_required(VERSION 3.4)
-include("${CMAKE_SOURCE_DIR}/FindGfxLibs.cmake")
+cmake_minimum_required(VERSION 2.7)
 
 # Name of the project
-project(cat)
-
-# Enforce use of C++14
-set(CMAKE_CXX_STANDARD_REQUIRED 14)
-set(CMAKE_CXX_STANDARD 14)
+project(lab3)
 
 # Use glob to get the list of all source files.
-file(GLOB_RECURSE SOURCES "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/ext/*/*.cpp" "${CMAKE_SOURCE_DIR}/ext/glad/src/*.c")
+file(GLOB_RECURSE SOURCES "src/*.cpp" "ext/glad/src/*.c")
 
 # We don't really need to include header and resource files to build, but it's
 # nice to have them show up in IDEs.
-file(GLOB_RECURSE HEADERS "src/*.h" "ext/*/*.h" "ext/glad/*/*.h")
+file(GLOB_RECURSE HEADERS "src/*.h" "ext/glad/*/*.h")
 file(GLOB_RECURSE GLSL "resources/*.glsl")
 
-include_directories("ext")
 include_directories("ext/glad/include")
 
 # Set the executable.
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES} ${HEADERS} ${GLSL})
 
-# Helper function included from FindGfxLibs.cmake
-findGLFW3(${CMAKE_PROJECT_NAME})
-findGLM(${CMAKE_PROJECT_NAME})
+
+
+# Add GLFW
+# Get the GLFW environment variable.
+# There should be a CMakeLists.txt in the specified directory.
+set(GLFW_DIR "$ENV{GLFW_DIR}")
+if(GLFW_DIR)
+  message(STATUS "GLFW environment variable found")
+
+  option(GLFW_BUILD_EXAMPLES "GLFW_BUILD_EXAMPLES" OFF)
+  option(GLFW_BUILD_TESTS "GLFW_BUILD_TESTS" OFF)
+  option(GLFW_BUILD_DOCS "GLFW_BUILD_DOCS" OFF)
+  if(CMAKE_BUILD_TYPE MATCHES Release)
+    add_subdirectory(${GLFW_DIR} ${GLFW_DIR}/release)
+  else()
+    add_subdirectory(${GLFW_DIR} ${GLFW_DIR}/debug)
+  endif()
+
+  include_directories(${GLFW_DIR}/include)
+  target_link_libraries(${CMAKE_PROJECT_NAME} glfw ${GLFW_LIBRARIES})
+else()
+  message(STATUS "GLFW environment variable `GLFW_DIR` not found, GLFW3 must be installed with the system")
+
+  find_package(PkgConfig)
+  if (PKGCONFIG_FOUND)
+    message(STATUS "PkgConfig found")
+    pkg_search_module(GLFW REQUIRED glfw3)
+    include_directories(${GLFW_INCLUDE_DIRS})
+    target_link_libraries(${CMAKE_PROJECT_NAME} ${GLFW_LIBRARIES})
+  else()
+    message(STATUS "No PkgConfig found")
+    find_package(glfw3 REQUIRED)
+    include_directories(${GLFW_INCLUDE_DIRS})
+    target_link_libraries(${CMAKE_PROJECT_NAME} glfw)
+  endif()
+endif()
+
+
+
+# Add GLM
+# Get the GLM environment variable. Since GLM is a header-only library, we
+# just need to add it to the include directory.
+set(GLM_INCLUDE_DIR "$ENV{GLM_INCLUDE_DIR}")
+if(GLM_INCLUDE_DIR)
+  include_directories(${GLM_INCLUDE_DIR})
+  message(STATUS "GLM environment variable found")
+else()
+# If the GLM_INCLUDE_DIR environment variable is not set, we assume
+# the user has installed GLM properly on their system
+  message(STATUS "GLM environment variable `GLM_INCLUDE_DIR` not found, GLM must be installed with the system")
+endif()
+
+
 
 # OS specific options and libraries
-if(NOT WIN32)
+if(WIN32)
+  # c++0x is enabled by default.
+  # -Wall produces way too many warnings.
+  # -pedantic is not supported.
+  target_link_libraries(${CMAKE_PROJECT_NAME} opengl32.lib)
+else()
+  # Enable all pedantic warnings.
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -pedantic")
 
-  message(STATUS "Adding GCC style compiler flags")
-  add_compile_options("-Wall")
-  add_compile_options("-pedantic")
-  add_compile_options("-Werror=return-type")
- 
-  # TODO: The following links may be uneeded. 
   if(APPLE)
     # Add required frameworks for GLFW.
     target_link_libraries(${CMAKE_PROJECT_NAME} "-framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo")
@@ -42,10 +87,4 @@ if(NOT WIN32)
     #Link the Linux OpenGL library
     target_link_libraries(${CMAKE_PROJECT_NAME} "GL" "dl")
   endif()
-
-else()
-
-  # Link OpenGL on Windows
-  target_link_libraries(${CMAKE_PROJECT_NAME} opengl32.lib)
-
 endif()

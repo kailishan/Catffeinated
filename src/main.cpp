@@ -566,7 +566,6 @@ public:
       glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
       glm::vec4 blue = glm::vec4(0.678, 0.847, 0.902, 1);
 
-      glUniform4fv(progL->getUniform("objColor"), 1, &blue[0]);
 
       static float fcount = 0.0;
       fcount += 0.01;
@@ -623,20 +622,21 @@ public:
 
       
       // draw room
-      /*
-      prog->bind();
+      
+      //prog->bind();
 
       M = glm::mat4(1);
       S = glm::scale(glm::mat4(1.0f), glm::vec3(12.5, 12.5, 12.5));
       T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
       M = T * S;
-      glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
-      glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
-      glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      room->draw(prog, false);
+      glUniform4fv(progL->getUniform("objColor"), 1, &blue[0]);
+      glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+      glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      room->draw(progL, false);
 
-      prog->unbind();
-      */
+      //prog->unbind();
+      
 
       /*
       M = glm::mat4(1.0f);
@@ -644,7 +644,7 @@ public:
       table->draw(progL, false);*/
 
       // shape->draw(prog,FALSE);
-
+      /*
       heightshader->bind();
       // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       // glm::mat4 TransY = glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f,
@@ -701,7 +701,7 @@ public:
       glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
           (void*)0);
 
-      heightshader->unbind();
+      heightshader->unbind();*/
 
       assert(glGetError() == GL_NO_ERROR);
   }
@@ -792,8 +792,8 @@ int main(int argc, char **argv) {
   /* your main will always include a similar set up to establish your window
           and GL context, etc. */
   WindowManager *windowManager = new WindowManager();
-  //windowManager->init(1920, 1080);
-  windowManager->init(960, 540);
+  windowManager->init(1920, 1080);
+  //windowManager->init(960, 540);
   windowManager->setEventCallbacks(application);
 
   // allows cursor to remain within window while also hiding it
