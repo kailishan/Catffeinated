@@ -12,7 +12,7 @@ void main()
 {
 	// Diffuse
 	vec3 norm = normalize(vertex_normal);
-	vec3 Lp = vec3(0, 0, 10);
+	vec3 Lp = vec3(20, 20, 20);
 	vec3 Ld = normalize(Lp - vertex_pos);
 	float diff = clamp(dot(norm, Ld), 0, 1);
 
@@ -22,7 +22,8 @@ void main()
 	float spec = pow(clamp(dot(H, norm), 0, 1), 2);
 
 	// Ambient + Diffuse
-	color = 0.4 * vertex_color + diff * vertex_color;
+	color = 0.3 * vertex_color + diff * vertex_color;
+	//color.rgb = vec3(diff);
 	//color.rgb = (diff * vertex_color.rgb) + (spec * vec3(1, 1, 1));
 	color.a = vertex_color.a;
 }
