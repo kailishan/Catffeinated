@@ -12,6 +12,7 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "camera.h"
 #include "gameManager.h"
 #include "gameObject.h"
+#include "roomObject.h"
 #include "math.h"
 #include "stb_image.h"
 
@@ -25,7 +26,7 @@ using namespace std;
 using namespace glm;
 
 camera mycam;
-vector<gameObject> objects;
+vector<shared_ptr<gameObject>> objects;
 
 
 double get_last_elapsed_time() {
@@ -66,33 +67,67 @@ public:
 
   void initRoomGeo()
   {
-      objects.push_back(gameObject(vec3(5.75, 1, .75), 1));
-      objects.push_back(gameObject(vec3(5.75, 1, 3.25), 1));
-      objects.push_back(gameObject(vec3(5.75, 1, 5.75), 1));
-      objects.push_back(gameObject(vec3(5.75, 1, 8.25), 1));
-      objects.push_back(gameObject(vec3(5.75, 1, 10.75), 1));
+    shared_ptr<gameObject> ro1 =
+        make_shared<roomObject>(vec3(5.75, 1, .75), 1);
+    shared_ptr<gameObject> ro2 =
+        make_shared<roomObject>(vec3(5.75, 1, 3.25), 1);
+    shared_ptr<gameObject> ro3 =
+        make_shared<roomObject>(vec3(5.75, 1, 5.75), 1);
+    shared_ptr<gameObject> ro4 =
+        make_shared<roomObject>(vec3(5.75, 1, 8.25), 1);
+    shared_ptr<gameObject> ro5 =
+        make_shared<roomObject>(vec3(5.75, 1, 10.75), 1);
+    objects.push_back(ro1);
+    objects.push_back(ro2);
+    objects.push_back(ro3);
+    objects.push_back(ro4);
+    objects.push_back(ro5);
 
+    shared_ptr<gameObject> ro6 =
+        make_shared<roomObject>(vec3(10.75, 1, -1.75), 1);
+    shared_ptr<gameObject> ro7 =
+        make_shared<roomObject>(vec3(10.75, 1, .75), 1);
+    shared_ptr<gameObject> ro8 =
+        make_shared<roomObject>(vec3(10.75, 1, 3.25), 1);
+    shared_ptr<gameObject> ro9 =
+        make_shared<roomObject>(vec3(10.75, 1, 5.25), 1);
+    shared_ptr<gameObject> ro10 =
+        make_shared<roomObject>(vec3(10.75, 1, 8.25), 1);
+    shared_ptr<gameObject> ro11 =
+        make_shared<roomObject>(vec3(10.75, 1, 10.75), 1);
+    objects.push_back(ro6);
+    objects.push_back(ro7);
+    objects.push_back(ro8);
+    objects.push_back(ro9);
+    objects.push_back(ro10);
+    objects.push_back(ro11);
 
-      objects.push_back(gameObject(vec3(10.75, 1, -1.75), 1));
-      objects.push_back(gameObject(vec3(10.75, 1, .75), 1));
-      objects.push_back(gameObject(vec3(10.75, 1, 3.25), 1));
-      objects.push_back(gameObject(vec3(10.75, 1, 5.75), 1));
-      objects.push_back(gameObject(vec3(10.75, 1, 8.25), 1));
-      objects.push_back(gameObject(vec3(10.75, 1, 10.75), 1));
+    int x = -3.5;
+    int z = 5.75;
+    shared_ptr<gameObject> ro12 =
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), 1);
+    shared_ptr<gameObject> ro13 =
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), 1);
+    shared_ptr<gameObject> ro14 =
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), 1);
+    shared_ptr<gameObject> ro15 =
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), 1);
+    shared_ptr<gameObject> ro16 =
+        make_shared<roomObject>(vec3(x, 1, z = z + 2), 1);
+    objects.push_back(ro12);
+    objects.push_back(ro13);
+    objects.push_back(ro14);
+    objects.push_back(ro15);
+    objects.push_back(ro16);
 
-      int x = -3.5;
-      int z = 5.75;
-      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
-      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
-      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
-      objects.push_back(gameObject(vec3(x = x - 2, 1, z), 1));
-      objects.push_back(gameObject(vec3(x, 1, z = z + 2), 1));
-
-
-      x = -8.9;
-      z = 12.5;
-      objects.push_back(gameObject(vec3(x, 1, z), 1));
-      objects.push_back(gameObject(vec3(x + .75, 1, z), 1));
+    x = -8.9;
+    z = 12.5;
+    shared_ptr<gameObject> ro17 =
+        make_shared<roomObject>(vec3(x, 1, z), 1);
+    shared_ptr<gameObject> ro18 = 
+        make_shared<roomObject>(vec3(x + .75, 1, z), 1);
+    objects.push_back(ro17);
+    objects.push_back(ro18);
   }
   void keyCallback(GLFWwindow *window, int key, int scancode, int action,
                    int mods) {
@@ -341,6 +376,7 @@ public:
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
+
 
     //[TWOTEXTURES]
     // set the 2 textures to the correct samplers in the fragment shader:
@@ -721,7 +757,7 @@ public:
 
     V = glm::lookAt(mycam.getPos() - mycam.getFront() * vec3(1.5), mycam.getPos() + mycam.getFront(),
         mycam.getUp());
-    mycam.processKeyboard(frametime, &objects);
+    mycam.processKeyboard(frametime, objects);
 
     drawScene(P, V); /* 3RD PERSON CAMERA */
 

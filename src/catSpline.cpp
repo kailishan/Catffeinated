@@ -13,12 +13,10 @@ catSpline::catSpline(std::shared_ptr<Shape> shape) {
   rad = .5;
   std::cout << "x: " << pos.x << " z: " << pos.z << std::endl;
 
-  splinepath[0] = Spline(pos, glm::vec3(pos.x + 5, pos.y, pos.z + 5),
-                         glm::vec3(pos.x - 5, pos.y, pos.z - 5),
-                         pos, 8);
-  splinepath[1] = Spline(pos,
-                         glm::vec3(pos.x + 5, pos.y, pos.z - 5),
-                         glm::vec3(pos.x - 1, pos.y, pos.z + 1), pos, 8);
+  splinepath[0] = Spline(pos, glm::vec3(-3, 0.35, -3),
+                         glm::vec3(3, 0.35, -3), pos, 5);
+  splinepath[1] = Spline(glm::vec3(2, 0.5, 5), glm::vec3(3, 0.5, 5),
+                         glm::vec3(-0.25, 0.5, 5), glm::vec3(0, 0.5, 5), 5);
 }
 
 void catSpline::move(double ftime) {
@@ -28,20 +26,16 @@ void catSpline::move(double ftime) {
       splinepath[0].update(ftime);
       vel = splinepath[0].getPosition() - pos;
       //pos = splinepath[0].getPosition();
-    } else {
-      splinepath[1].update(ftime);
-      vel = splinepath[1].getPosition() - pos;
-      //pos = splinepath[1].getPosition();
     }
 
     glm::vec4 dir = glm::vec4(vel, 1);
 
 
-    if (splinepath[1].isDone()) {
-      splinepath[0] = Spline(pos, glm::vec3(pos.x + 5, pos.y, pos.z + 5),
-                             glm::vec3(pos.x - 5, pos.y, pos.z - 5), pos, 8);
-      splinepath[1] = Spline(pos, glm::vec3(pos.x + 5, pos.y, pos.z - 5),
-                             glm::vec3(pos.x - 1, pos.y, pos.z + 1), pos, 8);
+    if (splinepath[0].isDone()) {
+      splinepath[0] =
+          Spline(pos, glm::vec3(-3, 0.35, -3), glm::vec3(3, 0.35, -3), pos, 5);
+      splinepath[1] = Spline(glm::vec3(2, 0.5, 5), glm::vec3(3, 0.5, 5),
+                             glm::vec3(-0.25, 0.5, 5), glm::vec3(0, 0.5, 5), 5);
     }
 
     pos += glm::vec3(dir.x, dir.y, dir.z);

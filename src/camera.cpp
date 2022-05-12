@@ -22,9 +22,9 @@ bool camera::isColliding(std::shared_ptr<gameObject> other) {
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
     //other->setDestroying(true);
     return true;
-  } else if (d <= rad + other.getRad() &&  other.getObjectType() == 2) {
+  } else if (d <= rad + other->getRad() &&  other->getObjectType() == 2) {
       return true;
-  } else if (d <= rad + other.getRad() && !other.getDestroying() && other.getObjectType() == 0)
+  } else if (d <= rad + other->getRad() && !other->getDestroying() && other->getObjectType() == 0)
   {
     takeDamage();
     return false;
@@ -33,7 +33,7 @@ bool camera::isColliding(std::shared_ptr<gameObject> other) {
 }
 
 /* change camera position wrt keyboard input */
-void camera::processKeyboard(double ftime, std::vector<gameObject> *objects) {
+void camera::processKeyboard(double ftime, std::vector<std::shared_ptr<gameObject>> objects) {
   incrementFrames();
   float cameraSpeed = 5.0f * ftime * speedBoost;
   glm::vec3 nextPos = pos;
@@ -65,10 +65,10 @@ void camera::processKeyboard(double ftime, std::vector<gameObject> *objects) {
           std::cout << "Zoe Mode: OFF" << std::endl;
   }
 
-  for (int i = 0; i < objects->size(); i++)
+  for (int i = 0; i < objects.size(); i++)
   {
       pos = nextPos;
-      if (isColliding((*objects)[i])) {
+      if (isColliding(objects.at(i))) {
           pos = prevPos;
           return;
       }

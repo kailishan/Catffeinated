@@ -1,7 +1,7 @@
 #include "gameObject.h"
 
 
-
+/*
 gameObject::gameObject(glm::vec3 position, float radius)
 {
     pos = position;
@@ -30,10 +30,11 @@ gameObject::gameObject(std::shared_ptr<Shape> shape) {
   rad = .5;
   std::cout << "x: " << pos.x << " z: " << pos.z << std::endl;
 }
+*/
 
 
-bool gameObject::isColliding(gameObject other) {
-  if (destroying || other.destroying)
+bool gameObject::isColliding(std::shared_ptr<gameObject> other) {
+  if (destroying || other->destroying)
     return false;
   float d = glm::distance(pos, other->pos);
   if (d > rad + other->rad)

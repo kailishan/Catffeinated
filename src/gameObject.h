@@ -9,9 +9,7 @@
 
 class gameObject {
 public:
-  gameObject(std::shared_ptr<Shape> shape);
-  gameObject(glm::vec3 posistion, float radius);
-  bool isColliding(gameObject other);
+  virtual bool isColliding(std::shared_ptr<gameObject> other);
   void destroy(double ftime);
   virtual void process(std::vector<std::shared_ptr<gameObject>> others, int index, double ftime);
   std::shared_ptr<Shape> getMesh() { return mesh; }
@@ -30,8 +28,10 @@ public:
   void setRadius(float newRad) { rad = newRad; }
   void setIsStatic(bool newVal) { isStatic = newVal; }
   void setObjectType(int type) { objectType = type; };
+
+  virtual void move(double ftime) = 0;
   
-private:
+protected:
   std::shared_ptr<Shape> mesh = NULL;
   int objectType = NULL;
   bool isStatic = false;
