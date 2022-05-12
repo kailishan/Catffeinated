@@ -8,17 +8,19 @@
 
 class gameManager {
 public:
-  gameManager(std::shared_ptr<Shape> shape, std::shared_ptr<Shape> shape2) {
+  gameManager(std::shared_ptr<Shape> shape, std::shared_ptr<Shape> shape2, camera *player) {
     kibble = shape2;
     curShape = shape;
     srand(glfwGetTime());
     while (count <= 14) {
       spawnGameObject(curShape);
+      spawnAggressive(curShape, player);
       spawnStaticGameObject(kibble);
     }
   }
 
   void spawnGameObject(std::shared_ptr<Shape> shape);
+  void spawnAggressive(std::shared_ptr<Shape> shape, camera *player);
   void spawnStaticGameObject(std::shared_ptr<Shape> shape);
   void process(camera &mycam, double ftime);
   //int getHealth();

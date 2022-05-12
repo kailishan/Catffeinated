@@ -1,8 +1,19 @@
+#include "cat.h"
+#include "catAggressive.h"
 #include "gameManager.h"
 
 void gameManager::spawnGameObject(std::shared_ptr<Shape> shape)
 {
-  std::shared_ptr<gameObject> object = std::make_shared<gameObject>(shape);
+  std::shared_ptr<gameObject> object = std::make_shared<cat>(shape);
+  object->setObjectType(0);
+  objects.push_back(object);
+  count++;
+}
+
+void gameManager::spawnAggressive(std::shared_ptr<Shape> shape,
+                                  camera *player) {
+  std::shared_ptr<gameObject> object =
+      std::make_shared<catAggressive>(shape, player);
   object->setObjectType(0);
   objects.push_back(object);
   count++;
@@ -11,7 +22,7 @@ void gameManager::spawnGameObject(std::shared_ptr<Shape> shape)
 // temp kibble code
 void gameManager::spawnStaticGameObject(std::shared_ptr<Shape> shape)
 {
-  std::shared_ptr<gameObject> object = std::make_shared<gameObject>(shape);
+  std::shared_ptr<gameObject> object = std::make_shared<cat>(shape);
   object->setObjectType(1);
   object->setVelocity(glm::vec3(0, 0, 0));
   object->setRadius(0.1f);
