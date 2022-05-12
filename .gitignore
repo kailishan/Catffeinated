@@ -5,3 +5,4 @@ out/
 src/x64/
 src/x64/Debug
 Debug/
+CMakeLists
