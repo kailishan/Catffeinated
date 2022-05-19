@@ -312,8 +312,8 @@ public:
     sphere->init();
 
     room = make_shared<Shape>();
-    string mtlPath = resourceDirectory + "/acroom/acroom .mtl";
-    room->loadMesh(resourceDirectory + "/acroom/acroom .obj", &mtlPath);
+    string mtlPath = resourceDirectory + "/acroom/";
+    room->loadMesh(resourceDirectory + "/acroom/acroom.obj", &mtlPath);
     room->resize();
     room->init();
 
@@ -625,19 +625,19 @@ public:
       
       // draw room
       
-      //prog->bind();
+      prog->bind();
 
       M = glm::mat4(1);
       S = glm::scale(glm::mat4(1.0f), glm::vec3(12.5, 12.5, 12.5));
       T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
       M = T * S;
-      glUniform4fv(progL->getUniform("objColor"), 1, &blue[0]);
-      glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
-      glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
-      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      room->draw(progL, false);
+      //glUniform4fv(progL->getUniform("objColor"), 1, &blue[0]);
+      glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+      glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+      glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      room->draw(prog, false);
 
-      //prog->unbind();
+      prog->unbind();
       
 
       /*

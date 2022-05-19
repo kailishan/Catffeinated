@@ -8,6 +8,7 @@
 #include "Program.h"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+#include "stb_image.h"
 
 using namespace std;
 
@@ -59,11 +60,11 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
   }
   // material:
   for (int i = 0; i < objMaterials.size(); i++) {
-      cout << objMaterials[i].name << endl;
+      //cout << objMaterials[i].name << endl;
       if (objMaterials[i].diffuse_texname.size() > 0) {
           char filepath[1000];
           int width, height, channels;
-          string filename = objMaterials[i].ambient_texname;
+          string filename = objMaterials[i].diffuse_texname;
           int subdir = filename.rfind("\\");
           if (subdir > 0)
               filename = filename.substr(subdir + 1);
@@ -73,17 +74,26 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
           // stbi_load(char const *filename, int *x, int *y, int *comp, int
           // req_comp)
 
-          unsigned char* data = loadimage(filepath, &width, &height, &channels, 4);
+          unsigned char* data = stbi_load(filepath, &width, &height, &channels, 4);
           glGenTextures(1, &textureIDs[i]);
           glActiveTexture(GL_TEXTURE0);
           glBindTexture(GL_TEXTURE_2D, textureIDs[i]);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+              GL_LINEAR_MIPMAP_LINEAR);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+          glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+              GL_UNSIGNED_BYTE, data);
+          glGenerateMipmap(GL_TEXTURE_2D);
+          /*
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
           glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
               GL_UNSIGNED_BYTE, data);
-          glGenerateMipmap(GL_TEXTURE_2D);
+          glGenerateMipmap(GL_TEXTURE_2D);*/
           // delete[] data;
       }
   }
