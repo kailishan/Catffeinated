@@ -797,7 +797,6 @@ bool LoadObj(std::vector<shape_t> &shapes, // [output]
   if (mtl_basepath) {
     basePath = mtl_basepath;
   }
-  //std::cout << basePath << std::endl;
   MaterialFileReader matFileReader(basePath);
 
   return LoadObj(shapes, materials, err, ifs, matFileReader);

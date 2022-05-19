@@ -5,7 +5,6 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 
 #include <glad/glad.h>
 #include <iostream>
-#define STB_IMAGE_IMPLEMENTATION
 #include "GLSL.h"
 #include "MatrixStack.h"
 #include "Program.h"
