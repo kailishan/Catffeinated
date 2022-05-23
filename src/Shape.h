@@ -26,6 +26,7 @@ public:
   void measure();
 	void resize();
 	void draw(const std::shared_ptr<Program> prog, bool use_extern_texures) const;
+	void draw(const std::shared_ptr<Program> prog, int object, bool use_extern_textures) const;
 	unsigned int *textureIDs = NULL;
 
 	glm::vec3 min = glm::vec3(0);

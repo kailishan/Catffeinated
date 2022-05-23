@@ -301,7 +301,7 @@ public:
     // Initialize cat.
     cat = make_shared<Shape>();
     // shape->loadMesh(resourceDirectory + "/t800.obj");
-    cat->loadMesh(resourceDirectory + "/Cat_Low.obj");
+    cat->loadMesh(resourceDirectory + "/catsplit.obj");
     cat->resize();
     cat->init();
 
@@ -585,7 +585,7 @@ public:
       glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
       // draw object's mesh; this helps generalize
-      cat->draw(progL, false);
+      cat->draw(progL, 0, false);
 
       /*
       for (int j = 0; j < objects.size(); j++) {
