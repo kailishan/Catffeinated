@@ -61,7 +61,6 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
   }
   // material:
   for (int i = 0; i < objMaterials.size(); i++) {
-      cout << objMaterials[i].name << endl;
       if (objMaterials[i].diffuse_texname.size() > 0) {
           char filepath[1000];
           int width, height, channels;
@@ -70,7 +69,6 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
           if (subdir > 0)
               filename = filename.substr(subdir + 1);
           string str = *mtlpath + filename;
-          cout << str << endl;
           strcpy(filepath, str.c_str());
           // stbi_load(char const *filename, int *x, int *y, int *comp, int
           // req_comp)
@@ -290,6 +288,9 @@ void Shape::draw(const shared_ptr<Program> prog,
         glBindTexture(GL_TEXTURE_2D, textureIDs[textureindex]);
       }
     }
+
+    // color
+    //glUniform3fv(prog->getUniform("objColor"), 1, &objMaterials[i].ambient[0]);
     // Draw
     glDrawElements(GL_TRIANGLES, (int)eleBuf[i].size(), GL_UNSIGNED_INT,
                    (const void *)0);

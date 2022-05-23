@@ -411,8 +411,8 @@ public:
     // Initialize the GLSL program.
     prog = std::make_shared<Program>();
     prog->setVerbose(true);
-    prog->setShaderNames(resourceDirectory + "/shader_vertex.glsl",
-                         resourceDirectory + "/shader_fragment.glsl");
+    prog->setShaderNames(resourceDirectory + "/toon_vertex.glsl",
+                         resourceDirectory + "/toon_fragment.glsl");
     if (!prog->init()) {
       std::cerr << "One or more shaders failed to compile... exiting!"
                 << std::endl;
@@ -421,7 +421,9 @@ public:
     prog->addUniform("P");
     prog->addUniform("V");
     prog->addUniform("M");
+    prog->addUniform("objColor");
     prog->addUniform("campos");
+    prog->addUniform("lightDir");
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
     prog->addAttribute("vertTex");
@@ -631,6 +633,8 @@ public:
       T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
       M = T * S;
       //glUniform4fv(progL->getUniform("objColor"), 1, &blue[0]);
+      vec3 lightDir = vec3(0.0, 1.0, 0.0);
+      glUniform3fv(prog->getUniform("lightDir"), 1, &lightDir[0]);
       glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
       glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
       glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);

@@ -3,11 +3,11 @@ out vec4 color;
 in vec3 vertex_normal;
 in vec3 vertex_pos;
 in vec2 vertex_tex;
+in float intensity;
 
 uniform vec3 campos;
 uniform sampler2D tex;
 uniform vec3 objColor;
-
 
 void main()
 {
@@ -33,4 +33,12 @@ void main()
 	color.a=1;
 	color.rgb = texture(tex, -vertex_tex).rgb;
 
+	if (intensity > 0.95)
+		color += vec4(0.25,0.25,0.25,0.0);
+	else if (intensity > 0.5)
+		color += vec4(0.0,0.0,0.0,0.0);
+	else if (intensity > 0.25)
+		color -= vec4(0.25,0.25,0.25,0.0);
+	else
+		color -= vec4(0.5,0.5,0.5,0.0);
 }
