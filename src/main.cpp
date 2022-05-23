@@ -26,6 +26,7 @@ using namespace glm;
 
 camera mycam;
 vector<shared_ptr<gameObject>> objects;
+double tail_dt = 0.0f;
 
 
 double get_last_elapsed_time() {
@@ -545,8 +546,11 @@ public:
 
       //cout << glm::to_string(V) << endl;
       double frametime = get_last_elapsed_time();
+      tail_dt += frametime;
 
       // set up all the matrices
+      auto Model = make_shared<MatrixStack>();
+
       glm::mat4 M = glm::mat4(1);
       glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f));
       glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
@@ -582,10 +586,30 @@ public:
       //glm::mat4 RT = glm::lookAt(-mycam.getPos(), -mycam.getPos() + mycam.getFront().x + mycam.getFront().z,
       //    mycam.getUp());
       M = T * S * R;
-      glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
-      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      // draw object's mesh; this helps generalize
-      cat->draw(progL, 0, false);
+
+      // base transforms for player model
+      Model->pushMatrix();
+        Model->loadIdentity();
+        Model->translate(vec3(mycam.getPos().x, mycam.getPos().y - 0.5, mycam.getPos().z));
+        Model->scale(0.5f);
+        Model->rotate(rot, vec3(0, 1, 0));  
+        glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
+        glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+        // draw everything but the tail with these transforms
+        for (int i = 0; i < cat->getObjCount(); i++) {
+          if (i != 4)
+          cat->draw(progL, i, false);
+        }
+        // tail transforms
+        Model->pushMatrix();
+          float angle = sin(glfwGetTime() * 3) / 3;
+          Model->rotate(angle, vec3(0, 0, 1));
+          // clip the tail slightly back into the model -- this helps hide any disjoint
+          Model->translate(vec3(0, 0, 0.05f));
+          glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+          cat->draw(progL, 4, false);
+        Model->popMatrix();
+      Model->popMatrix();
 
       /*
       for (int j = 0; j < objects.size(); j++) {
@@ -625,7 +649,6 @@ public:
 
       
       // draw room
-      
       prog->bind();
 
       M = glm::mat4(1);
@@ -641,15 +664,14 @@ public:
       room->draw(prog, false);
 
       prog->unbind();
-      
-
       /*
       M = glm::mat4(1.0f);
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      table->draw(progL, false);*/
+      table->draw(progL, false);
+      */
 
-      // shape->draw(prog,FALSE);
       /*
+      // shape->draw(prog,FALSE);
       heightshader->bind();
       // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
       // glm::mat4 TransY = glm::translate(glm::mat4(1.0f), glm::vec3(-50.0f,
@@ -706,7 +728,8 @@ public:
       glDrawElements(GL_TRIANGLES, MESHSIZE * MESHSIZE * 6, GL_UNSIGNED_SHORT,
           (void*)0);
 
-      heightshader->unbind();*/
+      heightshader->unbind();
+      */
 
       assert(glGetError() == GL_NO_ERROR);
   }

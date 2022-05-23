@@ -31,7 +31,7 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
     cerr << errStr << endl;
   } else if (shapes.size()) {
     obj_count = shapes.size();
-    //cout << shapes.size() << endl;
+    cout << shapes.size() << endl;
     posBuf = new std::vector<float>[shapes.size()];
     norBuf = new std::vector<float>[shapes.size()];
     texBuf = new std::vector<float>[shapes.size()];
