@@ -572,7 +572,6 @@ public:
       glm::vec4 blue = glm::vec4(0.2588, 0.4, 0.9608, 1);
       glm::vec4 red = glm::vec4(1, 0.302, 0.302, 1);
 
-
       static float fcount = 0.0;
       fcount += 0.01;
 
@@ -611,43 +610,31 @@ public:
         Model->popMatrix();
       Model->popMatrix();
 
-      /*
-      for (int j = 0; j < objects.size(); j++) {
-          T = glm::translate(glm::mat4(1.0f), objects[j].getPos());
-          M = T;
-          glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-          cat->draw(progL, false);
-      }*/
-
+      // draw the game objects
       for (int i = 0; i < myManager->getObjects().size(); i++) {
           std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
           vec3 currPos = currObj->getPos();
           if (!currObj->getIsStatic()) {
-              // transform cats
-              // S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
-              // T = glm::translate(glm::mat4(1.0f), currPos);
-              // glm::mat4 R =
-              //     glm::rotate(glm::mat4(1), currObj->getRot(), glm::vec3(0, 1, 0));
-              // M = myManager->getObjects().at(i)->getMatrix() * S;
-              glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
+            // object is a cat -- use matrix stack
+            glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
+            Model->pushMatrix();
+              Model->loadIdentity();
+              Model->multMatrix(myManager->getObjects().at(i)->getMatrix() * S);
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              for (int i = 0; i < currObj->getMesh()->getObjCount(); i++) {
+                if (i != 4)
+                  currObj->getMesh()->draw(progL, i, false);
+              }
               Model->pushMatrix();
-                Model->loadIdentity();
-                Model->multMatrix(myManager->getObjects().at(i)->getMatrix() * S);
+                float angle = sin(glfwGetTime() * 5) / 3;
+                Model->rotate(-25.0f, vec3(1, 0, 0));
+                Model->rotate(angle, vec3(0, 0, 1));
+                // clip the tail slightly back into the model -- this helps hide any disjoint
+                Model->translate(vec3(0, -0.05f, 0.05f));
                 glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                for (int i = 0; i < currObj->getMesh()->getObjCount(); i++) {
-                  if (i != 4)
-                    currObj->getMesh()->draw(progL, i, false);
-                }
-                Model->pushMatrix();
-                  float angle = sin(glfwGetTime() * 5) / 3;
-                  Model->rotate(-25.0f, vec3(1, 0, 0));
-                  Model->rotate(angle, vec3(0, 0, 1));
-                  // clip the tail slightly back into the model -- this helps hide any disjoint
-                  Model->translate(vec3(0, -0.05f, 0.05f));
-                  glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                  currObj->getMesh()->draw(progL, 4, false);
-                Model->popMatrix();
+                currObj->getMesh()->draw(progL, 4, false);
               Model->popMatrix();
+            Model->popMatrix();
           }
           else {
               glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
@@ -662,7 +649,6 @@ public:
               glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
               currObj->getMesh()->draw(progL, false);
           }
-          // draw object's mesh; this helps generalize
       }
 
       
