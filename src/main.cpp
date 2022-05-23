@@ -621,10 +621,12 @@ public:
               Model->loadIdentity();
               Model->multMatrix(myManager->getObjects().at(i)->getMatrix() * S);
               glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              for (int i = 0; i < currObj->getMesh()->getObjCount(); i++) {
+              // torso transforms
+              for (int i = 0; i < 3; i++) {
                 if (i != 4)
                   currObj->getMesh()->draw(progL, i, false);
               }
+              // tail transform
               Model->pushMatrix();
                 float angle = sin(glfwGetTime() * 5) / 3;
                 Model->rotate(-25.0f, vec3(1, 0, 0));
@@ -633,6 +635,35 @@ public:
                 Model->translate(vec3(0, -0.05f, 0.05f));
                 glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
                 currObj->getMesh()->draw(progL, 4, false);
+              Model->popMatrix();
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              // right rear leg
+              Model->pushMatrix();
+                angle = sin(glfwGetTime() * 3) / 3;
+                Model->rotate(angle, vec3(1, 0, 0));
+                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+                currObj->getMesh()->draw(progL, 8, false);
+              Model->popMatrix();
+              // right front leg
+              Model->pushMatrix();
+                angle = sin(glfwGetTime() * 3 - 1) / 3;
+                Model->rotate(angle, vec3(1, 0, 0));
+                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+                currObj->getMesh()->draw(progL, 6, false);
+              Model->popMatrix();
+              // left rear leg
+              Model->pushMatrix();
+                angle = sin(glfwGetTime() * 3 - 2) / 3;
+                Model->rotate(angle, vec3(1, 0, 0));
+                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+                currObj->getMesh()->draw(progL, 7, false);
+              Model->popMatrix();
+              // left front leg
+              Model->pushMatrix();
+                angle = sin(glfwGetTime() * 3 - 3) / 3;
+                Model->rotate(angle, vec3(1, 0, 0));
+                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+                currObj->getMesh()->draw(progL, 5, false);
               Model->popMatrix();
             Model->popMatrix();
           }
@@ -651,7 +682,6 @@ public:
           }
       }
 
-      
       // draw room
       prog->bind();
 
