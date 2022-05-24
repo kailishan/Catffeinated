@@ -423,7 +423,7 @@ public:
     prog->addUniform("M");
     prog->addUniform("objColor");
     prog->addUniform("campos");
-    prog->addUniform("lightDir");
+    prog->addUniform("lightPos");
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
     prog->addAttribute("vertTex");
@@ -546,6 +546,8 @@ public:
       //cout << glm::to_string(V) << endl;
       double frametime = get_last_elapsed_time();
 
+      vec3 camPos = mycam.getPos() - mycam.getFront() * vec3(1.5);
+
       // set up all the matrices
       glm::mat4 M = glm::mat4(1);
       glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f));
@@ -559,7 +561,10 @@ public:
       glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
       glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
+
+
+      glUniform3fv(progL->getUniform("campos"), 1, &camPos[0]);
+      //glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, Texture);
 
@@ -633,8 +638,9 @@ public:
       T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
       M = T * S;
       //glUniform4fv(progL->getUniform("objColor"), 1, &blue[0]);
-      vec3 lightDir = vec3(0.0, 1.0, 0.0);
-      glUniform3fv(prog->getUniform("lightDir"), 1, &lightDir[0]);
+      vec3 lightDir = vec3(0.0, 10.0, 0.0);
+      glUniform3fv(prog->getUniform("lightPos"), 1, &lightDir[0]);
+      glUniform3fv(prog->getUniform("campos"), 1, &camPos[0]);
       glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
       glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
       glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
@@ -768,12 +774,7 @@ public:
 
     /* draw the complete scene from a top down camera */
     mat4 OrthoProj = GetOrthoMatrix();
-    /*OrthoProj = glm::ortho(-1 * aspect, 1 * aspect, -1.0f, 1.0f, -2.0f, 100.0f);
-    if (width < height) {
-        OrthoProj = glm::ortho(-1.0f, 1.0f, -1.0f / aspect, 1.0f / aspect, -2.0f, 100.0f);
-    }*/
     mat4 TopView = GetTopView();
-    //cout << glm::to_string(TopView) << endl;
     glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(0, height-180, 320, 180);
     drawScene(P, TopView); /* MINI MAP */

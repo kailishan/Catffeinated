@@ -5,7 +5,6 @@ out vec4 color;
 in vec4 vertex_color;
 in vec3 vertex_normal;
 in vec3 vertex_pos;
-in float intensity;
 
 uniform vec3 campos;
 
@@ -20,7 +19,7 @@ void main()
 	// Specular
 	vec3 Cd = normalize(campos - vertex_pos);
 	vec3 H = normalize(Cd + Ld);
-	float spec = pow(clamp(dot(H, norm), 0, 1), 2);
+	//float spec = pow(clamp(dot(H, norm), 0, 1), 2);
 
 	// Ambient + Diffuse
 	color = 0.3 * vertex_color + diff * vertex_color;
@@ -29,12 +28,34 @@ void main()
 	//color.rgb = (diff * vertex_color.rgb) + (spec * vec3(1, 1, 1));
 	color.a = vertex_color.a;
 
-	if (intensity > 0.95)
-		color += vec4(0.25,0.25,0.25,0.0);
-	else if (intensity > 0.5)
-		color += vec4(0.0,0.0,0.0,0.0);
-	else if (intensity > 0.25)
-		color -= vec4(0.25,0.25,0.25,0.0);
-	else
-		color -= vec4(0.5,0.5,0.5,0.0);
+	vec3 nn = normalize(vertex_normal);
+	vec3 light_pos = vec3(0.0, 10.0, 0.0);
+	vec3 light_dir = normalize(vertex_pos - light_pos);
+	vec3 eye_dir = normalize(-vertex_pos);
+	vec3 reflect_dir = normalize(reflect(light_dir, nn));
+	
+	float spec = max(dot(reflect_dir, eye_dir), 0.0);
+	float diffuse = max(dot(-light_dir, nn), 0.0);
+
+	float intensity = 0.6 * diffuse + 0.4 * spec;
+
+ 	if (intensity > 0.9) {
+ 		intensity = 1.1;
+ 	}
+ 	else if (intensity > 0.5) {
+ 		intensity = 0.7;
+ 	}
+ 	else {
+ 		intensity = 0.5;
+	}
+
+	vec3 camDir = campos - vertex_pos;
+	camDir = normalize(camDir);
+	float outline = dot(camDir, nn);
+	if (outline > -0.2 && outline < 0.2)
+	{
+		intensity = 0.0;
+	}
+
+	color.rgb = color.rgb * intensity;
 }

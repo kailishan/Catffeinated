@@ -12,7 +12,6 @@ out vec4 vertex_color;
 out vec3 vertex_pos;
 out vec3 vertex_normal;
 
-out float intensity;
 
 void main()
 {
@@ -21,7 +20,4 @@ void main()
 	vec4 tpos =  M * vec4(vertPos, 1.0);
 	vertex_pos = tpos.xyz;
 	gl_Position = P * V * tpos;
-
-	vec3 lightDir = vec3(0.0, 1.0, 0.0);
-	intensity = dot(lightDir, vertex_normal);
 }
