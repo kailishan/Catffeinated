@@ -67,15 +67,15 @@ public:
   void initRoomGeo()
   {
     shared_ptr<gameObject> ro1 =
-        make_shared<roomObject>(vec3(5.75, 1, .75), 1);
+        make_shared<roomObject>(vec3(5.75, 1, .75), .8);
     shared_ptr<gameObject> ro2 =
-        make_shared<roomObject>(vec3(5.75, 1, 3.25), 1);
+        make_shared<roomObject>(vec3(5.75, 1, 3.25), .8);
     shared_ptr<gameObject> ro3 =
-        make_shared<roomObject>(vec3(5.75, 1, 5.75), 1);
+        make_shared<roomObject>(vec3(5.75, 1, 5.75), .8);
     shared_ptr<gameObject> ro4 =
-        make_shared<roomObject>(vec3(5.75, 1, 8.25), 1);
+        make_shared<roomObject>(vec3(5.75, 1, 8.25), .8);
     shared_ptr<gameObject> ro5 =
-        make_shared<roomObject>(vec3(5.75, 1, 10.75), 1);
+        make_shared<roomObject>(vec3(5.75, 1, 10.75), .8);
     objects.push_back(ro1);
     objects.push_back(ro2);
     objects.push_back(ro3);
@@ -83,17 +83,17 @@ public:
     objects.push_back(ro5);
 
     shared_ptr<gameObject> ro6 =
-        make_shared<roomObject>(vec3(10.75, 1, -1.75), 1);
+        make_shared<roomObject>(vec3(10.75, 1, -1.75), .8);
     shared_ptr<gameObject> ro7 =
-        make_shared<roomObject>(vec3(10.75, 1, .75), 1);
+        make_shared<roomObject>(vec3(10.75, 1, .75), .8);
     shared_ptr<gameObject> ro8 =
-        make_shared<roomObject>(vec3(10.75, 1, 3.25), 1);
+        make_shared<roomObject>(vec3(10.75, 1, 3.25), .8);
     shared_ptr<gameObject> ro9 =
-        make_shared<roomObject>(vec3(10.75, 1, 5.25), 1);
+        make_shared<roomObject>(vec3(10.75, 1, 5.25), .8);
     shared_ptr<gameObject> ro10 =
-        make_shared<roomObject>(vec3(10.75, 1, 8.25), 1);
+        make_shared<roomObject>(vec3(10.75, 1, 8.25), .8);
     shared_ptr<gameObject> ro11 =
-        make_shared<roomObject>(vec3(10.75, 1, 10.75), 1);
+        make_shared<roomObject>(vec3(10.75, 1, 10.75), .8);
     objects.push_back(ro6);
     objects.push_back(ro7);
     objects.push_back(ro8);
@@ -104,15 +104,15 @@ public:
     int x = -3.5;
     int z = 5.75;
     shared_ptr<gameObject> ro12 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), 1);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
     shared_ptr<gameObject> ro13 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), 1);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
     shared_ptr<gameObject> ro14 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), 1);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
     shared_ptr<gameObject> ro15 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), 1);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
     shared_ptr<gameObject> ro16 =
-        make_shared<roomObject>(vec3(x, 1, z = z + 2), 1);
+        make_shared<roomObject>(vec3(x, 1, z = z + 2), .8);
     objects.push_back(ro12);
     objects.push_back(ro13);
     objects.push_back(ro14);
@@ -122,9 +122,9 @@ public:
     x = -8.9;
     z = 12.5;
     shared_ptr<gameObject> ro17 =
-        make_shared<roomObject>(vec3(x, 1, z), 1);
+        make_shared<roomObject>(vec3(x, 1, z), .8);
     shared_ptr<gameObject> ro18 = 
-        make_shared<roomObject>(vec3(x + .75, 1, z), 1);
+        make_shared<roomObject>(vec3(x + .75, 1, z), .8);
     objects.push_back(ro17);
     objects.push_back(ro18);
   }
@@ -141,24 +141,28 @@ public:
     }
     if (key == GLFW_KEY_W && action == GLFW_RELEASE) {
       mycam.setw(0);
+      mycam.newKey = true;
     }
     if (key == GLFW_KEY_S && action == GLFW_PRESS) {
       mycam.sets(1);
     }
     if (key == GLFW_KEY_S && action == GLFW_RELEASE) {
       mycam.sets(0);
+      mycam.newKey = true;
     }
     if (key == GLFW_KEY_A && action == GLFW_PRESS) {
       mycam.seta(1);
     }
     if (key == GLFW_KEY_A && action == GLFW_RELEASE) {
       mycam.seta(0);
+      mycam.newKey = true;
     }
     if (key == GLFW_KEY_D && action == GLFW_PRESS) {
       mycam.setd(1);
     }
     if (key == GLFW_KEY_D && action == GLFW_RELEASE) {
       mycam.setd(0);
+      mycam.newKey = true;
     }
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
       mycam.setp(1);
@@ -579,9 +583,42 @@ public:
 
       T = glm::translate(glm::mat4(1.0f), vec3(mycam.getPos().x, mycam.getPos().y - 0.5, mycam.getPos().z));
       S = glm::scale(glm::mat4(1.0f), glm::vec3(0.5));
-      float rot = -atan(mycam.getFront().z / mycam.getFront().x) + 90.0 / 180.0 * M_PI;
-      if (mycam.getFront().x < 0)
-          rot += M_PI;
+      static float rot = 0;
+      if (mycam.newKey) {
+          if (mycam.wkey())
+          {
+              rot = -atan(mycam.getFront().z / mycam.getFront().x) + 90.0 / 180.0 * M_PI;
+              if (mycam.getFront().x < 0)
+                  rot += M_PI;
+              mycam.newKey = false;
+          }
+          else if (mycam.dkey())
+          {
+              rot = -M_PI / 2 + -atan(mycam.getFront().z / mycam.getFront().x) + 90.0 / 180.0 * M_PI;
+              if (mycam.getFront().x < 0)
+                  rot += M_PI;
+              mycam.newKey = false;
+          }
+          else if (mycam.skey())
+          {
+              rot = M_PI + -atan(mycam.getFront().z / mycam.getFront().x) + 90.0 / 180.0 * M_PI;
+              if (mycam.getFront().x < 0)
+                  rot += M_PI;
+              mycam.newKey = false;
+          }
+          else if (mycam.akey())
+          {
+              rot = M_PI / 2 + -atan(mycam.getFront().z / mycam.getFront().x) + 90.0 / 180.0 * M_PI;
+              if (mycam.getFront().x < 0)
+                  rot += M_PI;
+              mycam.newKey = false;
+
+          }
+      }
+      else
+      {
+          rot = rot;
+      }
       R = glm::rotate(glm::mat4(1.0f), rot, vec3(0, 1, 0));
       //M = glm::lookAt(mycam.getPos(), mycam.getPos() + mycam.getFront(), mycam.getUp());
       //glm::mat4 RT = glm::lookAt(-mycam.getPos(), -mycam.getPos() + mycam.getFront().x + mycam.getFront().z,

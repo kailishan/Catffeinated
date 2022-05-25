@@ -68,7 +68,8 @@ void main()
 	vec3 camDir = campos - vertex_pos;
 	camDir = normalize(camDir);
 	float outline = dot(camDir, nn);
-	if (outline > -0.2 && outline < 0.2)
+	//if (outline > -0.2 && outline < 0.2)
+	if (outline == 0)
 	{
 		intensity = 0.0;
 	}

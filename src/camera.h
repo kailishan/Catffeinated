@@ -9,6 +9,9 @@
 
 class camera {
 public:
+
+
+  bool newKey = true;
   camera() {
     window = nullptr;
     pos = glm::vec3(0, 0.85f, 0);
