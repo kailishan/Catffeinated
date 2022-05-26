@@ -10,7 +10,6 @@
 class camera {
 public:
 
-
   bool newKey = true;
   camera() {
     window = nullptr;
@@ -67,9 +66,11 @@ public:
   void changeZMode() { zMode = !zMode; }
 
   float getSpeedBoost() { return speedBoost; }
-
   int getHealth();
   void takeDamage();
+
+  //void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
+  //int playAudio();
 
 private:
   glm::vec3 modeldirection;

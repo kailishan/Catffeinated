@@ -59,6 +59,7 @@ public:
   // texture data
   GLuint Texture;
   GLuint Texture2, HeightTex;
+  GLuint CatTex1, CatTex2;
 
 
   vec3 g_eye = vec3(0, 1, 0);
@@ -380,6 +381,35 @@ public:
                  GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+    // texture 4
+    str = resourceDirectory + "/fur1.png";
+    strcpy(filepath, str.c_str());
+    data = stbi_load(filepath, &width, &height, &channels, 4);
+    glGenTextures(1, &CatTex1);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, CatTex1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // texture 5
+    str = resourceDirectory + "/fur2.png";
+    strcpy(filepath, str.c_str());
+    data = stbi_load(filepath, &width, &height, &channels, 4);
+    glGenTextures(1, &CatTex2);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, CatTex2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     //[TWOTEXTURES]
     // set the 2 textures to the correct samplers in the fragment shader:
@@ -490,7 +520,6 @@ public:
       return Cam;
   }
 
-  /* TODO fix */
   mat4 SetOrthoMatrix(shared_ptr<Program> curShade) {
       mat4 ortho = mat4(1.0);
       ortho = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
@@ -499,7 +528,6 @@ public:
       return ortho;
   }
 
-  /* TODO fix */
   mat4 SetLightView(shared_ptr<Program> curShade, vec3 pos, vec3 LA, vec3 up) {
       //mat4 Cam = mat4(1.0);
       mat4 Cam = glm::lookAt(pos, LA, up);

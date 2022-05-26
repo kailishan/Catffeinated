@@ -1,5 +1,46 @@
 #include "camera.h"
 
+/* MINI AUDIO */
+#define MINIAUDIO_IMPLEMENTATION
+#include "miniaudio.h"
+#include <stdio.h>
+
+int playAudio()
+{
+    ma_result result;
+    ma_engine engine;
+    ma_sound sound;
+
+    //std::cout << "sound 1" << std::endl;
+
+    result = ma_engine_init(NULL, &engine);
+    if (result != MA_SUCCESS) {
+        return result;  // Failed to initialize the engine.
+    }
+
+    //std::cout << "sound 2" << std::endl;
+
+    /*result = ma_sound_init_from_file(&engine, "../resources/meow.wav", 0, NULL, NULL, &sound);
+    if (result != MA_SUCCESS) {
+        return result;
+    }*/
+
+    //std::cout << "sound 3" << std::endl;
+    ma_engine_play_sound(&engine, "../resources/meow.wav", NULL);
+    //ma_sound_start(&sound);
+    //std::cout << "sound 4" << std::endl;
+
+    //ma_sound_uninit(&sound);
+    ma_engine_uninit(&engine);
+
+    //std::cout << "sound 5" << std::endl;
+    
+    return 0;
+}
+
+/*****************************************************************************/
+
+
 float distance(float x1, float y1, float z1, float x2, float y2, float z2) {
   float d = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2) + pow(z2 - z1, 2) * 1.0);
   return d;
@@ -115,6 +156,7 @@ void camera::takeDamage()
   if (dt > 3.0f && !zMode) {
     dt = 0.0f;
     decrementHealth();
+    playAudio();
     std::cout << "Health: " << playerHealth << std::endl;
   }
   /*
