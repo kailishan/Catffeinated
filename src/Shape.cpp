@@ -31,7 +31,7 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
     cerr << errStr << endl;
   } else if (shapes.size()) {
     obj_count = shapes.size();
-    //cout << shapes.size() << endl;
+    cout << shapes.size() << endl;
     posBuf = new std::vector<float>[shapes.size()];
     norBuf = new std::vector<float>[shapes.size()];
     texBuf = new std::vector<float>[shapes.size()];
@@ -306,4 +306,65 @@ void Shape::draw(const shared_ptr<Program> prog,
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   }
+}
+
+void Shape::draw(const std::shared_ptr<Program> prog, int object, bool use_extern_textures) const {
+    //cout << i << endl;
+    int h_pos, h_nor, h_tex;
+    h_pos = h_nor = h_tex = -1;
+
+    glBindVertexArray(vaoID[object]);
+    // Bind position buffer
+    h_pos = prog->getAttribute("vertPos");
+    GLSL::enableVertexAttribArray(h_pos);
+    glBindBuffer(GL_ARRAY_BUFFER, posBufID[object]);
+    glVertexAttribPointer(h_pos, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
+
+    // Bind normal buffer
+    h_nor = prog->getAttribute("vertNor");
+    if (h_nor != -1 && norBufID[object] != 0) {
+      GLSL::enableVertexAttribArray(h_nor);
+      glBindBuffer(GL_ARRAY_BUFFER, norBufID[object]);
+      glVertexAttribPointer(h_nor, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
+    }
+
+    if (texBufID[object] != 0) {
+      // Bind texcoords buffer
+      h_tex = prog->getAttribute("vertTex");
+      if (h_tex != -1 && texBufID[object] != 0) {
+        GLSL::enableVertexAttribArray(h_tex);
+        glBindBuffer(GL_ARRAY_BUFFER, texBufID[object]);
+        glVertexAttribPointer(h_tex, 2, GL_FLOAT, GL_FALSE, 0, (const void *)0);
+      }
+    }
+
+    // Bind element buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eleBufID[object]);
+
+    // texture
+
+    if (!use_extern_textures) {
+      int textureindex = materialIDs[object];
+      if (textureindex >= 0) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureIDs[textureindex]);
+      }
+    }
+
+    // color
+    //glUniform3fv(prog->getUniform("objColor"), 1, &objMaterials[i].ambient[0]);
+    // Draw
+    glDrawElements(GL_TRIANGLES, (int)eleBuf[object].size(), GL_UNSIGNED_INT,
+                   (const void *)0);
+
+    // Disable and unbind
+    if (h_tex != -1) {
+      GLSL::disableVertexAttribArray(h_tex);
+    }
+    if (h_nor != -1) {
+      GLSL::disableVertexAttribArray(h_nor);
+    }
+    GLSL::disableVertexAttribArray(h_pos);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }

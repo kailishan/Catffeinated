@@ -23,13 +23,16 @@ public:
 	//stbi_load(char const *filename, int *x, int *y, int *comp, int req_comp)
 	void loadMesh(const std::string &meshName, std::string *mtlName = NULL, unsigned char *(loadimage)(char const *, int *, int *, int *, int) = NULL);
 	void init();
-  void measure();
+  	void measure();
 	void resize();
 	void draw(const std::shared_ptr<Program> prog, bool use_extern_texures) const;
+	void draw(const std::shared_ptr<Program> prog, int object, bool use_extern_textures) const;
 	unsigned int *textureIDs = NULL;
 
+	int getObjCount() { return obj_count; }
+
 	glm::vec3 min = glm::vec3(0);
-  glm::vec3 max = glm::vec3(0);
+  	glm::vec3 max = glm::vec3(0);
 
 
 
@@ -40,7 +43,6 @@ private:
 	std::vector<float> *norBuf = NULL;
 	std::vector<float> *texBuf = NULL;
 	unsigned int *materialIDs = NULL;
-
 
 	unsigned int *eleBufID = 0;
 	unsigned int *posBufID = 0;
