@@ -57,6 +57,7 @@ void gameObject::destroy(double ftime) {
     destroyed = true;
   }
 }
+
 /*
 void gameObject::move(double ftime) {
   rot = atan(vel.z / vel.x);

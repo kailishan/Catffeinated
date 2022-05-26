@@ -12,12 +12,10 @@ public:
     kibble = shape2;
     curShape = shape;
     srand(glfwGetTime());
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 3; i++) {
       spawnGameObject(curShape);
-      spawnAggressive(curShape, player);
     }
-    spawnGameObject(curShape);
-    spawnGameObject(curShape);
+    spawnAggressive(curShape, player);
     spawnSpline(curShape);
 
     while (count <= 14) {
@@ -43,7 +41,7 @@ public:
   //int playerHealth = 5;
   int maxObj = 15;
   int count = 0;
-  int bound = 12.5; // min/max x/y
+  int bound = 11.5; // min/max x/y
   int score = 0;
   int framecount = 0;
   std::shared_ptr<Shape> curShape;

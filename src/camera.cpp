@@ -6,9 +6,9 @@ float distance(float x1, float y1, float z1, float x2, float y2, float z2) {
 }
 
 bool camera::isColliding(std::shared_ptr<gameObject> other) {
+
   float d = distance(-pos.x, -pos.y, -pos.z, other->getPos().x, other->getPos().y,
                      other->getPos().z);
-  // ?????????????????????????????????????????????
   d = glm::distance(pos, other->getPos());
   if (d > rad + other->getRad()) {
     return false;
@@ -16,8 +16,15 @@ bool camera::isColliding(std::shared_ptr<gameObject> other) {
     score++;
     std::cout << "Kibble Collected: " << score << std::endl;
     if ((score > 0) && (score % 10 == 0)) {
-      speedBoost = 2;
-      //std::cout << "speed boost activated" << std::endl;
+      //std::cout << "timer = " << speedTimer << std::endl;
+      if (score == 10)  // reset on first boost
+        speedTimer = 0;
+      speedBoost = 0.5;     /* BURST SPEED BOOST */
+      if (baseSpeed < 1.5)  /* STACKED SPEED BOOST */
+        baseSpeed += 0.1;
+      if (playerHealth < 5) /* LIFE REGENERATION */
+        playerHealth++;
+      //std::cout << "base speed+ = " << baseSpeed << std::endl;
     }
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
     //other->setDestroying(true);
@@ -26,7 +33,8 @@ bool camera::isColliding(std::shared_ptr<gameObject> other) {
       return true;
   } else if (d <= rad + other->getRad() && !other->getDestroying() && other->getObjectType() == 0)
   {
-    takeDamage();
+    if (speedBoost == 0) /* TEMPORARY INVINCIBILITY */
+      takeDamage();
     return false;
   } else
     return false;
@@ -35,26 +43,36 @@ bool camera::isColliding(std::shared_ptr<gameObject> other) {
 /* change camera position wrt keyboard input */
 void camera::processKeyboard(double ftime, std::vector<std::shared_ptr<gameObject>> objects) {
   incrementFrames();
-  float cameraSpeed = 5.0f * ftime * speedBoost;
+  //float cameraSpeed = 5.0f * ftime * (baseSpeed + speedBoost);
+  float cameraSpeed = 5.0f * ftime;
   glm::vec3 nextPos = pos;
   glm::vec3 prevPos = pos;
 
-  if (speedBoost > 1) {
-    speedBoost -= 0.01;
+  /* STACKED SPEED */
+  speedTimer++;
+  if ((baseSpeed > 1.0) && (speedTimer == 2000)) {
+    baseSpeed -= 0.1;
+    //std::cout << "timer = " << speedTimer << std::endl;
+    //std::cout << "base speed- = " << baseSpeed << std::endl;
     //std::cout << "speed boost = " << speedBoost << std::endl;
+    //std::cout << "total speed = " << baseSpeed + speedBoost << std::endl;
+    speedTimer = 0;
   }
-  else
-    speedBoost = 1;
 
+  /* BURST SPEED */
+  if (speedBoost > 0.0)
+    speedBoost -= 0.005;
+  else
+    speedBoost = 0.0;
 
   if (w)
-    nextPos += cameraSpeed * front * speedBoost;
+    nextPos += cameraSpeed * front * (baseSpeed + speedBoost);
   if (s)
-    nextPos -= cameraSpeed * front * speedBoost;
+    nextPos -= cameraSpeed * front * (baseSpeed + speedBoost);
   if (a)
-    nextPos -= glm::normalize(glm::cross(front, up)) * cameraSpeed * speedBoost;
+    nextPos -= glm::normalize(glm::cross(front, up)) * cameraSpeed * (baseSpeed + speedBoost);
   if (d)
-    nextPos += glm::normalize(glm::cross(front, up)) * cameraSpeed * speedBoost;
+    nextPos += glm::normalize(glm::cross(front, up)) * cameraSpeed * (baseSpeed + speedBoost);
   if (z && dt > 1.0)
   {
       dt = 0.0;
@@ -77,8 +95,8 @@ void camera::processKeyboard(double ftime, std::vector<std::shared_ptr<gameObjec
   }
 
 
-  if (nextPos.x > 12.5 || nextPos.x < -12.5 || nextPos.z > 12.5 ||
-      nextPos.z < -12.5)
+  if (nextPos.x > 11.5 || nextPos.x < -11.5 || nextPos.z > 11.5 ||
+      nextPos.z < -11.5)
       pos = pos;
   else
       pos = nextPos;
