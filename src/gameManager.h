@@ -43,7 +43,7 @@ public:
   //int playerHealth = 5;
   int maxObj = 15;
   int count = 0;
-  int bound = 12.5; // min/max x/y
+  int bound = 11.5; // min/max x/y
   int score = 0;
   int framecount = 0;
   std::shared_ptr<Shape> curShape;

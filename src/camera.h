@@ -78,7 +78,9 @@ private:
   int playerHealth = 5;
   int invinFrames = 150;
   float dt = 0.0f;
-  float speedBoost = 1.0f;
+  float baseSpeed = 1.0f;
+  float speedBoost = 0.0f;
+  int speedTimer = 0;
   glm::vec3 up = glm::vec3(0, 1, 0);
   glm::vec3 pos, rot, front;
 

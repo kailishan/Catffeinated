@@ -135,7 +135,6 @@ public:
     }
 
 
-
     if (key == GLFW_KEY_W && action == GLFW_PRESS) {
       mycam.setw(1);
     }
@@ -520,7 +519,7 @@ public:
 
     glm::vec4 red = glm::vec4(1, 0.302, 0.302, 1);
     glm::vec4 green = glm::vec4(0.302, 1, 0.302, 1);
-    if (mycam.getSpeedBoost() > 1.0f)
+    if (mycam.getSpeedBoost() > 0.0f)
       glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
     else
       glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
