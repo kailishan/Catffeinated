@@ -100,7 +100,7 @@ private:
   int p = 0;
   int z = 0;
   GLFWwindow *window;
-  float rad = 0.8f;
+  float rad = 0.7f;
 
   // This should probably be in a different class. Okay for now
   int score = 0;

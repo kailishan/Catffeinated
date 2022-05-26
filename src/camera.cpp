@@ -136,8 +136,8 @@ void camera::processKeyboard(double ftime, std::vector<std::shared_ptr<gameObjec
   }
 
 
-  if (nextPos.x > 11.5 || nextPos.x < -11.5 || nextPos.z > 11.5 ||
-      nextPos.z < -11.5)
+  if (nextPos.x > 12 || nextPos.x < -12 || nextPos.z > 12 ||
+      nextPos.z < -12)
       pos = pos;
   else
       pos = nextPos;

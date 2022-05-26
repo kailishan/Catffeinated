@@ -692,11 +692,11 @@ public:
 
       // draw the game objects
       for (int i = 0; i < myManager->getObjects().size(); i++) {
+          glActiveTexture(GL_TEXTURE2);
+          glBindTexture(GL_TEXTURE_2D, CatTex2);
           std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
           vec3 currPos = currObj->getPos();
           if (!currObj->getIsStatic()) {
-              glActiveTexture(GL_TEXTURE0);
-              glBindTexture(GL_TEXTURE_2D, CatTex2);
               // object is a cat -- use matrix stack
               glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
               Model->pushMatrix();

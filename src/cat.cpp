@@ -30,10 +30,10 @@ void cat::move(double ftime) {
   R = formRotationMatrix(ftime);
   glm::vec4 dir = glm::vec4(vel, 1);
 
-  if (pos.x + dir.x > 11.5 || pos.x + dir.x < -11.5) {
+  if (pos.x + dir.x > 12 || pos.x + dir.x < -12) {
     pos = pos;
     vel.x = -vel.x;
-  } else if (pos.z + dir.z > 11.5 || pos.z + dir.z < -11.5) {
+  } else if (pos.z + dir.z > 12 || pos.z + dir.z < -12) {
     pos = pos;
     vel.z = -vel.z;
   } else
