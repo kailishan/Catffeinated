@@ -382,7 +382,7 @@ public:
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // texture 4
-    str = resourceDirectory + "/fur1.png";
+    str = resourceDirectory + "/cow1.png";
     strcpy(filepath, str.c_str());
     data = stbi_load(filepath, &width, &height, &channels, 4);
     glGenTextures(1, &CatTex1);
@@ -397,7 +397,7 @@ public:
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // texture 5
-    str = resourceDirectory + "/fur2.png";
+    str = resourceDirectory + "/cow2.png";
     strcpy(filepath, str.c_str());
     data = stbi_load(filepath, &width, &height, &channels, 4);
     glGenTextures(1, &CatTex2);
@@ -427,6 +427,11 @@ public:
     glUseProgram(heightshader->pid);
     glUniform1i(Tex1Location, 0);
     glUniform1i(Tex2Location, 1);
+
+    // tex, tex2... sampler in the fragment shader
+    Tex1Location = glGetUniformLocation(heightshader->pid, "tex");
+    glUseProgram(progL->pid);
+    glUniform1i(Tex1Location, 0);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -657,6 +662,9 @@ public:
       //    mycam.getUp());
       M = T * S * R;
 
+
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, CatTex1);
       // base transforms for player model
       Model->pushMatrix();
         Model->loadIdentity();
@@ -680,67 +688,72 @@ public:
           cat->draw(progL, 4, false);
         Model->popMatrix();
       Model->popMatrix();
+      glBindTexture(GL_TEXTURE_2D, 0);
+
 
       // draw the game objects
       for (int i = 0; i < myManager->getObjects().size(); i++) {
           std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
           vec3 currPos = currObj->getPos();
           if (!currObj->getIsStatic()) {
-            // object is a cat -- use matrix stack
-            glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
-            Model->pushMatrix();
+              glActiveTexture(GL_TEXTURE0);
+              glBindTexture(GL_TEXTURE_2D, CatTex2);
+              // object is a cat -- use matrix stack
+              glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
+              Model->pushMatrix();
               Model->loadIdentity();
               Model->multMatrix(myManager->getObjects().at(i)->getMatrix() * S);
               glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
               // torso transforms
               for (int i = 0; i < 3; i++) {
-                if (i != 4)
-                  currObj->getMesh()->draw(progL, i, false);
+                  if (i != 4)
+                      currObj->getMesh()->draw(progL, i, false);
               }
               // tail transform
               Model->pushMatrix();
-                float angle = sin(glfwGetTime() * 5) / 3;
-                Model->rotate(-25.0f, vec3(1, 0, 0));
-                Model->rotate(angle, vec3(0, 0, 1));
-                // clip the tail slightly back into the model -- this helps hide any disjoint
-                Model->translate(vec3(0, -0.05f, 0.05f));
-                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                currObj->getMesh()->draw(progL, 4, false);
+              float angle = sin(glfwGetTime() * 5) / 3;
+              Model->rotate(-25.0f, vec3(1, 0, 0));
+              Model->rotate(angle, vec3(0, 0, 1));
+              // clip the tail slightly back into the model -- this helps hide any disjoint
+              Model->translate(vec3(0, -0.05f, 0.05f));
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(progL, 4, false);
               Model->popMatrix();
               glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
               // right rear leg
               Model->pushMatrix();
-                angle = sin(glfwGetTime() * 3) / 3;
-                Model->rotate(angle, vec3(1, 0, 0));
-                Model->translate(vec3(0, fabs(angle) / 2, 0));
-                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                currObj->getMesh()->draw(progL, 8, false);
+              angle = sin(glfwGetTime() * 3) / 3;
+              Model->rotate(angle, vec3(1, 0, 0));
+              Model->translate(vec3(0, fabs(angle) / 2, 0));
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(progL, 8, false);
               Model->popMatrix();
               // right front leg
               Model->pushMatrix();
-                angle = sin(glfwGetTime() * 3 - 1) / 3;
-                Model->rotate(angle, vec3(1, 0, 0));
-                Model->translate(vec3(0, fabs(angle) / 2, 0));
-                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                currObj->getMesh()->draw(progL, 6, false);
+              angle = sin(glfwGetTime() * 3 - 1) / 3;
+              Model->rotate(angle, vec3(1, 0, 0));
+              Model->translate(vec3(0, fabs(angle) / 2, 0));
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(progL, 6, false);
               Model->popMatrix();
               // left rear leg
               Model->pushMatrix();
-                angle = sin(glfwGetTime() * 3 - 2) / 3;
-                Model->rotate(angle, vec3(1, 0, 0));
-                Model->translate(vec3(0, fabs(angle) / 2, 0));
-                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                currObj->getMesh()->draw(progL, 7, false);
+              angle = sin(glfwGetTime() * 3 - 2) / 3;
+              Model->rotate(angle, vec3(1, 0, 0));
+              Model->translate(vec3(0, fabs(angle) / 2, 0));
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(progL, 7, false);
               Model->popMatrix();
               // left front leg
               Model->pushMatrix();
-                angle = sin(glfwGetTime() * 3 - 3) / 3;
-                Model->rotate(angle, vec3(1, 0, 0));
-                Model->translate(vec3(0, fabs(angle) / 2, 0));
-                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                currObj->getMesh()->draw(progL, 5, false);
+              angle = sin(glfwGetTime() * 3 - 3) / 3;
+              Model->rotate(angle, vec3(1, 0, 0));
+              Model->translate(vec3(0, fabs(angle) / 2, 0));
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(progL, 5, false);
               Model->popMatrix();
-            Model->popMatrix();
+              Model->popMatrix();
+              glBindTexture(GL_TEXTURE_2D, 0);
           }
           else {
               glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
