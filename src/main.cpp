@@ -574,7 +574,7 @@ public:
 
       glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
       glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
-      glm::vec4 blue = glm::vec4(0.2588, 0.4, 0.9608, 1);
+      glm::vec3 blue = glm::vec3(0.2588, 0.4, 0.9608);
       glm::vec4 red = glm::vec4(1, 0.302, 0.302, 1);
 
 
@@ -674,16 +674,18 @@ public:
       S = glm::scale(glm::mat4(1.0f), glm::vec3(12.5, 12.5, 12.5));
       T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
       M = T * S;
-      //glUniform4fv(progL->getUniform("objColor"), 1, &blue[0]);
-      vec3 lightDir = vec3(0.0, 10.0, 0.0);
+      glUniform3fv(prog->getUniform("objColor"), 1, &blue[0]);
+      vec3 lightDir = vec3(0.0, 5.0, 0.0);
       glUniform3fv(prog->getUniform("lightPos"), 1, &lightDir[0]);
       glUniform3fv(prog->getUniform("campos"), 1, &camPos[0]);
       glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
       glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
       glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+
       room->draw(prog, false);
 
       prog->unbind();
+
       
 
       /*

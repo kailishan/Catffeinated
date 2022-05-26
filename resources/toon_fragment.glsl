@@ -32,6 +32,8 @@ void main()
 
 	color.a=1;
 	color.rgb = texture(tex, -vertex_tex).rgb;
+	if (color.rgb == vec3(0, 0, 0))
+		color.rgb = objColor.rgb;
 
 	/*
 	if (intensity > 0.95)
@@ -68,8 +70,8 @@ void main()
 	vec3 camDir = campos - vertex_pos;
 	camDir = normalize(camDir);
 	float outline = dot(camDir, nn);
-	//if (outline > -0.2 && outline < 0.2)
-	if (outline == 0)
+	if (outline > -0.1 && outline < 0.1)
+	//if (outline == 0)
 	{
 		intensity = 0.0;
 	}
