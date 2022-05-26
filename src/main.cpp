@@ -592,28 +592,28 @@ public:
               rot = -atan(mycam.getFront().z / mycam.getFront().x) + 90.0 / 180.0 * M_PI;
               if (mycam.getFront().x < 0)
                   rot += M_PI;
-              mycam.newKey = false;
+              //mycam.newKey = false;
           }
           else if (mycam.dkey())
           {
               rot = -M_PI / 2 + -atan(mycam.getFront().z / mycam.getFront().x) + 90.0 / 180.0 * M_PI;
               if (mycam.getFront().x < 0)
                   rot += M_PI;
-              mycam.newKey = false;
+              //mycam.newKey = false;
           }
           else if (mycam.skey())
           {
               rot = M_PI + -atan(mycam.getFront().z / mycam.getFront().x) + 90.0 / 180.0 * M_PI;
               if (mycam.getFront().x < 0)
                   rot += M_PI;
-              mycam.newKey = false;
+              //mycam.newKey = false;
           }
           else if (mycam.akey())
           {
               rot = M_PI / 2 + -atan(mycam.getFront().z / mycam.getFront().x) + 90.0 / 180.0 * M_PI;
               if (mycam.getFront().x < 0)
                   rot += M_PI;
-              mycam.newKey = false;
+              //mycam.newKey = false;
 
           }
       }
