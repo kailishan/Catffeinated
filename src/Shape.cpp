@@ -13,6 +13,8 @@
 
 using namespace std;
 
+vector<tinyobj::material_t> mats;
+
 void Shape::loadMesh(const string &meshName, string *mtlpath,
                      unsigned char *(loadimage)(char const *, int *, int *,
                                                 int *, int)) {
@@ -26,6 +28,11 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
                           mtlpath->c_str());
   else
     rc = tinyobj::LoadObj(shapes, objMaterials, errStr, meshName.c_str());
+
+  for (int i = 0; i < objMaterials.size(); i++)
+  {
+      mats.push_back(objMaterials[i]);
+  }
 
   if (!rc) {
     cerr << errStr << endl;
@@ -244,6 +251,8 @@ void Shape::init() {
 }
 void Shape::draw(const shared_ptr<Program> prog,
                  bool use_extern_texures) const {
+
+  //prog->bind();
   for (int i = 0; i < obj_count; i++)
 
   {
@@ -280,17 +289,21 @@ void Shape::draw(const shared_ptr<Program> prog,
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eleBufID[i]);
 
     // texture
-
     if (!use_extern_texures) {
       int textureindex = materialIDs[i];
       if (textureindex >= 0) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureIDs[textureindex]);
       }
+      else if (mats.size() > i) {
+          glm::vec3 ambient = glm::vec3(mats[i].ambient[0], mats[i].ambient[1], mats[i].ambient[2]);
+          glUniform3fv(prog->getUniform("objColor"), 1, &ambient[0]);
+          //cout << mats[i].name << endl;
+          //cout << mats[i].ambient[0] << endl;
+      }
     }
 
     // color
-    //glUniform3fv(prog->getUniform("objColor"), 1, &objMaterials[i].ambient[0]);
     // Draw
     glDrawElements(GL_TRIANGLES, (int)eleBuf[i].size(), GL_UNSIGNED_INT,
                    (const void *)0);
@@ -305,6 +318,7 @@ void Shape::draw(const shared_ptr<Program> prog,
     GLSL::disableVertexAttribArray(h_pos);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    //prog->unbind();
   }
 }
 
