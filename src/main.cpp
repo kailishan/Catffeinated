@@ -466,7 +466,6 @@ public:
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
     prog->addAttribute("vertTex");
-    prog->addAttribute("vertCol");
 
     progL = std::make_shared<Program>();
     progL->setVerbose(true);
@@ -486,7 +485,6 @@ public:
     progL->addAttribute("vertColor");
     progL->addAttribute("vertNor");
     progL->addAttribute("vertTex");
-    progL->addAttribute("vertCol");
 
     // Initialize the GLSL program.
     heightshader = std::make_shared<Program>();
@@ -542,6 +540,7 @@ public:
 
   void drawHealth(mat4 P, mat4 V) {
 
+    glBindTexture(GL_TEXTURE_2D, 0);
     progL->bind();
     
     glm::mat4 M = glm::mat4(1.0f);
@@ -753,9 +752,9 @@ public:
               currObj->getMesh()->draw(progL, 5, false);
               Model->popMatrix();
               Model->popMatrix();
-              glBindTexture(GL_TEXTURE_2D, 0);
           }
           else {
+              glBindTexture(GL_TEXTURE_2D, 0);
               glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
               // transform spheres
               S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
@@ -769,6 +768,7 @@ public:
               currObj->getMesh()->draw(progL, false);
           }
       }
+      glBindTexture(GL_TEXTURE_2D, 0);
       progL->unbind();
 
       // draw room

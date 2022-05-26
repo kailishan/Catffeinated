@@ -156,7 +156,7 @@ void camera::takeDamage()
   if (dt > 3.0f && !zMode) {
     dt = 0.0f;
     decrementHealth();
-    playAudio();
+    //playAudio();
     std::cout << "Health: " << playerHealth << std::endl;
   }
   /*
