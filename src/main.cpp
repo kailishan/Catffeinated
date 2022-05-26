@@ -681,7 +681,6 @@ public:
               // right rear leg
               Model->pushMatrix();
                 angle = sin(glfwGetTime() * 3) / 3;
-                cout << "rr: " << angle << endl;
                 Model->rotate(angle, vec3(1, 0, 0));
                 Model->translate(vec3(0, fabs(angle) / 2, 0));
                 glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
