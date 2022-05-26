@@ -3,6 +3,7 @@ out vec4 color;
 in vec3 vertex_normal;
 in vec3 vertex_pos;
 in vec2 vertex_tex;
+in vec3 vertex_color;
 
 uniform vec3 campos;
 uniform sampler2D tex;
@@ -33,7 +34,7 @@ void main()
 	color.a=1;
 	color.rgb = texture(tex, -vertex_tex).rgb;
 	if (color.rgb == vec3(0, 0, 0))
-		color.rgb = objColor.rgb;
+		color.rgb = vertex_color.rgb;
 
 	/*
 	if (intensity > 0.95)

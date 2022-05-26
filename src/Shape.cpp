@@ -257,8 +257,8 @@ void Shape::draw(const shared_ptr<Program> prog,
 
   {
     //cout << i << endl;
-    int h_pos, h_nor, h_tex;
-    h_pos = h_nor = h_tex = -1;
+    int h_pos, h_nor, h_tex, h_col;
+    h_pos = h_nor = h_tex = h_col = -1;
 
     glBindVertexArray(vaoID[i]);
     // Bind position buffer
@@ -297,9 +297,16 @@ void Shape::draw(const shared_ptr<Program> prog,
       }
       else if (mats.size() > i) {
           glm::vec3 ambient = glm::vec3(mats[i].ambient[0], mats[i].ambient[1], mats[i].ambient[2]);
-          glUniform3fv(prog->getUniform("objColor"), 1, &ambient[0]);
+          //glUniform3fv(prog->getUniform("objColor"), 1, &ambient[0]);
           //cout << mats[i].name << endl;
           //cout << mats[i].ambient[0] << endl;
+          
+          /*
+          h_col = prog->getAttribute("vertCol");
+          GLSL::enableVertexAttribArray(h_col);
+          glBindBuffer(GL_ARRAY_BUFFER, mats[i].ambient[0]);
+          glVertexAttribPointer(h_col, 3, GL_FLOAT, GL_FALSE, 0, (const void*)0);
+          */
       }
     }
 

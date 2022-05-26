@@ -431,6 +431,7 @@ public:
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
     prog->addAttribute("vertTex");
+    prog->addAttribute("vertCol");
 
     progL = std::make_shared<Program>();
     progL->setVerbose(true);
@@ -450,6 +451,7 @@ public:
     progL->addAttribute("vertColor");
     progL->addAttribute("vertNor");
     progL->addAttribute("vertTex");
+    progL->addAttribute("vertCol");
 
     // Initialize the GLSL program.
     heightshader = std::make_shared<Program>();
@@ -726,6 +728,7 @@ public:
               currObj->getMesh()->draw(progL, false);
           }
       }
+      progL->unbind();
 
       // draw room
       prog->bind();
