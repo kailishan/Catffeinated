@@ -42,7 +42,7 @@ void camera::playMeow()
 
 void camera::playRoost()
 {
-  ma_engine_play_sound(&meowEngine, "../resources/roost2.wav", NULL);
+  ma_engine_play_sound(&meowEngine, "../resources/roost.wav", NULL);
 }
 
 void camera::playCollect()
