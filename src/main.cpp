@@ -693,7 +693,7 @@ public:
 
       // draw the game objects
       for (int i = 0; i < myManager->getObjects().size(); i++) {
-          glActiveTexture(GL_TEXTURE3);
+          glActiveTexture(GL_TEXTURE2);
           glBindTexture(GL_TEXTURE_2D, CatTex2);
           std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
           vec3 currPos = currObj->getPos();

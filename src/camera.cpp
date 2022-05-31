@@ -170,6 +170,7 @@ void camera::takeDamage()
     dt = 0.0f;
     decrementHealth();
     playMeow();
+    //playAudio();
     std::cout << "Health: " << playerHealth << std::endl;
   }
   /*
