@@ -1,5 +1,58 @@
 #include "camera.h"
 
+/* MINI AUDIO */
+#define MINIAUDIO_IMPLEMENTATION
+#include "miniaudio.h"
+#include <stdio.h>
+
+ma_engine meowEngine;
+ma_engine roostEngine;
+ma_engine collectEngine;
+
+int camera::initEngine(int id)
+{
+  ma_result result;
+  ma_sound sound;
+
+  if (id == 1)
+    result = ma_engine_init(NULL, &meowEngine);
+  if (id == 2)
+    result = ma_engine_init(NULL, &roostEngine);
+  if (id == 3)
+    result = ma_engine_init(NULL, &collectEngine);
+  
+  if (result != MA_SUCCESS) {
+    return result;  // Failed to initialize the engine.
+  }
+
+  return 0;
+}
+
+void camera::uninitEngine()
+{
+  ma_engine_uninit(&meowEngine);
+  ma_engine_uninit(&roostEngine);
+  ma_engine_uninit(&collectEngine);
+}
+
+void camera::playMeow()
+{
+  ma_engine_play_sound(&meowEngine, "../resources/meow.wav", NULL);
+}
+
+void camera::playRoost()
+{
+  ma_engine_play_sound(&meowEngine, "../resources/roost2.wav", NULL);
+}
+
+void camera::playCollect()
+{
+  ma_engine_play_sound(&collectEngine, "../resources/collect.wav", NULL);
+}
+
+/*****************************************************************************/
+
+
 float distance(float x1, float y1, float z1, float x2, float y2, float z2) {
   float d = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2) + pow(z2 - z1, 2) * 1.0);
   return d;
@@ -14,6 +67,7 @@ bool camera::isColliding(std::shared_ptr<gameObject> other) {
     return false;
   } else if (d <= rad + other->getRad() && !other->getDestroying() && other->getObjectType() == 1) {
     score++;
+    playCollect();
     std::cout << "Kibble Collected: " << score << std::endl;
     if ((score > 0) && (score % 10 == 0)) {
       //std::cout << "timer = " << speedTimer << std::endl;
@@ -95,8 +149,8 @@ void camera::processKeyboard(double ftime, std::vector<std::shared_ptr<gameObjec
   }
 
 
-  if (nextPos.x > 11.5 || nextPos.x < -11.5 || nextPos.z > 11.5 ||
-      nextPos.z < -11.5)
+  if (nextPos.x > 12 || nextPos.x < -12 || nextPos.z > 12 ||
+      nextPos.z < -12)
       pos = pos;
   else
       pos = nextPos;
@@ -115,6 +169,7 @@ void camera::takeDamage()
   if (dt > 3.0f && !zMode) {
     dt = 0.0f;
     decrementHealth();
+    playMeow();
     std::cout << "Health: " << playerHealth << std::endl;
   }
   /*

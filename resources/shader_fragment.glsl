@@ -29,8 +29,6 @@ void main()
 	color.rgb += vec3(1,1,1)*spec*3;
 	*/
 
-
-	color.a=1;
+	color.a = 1;
 	color.rgb = texture(tex, -vertex_tex).rgb;
-
 }

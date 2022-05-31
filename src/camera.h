@@ -10,7 +10,6 @@
 class camera {
 public:
 
-
   bool newKey = true;
   camera() {
     window = nullptr;
@@ -67,9 +66,14 @@ public:
   void changeZMode() { zMode = !zMode; }
 
   float getSpeedBoost() { return speedBoost; }
-
   int getHealth();
   void takeDamage();
+
+  int initEngine(int id);
+  void uninitEngine();
+  void playMeow();
+  void playRoost();
+  void playCollect();
 
 private:
   glm::vec3 modeldirection;
@@ -99,8 +103,11 @@ private:
   int p = 0;
   int z = 0;
   GLFWwindow *window;
-  float rad = 0.8f;
+  float rad = 0.7f;
 
   // This should probably be in a different class. Okay for now
   int score = 0;
+
+  // audio engine
+  //ma_engine engine;
 };

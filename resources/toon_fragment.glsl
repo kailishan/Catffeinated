@@ -34,7 +34,7 @@ void main()
 	color.a=1;
 	color.rgb = texture(tex, -vertex_tex).rgb;
 	if (color.rgb == vec3(0, 0, 0))
-		color.rgb = vertex_color.rgb;
+		color.rgb = objColor.rgb;
 
 	/*
 	if (intensity > 0.95)

@@ -59,6 +59,7 @@ public:
   // texture data
   GLuint Texture;
   GLuint Texture2, HeightTex;
+  GLuint CatTex1, CatTex2;
 
 
   vec3 g_eye = vec3(0, 1, 0);
@@ -380,6 +381,35 @@ public:
                  GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+    // texture 4
+    str = resourceDirectory + "/cow1.png";
+    strcpy(filepath, str.c_str());
+    data = stbi_load(filepath, &width, &height, &channels, 4);
+    glGenTextures(1, &CatTex1);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, CatTex1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // texture 5
+    str = resourceDirectory + "/cow2.png";
+    strcpy(filepath, str.c_str());
+    data = stbi_load(filepath, &width, &height, &channels, 4);
+    glGenTextures(1, &CatTex2);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, CatTex2);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     //[TWOTEXTURES]
     // set the 2 textures to the correct samplers in the fragment shader:
@@ -397,6 +427,11 @@ public:
     glUseProgram(heightshader->pid);
     glUniform1i(Tex1Location, 0);
     glUniform1i(Tex2Location, 1);
+
+    // tex, tex2... sampler in the fragment shader
+    Tex1Location = glGetUniformLocation(heightshader->pid, "tex");
+    glUseProgram(progL->pid);
+    glUniform1i(Tex1Location, 0);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -431,7 +466,6 @@ public:
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
     prog->addAttribute("vertTex");
-    prog->addAttribute("vertCol");
 
     progL = std::make_shared<Program>();
     progL->setVerbose(true);
@@ -451,7 +485,6 @@ public:
     progL->addAttribute("vertColor");
     progL->addAttribute("vertNor");
     progL->addAttribute("vertTex");
-    progL->addAttribute("vertCol");
 
     // Initialize the GLSL program.
     heightshader = std::make_shared<Program>();
@@ -490,7 +523,6 @@ public:
       return Cam;
   }
 
-  /* TODO fix */
   mat4 SetOrthoMatrix(shared_ptr<Program> curShade) {
       mat4 ortho = mat4(1.0);
       ortho = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
@@ -499,7 +531,6 @@ public:
       return ortho;
   }
 
-  /* TODO fix */
   mat4 SetLightView(shared_ptr<Program> curShade, vec3 pos, vec3 LA, vec3 up) {
       //mat4 Cam = mat4(1.0);
       mat4 Cam = glm::lookAt(pos, LA, up);
@@ -509,6 +540,7 @@ public:
 
   void drawHealth(mat4 P, mat4 V) {
 
+    glBindTexture(GL_TEXTURE_2D, 0);
     progL->bind();
     
     glm::mat4 M = glm::mat4(1.0f);
@@ -578,7 +610,8 @@ public:
       glBindTexture(GL_TEXTURE_2D, Texture);
 
       glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
-      glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
+      //glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
+      glm::vec4 green = glm::vec4(0.486, 0.988, 0, 1);
       glm::vec3 blue = glm::vec3(0.2588, 0.4, 0.9608);
       glm::vec4 red = glm::vec4(1, 0.302, 0.302, 1);
 
@@ -629,6 +662,9 @@ public:
       //    mycam.getUp());
       M = T * S * R;
 
+
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, CatTex1);
       // base transforms for player model
       Model->pushMatrix();
         Model->loadIdentity();
@@ -652,69 +688,74 @@ public:
           cat->draw(progL, 4, false);
         Model->popMatrix();
       Model->popMatrix();
+      glBindTexture(GL_TEXTURE_2D, 0);
+
 
       // draw the game objects
       for (int i = 0; i < myManager->getObjects().size(); i++) {
+          glActiveTexture(GL_TEXTURE3);
+          glBindTexture(GL_TEXTURE_2D, CatTex2);
           std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
           vec3 currPos = currObj->getPos();
           if (!currObj->getIsStatic()) {
-            // object is a cat -- use matrix stack
-            glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
-            Model->pushMatrix();
+              // object is a cat -- use matrix stack
+              glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
+              Model->pushMatrix();
               Model->loadIdentity();
               Model->multMatrix(myManager->getObjects().at(i)->getMatrix() * S);
               glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
               // torso transforms
               for (int i = 0; i < 3; i++) {
-                if (i != 4)
-                  currObj->getMesh()->draw(progL, i, false);
+                  if (i != 4)
+                      currObj->getMesh()->draw(progL, i, false);
               }
               // tail transform
               Model->pushMatrix();
-                float angle = sin(glfwGetTime() * 5) / 3;
-                Model->rotate(-25.0f, vec3(1, 0, 0));
-                Model->rotate(angle, vec3(0, 0, 1));
-                // clip the tail slightly back into the model -- this helps hide any disjoint
-                Model->translate(vec3(0, -0.05f, 0.05f));
-                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                currObj->getMesh()->draw(progL, 4, false);
+              float angle = sin(glfwGetTime() * 5) / 3;
+              Model->rotate(-25.0f, vec3(1, 0, 0));
+              Model->rotate(angle, vec3(0, 0, 1));
+              // clip the tail slightly back into the model -- this helps hide any disjoint
+              Model->translate(vec3(0, -0.05f, 0.05f));
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(progL, 4, false);
               Model->popMatrix();
               glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
               // right rear leg
               Model->pushMatrix();
-                angle = sin(glfwGetTime() * 3) / 3;
-                Model->rotate(angle, vec3(1, 0, 0));
-                Model->translate(vec3(0, fabs(angle) / 2, 0));
-                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                currObj->getMesh()->draw(progL, 8, false);
+              angle = sin(glfwGetTime() * 3) / 3;
+              Model->rotate(angle, vec3(1, 0, 0));
+              Model->translate(vec3(0, fabs(angle) / 2, 0));
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(progL, 8, false);
               Model->popMatrix();
               // right front leg
               Model->pushMatrix();
-                angle = sin(glfwGetTime() * 3 - 1) / 3;
-                Model->rotate(angle, vec3(1, 0, 0));
-                Model->translate(vec3(0, fabs(angle) / 2, 0));
-                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                currObj->getMesh()->draw(progL, 6, false);
+              angle = sin(glfwGetTime() * 3 - 1) / 3;
+              Model->rotate(angle, vec3(1, 0, 0));
+              Model->translate(vec3(0, fabs(angle) / 2, 0));
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(progL, 6, false);
               Model->popMatrix();
               // left rear leg
               Model->pushMatrix();
-                angle = sin(glfwGetTime() * 3 - 2) / 3;
-                Model->rotate(angle, vec3(1, 0, 0));
-                Model->translate(vec3(0, fabs(angle) / 2, 0));
-                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                currObj->getMesh()->draw(progL, 7, false);
+              angle = sin(glfwGetTime() * 3 - 2) / 3;
+              Model->rotate(angle, vec3(1, 0, 0));
+              Model->translate(vec3(0, fabs(angle) / 2, 0));
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(progL, 7, false);
               Model->popMatrix();
               // left front leg
               Model->pushMatrix();
-                angle = sin(glfwGetTime() * 3 - 3) / 3;
-                Model->rotate(angle, vec3(1, 0, 0));
-                Model->translate(vec3(0, fabs(angle) / 2, 0));
-                glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-                currObj->getMesh()->draw(progL, 5, false);
+              angle = sin(glfwGetTime() * 3 - 3) / 3;
+              Model->rotate(angle, vec3(1, 0, 0));
+              Model->translate(vec3(0, fabs(angle) / 2, 0));
+              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(progL, 5, false);
               Model->popMatrix();
-            Model->popMatrix();
+              Model->popMatrix();
           }
           else {
+              glBindTexture(GL_TEXTURE_2D, 0);
               glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
               // transform spheres
               S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
@@ -728,6 +769,7 @@ public:
               currObj->getMesh()->draw(progL, false);
           }
       }
+      glBindTexture(GL_TEXTURE_2D, 0);
       progL->unbind();
 
       // draw room
@@ -894,6 +936,12 @@ int main(int argc, char **argv) {
     resourceDir = argv[1];
   }
 
+  // *** audio engine ***
+  mycam.initEngine(1);
+  mycam.initEngine(2);
+  mycam.initEngine(3);
+  mycam.playRoost();
+
   Application *application = new Application();
 
   /* your main will always include a similar set up to establish your window
@@ -931,5 +979,9 @@ int main(int argc, char **argv) {
 
   // Quit program.
   windowManager->shutdown();
+
+  // *** audio engine ***
+  mycam.uninitEngine();
+
   return 0;
 }
