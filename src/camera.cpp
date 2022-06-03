@@ -5,37 +5,49 @@
 #include "miniaudio.h"
 #include <stdio.h>
 
-int playAudio()
+ma_engine meowEngine;
+ma_engine roostEngine;
+ma_engine collectEngine;
+
+int camera::initEngine(int id)
 {
-    ma_result result;
-    ma_engine engine;
-    ma_sound sound;
+  ma_result result;
+  ma_sound sound;
 
-    //std::cout << "sound 1" << std::endl;
+  if (id == 1)
+    result = ma_engine_init(NULL, &meowEngine);
+  if (id == 2)
+    result = ma_engine_init(NULL, &roostEngine);
+  if (id == 3)
+    result = ma_engine_init(NULL, &collectEngine);
+  
+  if (result != MA_SUCCESS) {
+    return result;  // Failed to initialize the engine.
+  }
 
-    result = ma_engine_init(NULL, &engine);
-    if (result != MA_SUCCESS) {
-        return result;  // Failed to initialize the engine.
-    }
+  return 0;
+}
 
-    //std::cout << "sound 2" << std::endl;
+void camera::uninitEngine()
+{
+  ma_engine_uninit(&meowEngine);
+  ma_engine_uninit(&roostEngine);
+  ma_engine_uninit(&collectEngine);
+}
 
-    /*result = ma_sound_init_from_file(&engine, "../resources/meow.wav", 0, NULL, NULL, &sound);
-    if (result != MA_SUCCESS) {
-        return result;
-    }*/
+void camera::playMeow()
+{
+  ma_engine_play_sound(&meowEngine, "../resources/meow.wav", NULL);
+}
 
-    //std::cout << "sound 3" << std::endl;
-    ma_engine_play_sound(&engine, "../resources/meow.wav", NULL);
-    //ma_sound_start(&sound);
-    //std::cout << "sound 4" << std::endl;
+void camera::playRoost()
+{
+  ma_engine_play_sound(&meowEngine, "../resources/roost.wav", NULL);
+}
 
-    //ma_sound_uninit(&sound);
-    ma_engine_uninit(&engine);
-
-    //std::cout << "sound 5" << std::endl;
-    
-    return 0;
+void camera::playCollect()
+{
+  ma_engine_play_sound(&collectEngine, "../resources/collect.wav", NULL);
 }
 
 /*****************************************************************************/
@@ -55,6 +67,7 @@ bool camera::isColliding(std::shared_ptr<gameObject> other) {
     return false;
   } else if (d <= rad + other->getRad() && !other->getDestroying() && other->getObjectType() == 1) {
     score++;
+    playCollect();
     std::cout << "Kibble Collected: " << score << std::endl;
     if ((score > 0) && (score % 10 == 0)) {
       //std::cout << "timer = " << speedTimer << std::endl;
@@ -156,6 +169,7 @@ void camera::takeDamage()
   if (dt > 3.0f && !zMode) {
     dt = 0.0f;
     decrementHealth();
+    playMeow();
     //playAudio();
     std::cout << "Health: " << playerHealth << std::endl;
   }

@@ -614,7 +614,8 @@ public:
       glBindTexture(GL_TEXTURE_2D, Texture);
 
       glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
-      glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
+      //glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
+      glm::vec4 green = glm::vec4(0.486, 0.988, 0, 1);
       glm::vec3 blue = glm::vec3(0.2588, 0.4, 0.9608);
       glm::vec4 red = glm::vec4(1, 0.302, 0.302, 1);
 
@@ -873,6 +874,12 @@ int main(int argc, char **argv) {
     resourceDir = argv[1];
   }
 
+  // *** audio engine ***
+  mycam.initEngine(1);
+  mycam.initEngine(2);
+  mycam.initEngine(3);
+  mycam.playRoost();
+
   Application *application = new Application();
 
   /* your main will always include a similar set up to establish your window
@@ -910,5 +917,9 @@ int main(int argc, char **argv) {
 
   // Quit program.
   windowManager->shutdown();
+
+  // *** audio engine ***
+  mycam.uninitEngine();
+
   return 0;
 }

@@ -69,8 +69,11 @@ public:
   int getHealth();
   void takeDamage();
 
-  //void data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount);
-  //int playAudio();
+  int initEngine(int id);
+  void uninitEngine();
+  void playMeow();
+  void playRoost();
+  void playCollect();
 
 private:
   glm::vec3 modeldirection;
@@ -104,4 +107,7 @@ private:
 
   // This should probably be in a different class. Okay for now
   int score = 0;
+
+  // audio engine
+  //ma_engine engine;
 };
