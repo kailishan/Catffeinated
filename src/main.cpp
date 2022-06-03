@@ -546,23 +546,23 @@ public:
   void drawHealth(mat4 P, mat4 V) {
 
     glBindTexture(GL_TEXTURE_2D, 0);
-    progL->bind();
+    prog->bind();
     
     glm::mat4 M = glm::mat4(1.0f);
     glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.35f, 0.5f, 0.35f));
     glm::mat4 R = glm::rotate(glm::mat4(1.0f), -1.5708f, vec3(1, 0, 0));
     glm::mat4 T = glm::mat4(1.0f);
 
-    glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
-    glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
-    glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
+    glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+    glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+    glUniform3fv(prog->getUniform("campos"), 1, &mycam.getPos()[0]);
 
     glm::vec4 red = glm::vec4(1, 0.302, 0.302, 1);
     glm::vec4 green = glm::vec4(0.302, 1, 0.302, 1);
     if (mycam.getSpeedBoost() > 0.0f)
-      glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
+      glUniform4fv(prog->getUniform("objColor"), 1, &green[0]);
     else
-      glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
+      glUniform4fv(prog->getUniform("objColor"), 1, &red[0]);
 
     glm::vec3 pos = mycam.getPos();
     pos.y += 2.5f;
@@ -571,12 +571,12 @@ public:
     for (int i = 0; i < mycam.getHealth(); i++) {
       T = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x + offset, pos.y, pos.z));
       M = T * R * S;
-      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      heart->draw(progL, true); 
+      glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      heart->draw(prog, true); 
       offset -= 0.8;
     }
 
-    progL->unbind();
+    prog->unbind();
   }
 
   /****DRAW
@@ -602,14 +602,14 @@ public:
       static float w = 0.0;
       w += 1.0 * frametime; // rotation angle
 
-      progL->bind();
-      glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
-      glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
-      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      prog->bind();
+      glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+      glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+      glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 
 
-      glUniform3fv(progL->getUniform("campos"), 1, &camPos[0]);
-      //glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
+      glUniform3fv(prog->getUniform("campos"), 1, &camPos[0]);
+      //glUniform3fv(prog->getUniform("campos"), 1, &mycam.getPos()[0]);
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, Texture);
 
@@ -675,12 +675,12 @@ public:
         Model->translate(vec3(mycam.getPos().x, mycam.getPos().y - 0.5, mycam.getPos().z));
         Model->scale(0.5f);
         Model->rotate(rot, vec3(0, 1, 0));  
-        glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
-        glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+        glUniform4fv(prog->getUniform("objColor"), 1, &red[0]);
+        glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
         // draw everything but the tail with these transforms
         for (int i = 0; i < cat->getObjCount(); i++) {
           if (i != 4)
-            cat->draw(progL, i, true);
+            cat->draw(prog, i, true);
         }
         // tail transforms
         Model->pushMatrix();
@@ -688,8 +688,8 @@ public:
           Model->rotate(angle, vec3(0, 0, 1));
           // clip the tail slightly back into the model -- this helps hide any disjoint
           Model->translate(vec3(0, 0, 0.05f));
-          glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-          cat->draw(progL, 4, true);
+          glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+          cat->draw(prog, 4, true);
         Model->popMatrix();
       Model->popMatrix();
       glBindTexture(GL_TEXTURE_2D, 0);
@@ -703,15 +703,15 @@ public:
           vec3 currPos = currObj->getPos();
           if (!currObj->getIsStatic()) {
               // object is a cat -- use matrix stack
-              glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
+              glUniform4fv(prog->getUniform("objColor"), 1, &pink[0]);
               Model->pushMatrix();
               Model->loadIdentity();
               Model->multMatrix(myManager->getObjects().at(i)->getMatrix() * S);
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
               // torso transforms
               for (int i = 0; i < 3; i++) {
                   if (i != 4)
-                      currObj->getMesh()->draw(progL, i, true);
+                      currObj->getMesh()->draw(prog, i, true);
               }
               // tail transform
               Model->pushMatrix();
@@ -720,47 +720,47 @@ public:
               Model->rotate(angle, vec3(0, 0, 1));
               // clip the tail slightly back into the model -- this helps hide any disjoint
               Model->translate(vec3(0, -0.05f, 0.05f));
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              currObj->getMesh()->draw(progL, 4, true);
+              glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(prog, 4, true);
               Model->popMatrix();
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
               // right rear leg
               Model->pushMatrix();
               angle = sin(glfwGetTime() * 3) / 3;
               Model->rotate(angle, vec3(1, 0, 0));
               Model->translate(vec3(0, fabs(angle) / 2, 0));
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              currObj->getMesh()->draw(progL, 8, true);
+              glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(prog, 8, true);
               Model->popMatrix();
               // right front leg
               Model->pushMatrix();
               angle = sin(glfwGetTime() * 3 - 1) / 3;
               Model->rotate(angle, vec3(1, 0, 0));
               Model->translate(vec3(0, fabs(angle) / 2, 0));
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              currObj->getMesh()->draw(progL, 6, true);
+              glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(prog, 6, true);
               Model->popMatrix();
               // left rear leg
               Model->pushMatrix();
               angle = sin(glfwGetTime() * 3 - 2) / 3;
               Model->rotate(angle, vec3(1, 0, 0));
               Model->translate(vec3(0, fabs(angle) / 2, 0));
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              currObj->getMesh()->draw(progL, 7, true);
+              glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(prog, 7, true);
               Model->popMatrix();
               // left front leg
               Model->pushMatrix();
               angle = sin(glfwGetTime() * 3 - 3) / 3;
               Model->rotate(angle, vec3(1, 0, 0));
               Model->translate(vec3(0, fabs(angle) / 2, 0));
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              currObj->getMesh()->draw(progL, 5, true);
+              glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+              currObj->getMesh()->draw(prog, 5, true);
               Model->popMatrix();
               Model->popMatrix();
           }
           else {
               glBindTexture(GL_TEXTURE_2D, 0);
-              glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
+              glUniform4fv(prog->getUniform("objColor"), 1, &green[0]);
               // transform spheres
               S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
               currPos.y = 0.1f;
@@ -769,12 +769,12 @@ public:
               R = glm::rotate(glm::mat4(1), w * 3, glm::vec3(0.0f, 1.0f, 0.0f));
               M = T * R * S;
               //M = T * S * myManager->getObjects().at(i).getMatrix();
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-              currObj->getMesh()->draw(progL, true);
+              glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+              currObj->getMesh()->draw(prog, true);
           }
       }
       glBindTexture(GL_TEXTURE_2D, 0);
-      progL->unbind();
+      prog->unbind();
 
       // draw room
       prog->bind();

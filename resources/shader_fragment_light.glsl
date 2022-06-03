@@ -2,38 +2,20 @@
 
 out vec4 color;
 
-in vec4 vertex_color;
 in vec3 vertex_normal;
 in vec3 vertex_pos;
 in vec2 vertex_tex;
 
+uniform vec4 objColor;
 uniform vec3 campos;
 uniform sampler2D tex;
 
 void main()
 {
-	// Diffuse
-	vec3 norm = normalize(vertex_normal);
-	vec3 Lp = vec3(20, 20, 20);
-	vec3 Ld = normalize(Lp - vertex_pos);
-	float diff = clamp(dot(norm, Ld), 0, 1);
-
-	// Specular
-	vec3 Cd = normalize(campos - vertex_pos);
-	vec3 H = normalize(Cd + Ld);
-	//float spec = pow(clamp(dot(H, norm), 0, 1), 2);
-
-	// Ambient + Diffuse
-	color = 0.3 * vertex_color + diff * vertex_color;
-	color = vertex_color;
-	//color.rgb = vec3(diff);
-	//color.rgb = (diff * vertex_color.rgb) + (spec * vec3(1, 1, 1));
-	color.a = vertex_color.a;
-
 	color.a=1;
 	color.rgb = texture(tex, vertex_tex*2).rgb;
 	if (color.rgb == vec3(0, 0, 0))
-		color.rgb = vertex_color.rgb;
+		color.rgb = objColor.rgb;
 
 	vec3 nn = normalize(vertex_normal);
 	vec3 light_pos = vec3(0.0, 10.0, 0.0);

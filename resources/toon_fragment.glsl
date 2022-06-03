@@ -1,43 +1,26 @@
 #version 330 core
 out vec4 color;
+
 in vec3 vertex_normal;
 in vec3 vertex_pos;
 in vec2 vertex_tex;
-in vec3 vertex_color;
 
 uniform vec3 campos;
 uniform sampler2D tex;
-uniform vec3 objColor;
+uniform vec4 objColor;
 uniform vec3 lightPos;
 
 void main()
 {
-	/*
-	vec3 n = normalize(vertex_normal);
-	vec3 lp=vec3(10,20,-100);
-	vec3 ld = normalize(vertex_pos - lp);
-	float diffuse = dot(n,ld);
-
-	color.rgb = texture(tex, vertex_tex).rgb;
-
-	color.rgb *= diffuse*0.7;
-
-	vec3 cd = normalize(vertex_pos - campos);
-	vec3 h = normalize(cd+ld);
-	float spec = dot(n,h);
-	spec = clamp(spec,0,1);
-	spec = pow(spec,20);
-	color.rgb += vec3(1,1,1)*spec*3;
-	*/
-
-
+	// Load Texture
+	// If there is no texture, read objColor
 	color.a=1;
 	color.rgb = texture(tex, vec2(vertex_tex.x, -vertex_tex.y)).rgb;
 	if (color.rgb == vec3(0, 0, 0))
 		color.rgb = objColor.rgb;
 
-	
-	
+
+	// Toon Shading
 	vec3 nn = normalize(vertex_normal);
 	vec3 light_pos = lightPos;
 	vec3 light_dir = normalize(vertex_pos - light_pos);
