@@ -443,7 +443,7 @@ public:
     GLSL::checkVersion();
 
     // Set background color.
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.098f, 0.098f, 0.439f, 1.0f);
     // Enable z-buffer test.
     glEnable(GL_DEPTH_TEST);
 
@@ -677,6 +677,11 @@ public:
         Model->rotate(rot, vec3(0, 1, 0));  
         glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
         glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+        // draw damage effects, if any
+        if (mycam.getDisplayDamage())
+          glBindTexture(GL_TEXTURE_2D, 0);
+        else
+          glBindTexture(GL_TEXTURE_2D, CatTex1);
         // draw everything but the tail with these transforms
         for (int i = 0; i < cat->getObjCount(); i++) {
           if (i != 4)
@@ -812,7 +817,7 @@ public:
     glViewport(0, 0, width, height);
 
     // Clear framebuffer.
-    glClearColor(0.8f, 0.8f, 1.0f, 1.0f);
+    glClearColor(0.098f, 0.098f, 0.439f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Create the matrix stacks

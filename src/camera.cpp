@@ -148,6 +148,21 @@ void camera::processKeyboard(double ftime, std::vector<std::shared_ptr<gameObjec
           pos = prevPos;
   }
 
+  /* RED EFFECT ON DAMAGE */
+  if (isDamaged) {
+    if (damageTimer == 0)
+      displayDamage = true;
+    if (damageTimer == 15)
+      displayDamage = false;
+    if (damageTimer == 30)
+      displayDamage = true;
+    if (damageTimer == 45) {
+      displayDamage = false;
+      isDamaged = false; 
+      damageTimer = -1;
+    }
+    damageTimer++;
+  }
 
   if (nextPos.x > 12 || nextPos.x < -12 || nextPos.z > 12 ||
       nextPos.z < -12)
@@ -171,6 +186,7 @@ void camera::takeDamage()
     decrementHealth();
     playMeow();
     //playAudio();
+    isDamaged = true;
     std::cout << "Health: " << playerHealth << std::endl;
   }
   /*
