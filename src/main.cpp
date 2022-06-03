@@ -9,6 +9,7 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "MatrixStack.h"
 #include "Program.h"
 #include "camera.h"
+#include "particleSys.h"
 #include "gameManager.h"
 #include "gameObject.h"
 #include "roomObject.h"
@@ -49,6 +50,9 @@ public:
 
   // Our shader program
   std::shared_ptr<Program> prog, progL, heightshader;
+  std::shared_ptr<Program> particleProg;
+
+  particleSys *thePartSystem;
 
   // Contains vertex information for OpenGL
   GLuint VertexArrayID;
@@ -60,6 +64,7 @@ public:
   GLuint Texture;
   GLuint Texture2, HeightTex;
   GLuint CatTex1, CatTex2;
+  GLuint particleTex;
 
 
   vec3 g_eye = vec3(0, 1, 0);
@@ -411,6 +416,22 @@ public:
                  GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+    // particle texture
+    str = resourceDirectory + "/particle.png";
+    strcpy(filepath, str.c_str());
+    data = stbi_load(filepath, &width, &height, &channels, 4);
+    glGenTextures(1, &particleTex);
+    glBindTexture(GL_TEXTURE_2D, particleTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+
     //[TWOTEXTURES]
     // set the 2 textures to the correct samplers in the fragment shader:
     GLuint Tex1Location = glGetUniformLocation(
@@ -432,6 +453,10 @@ public:
     Tex1Location = glGetUniformLocation(heightshader->pid, "tex");
     glUseProgram(progL->pid);
     glUniform1i(Tex1Location, 0);
+
+    GLuint particleTexLocation = glGetUniformLocation(particleProg->pid, "alphaTexture");
+    glUseProgram(particleProg->pid);
+    glUniform1i(particleTexLocation, 0);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -503,6 +528,27 @@ public:
     heightshader->addUniform("campos");
     heightshader->addAttribute("vertPos");
     heightshader->addAttribute("vertTex");
+
+    particleProg = make_shared<Program>();
+    particleProg->setVerbose(true);
+    particleProg->setShaderNames(
+      resourceDirectory + "/particle_vert.glsl",
+      resourceDirectory + "/particle_frag.glsl"
+    );
+    if (!particleProg->init()) {
+      std::cerr << "One or more shaders failed to compile... exiting!"
+                << std::endl;
+      exit(1); 
+    }
+    particleProg->addUniform("P");
+    particleProg->addUniform("V");
+    particleProg->addUniform("M");
+    particleProg->addUniform("alphaTexture");
+    particleProg->addAttribute("vertPos");
+    particleProg->addAttribute("partColor");
+
+    thePartSystem = new particleSys(vec3(2, 1, 3.5));
+    thePartSystem->gpuSetup();
 
     /*
     cout << prog->pid << endl;

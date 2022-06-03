@@ -20,7 +20,6 @@ using namespace glm;
 
 class MatrixStack;
 class Program;
-class Texture;
 
 class Particle
 {
