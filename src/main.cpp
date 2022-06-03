@@ -675,8 +675,8 @@ public:
         Model->translate(vec3(mycam.getPos().x, mycam.getPos().y - 0.5, mycam.getPos().z));
         Model->scale(0.5f);
         Model->rotate(rot, vec3(0, 1, 0));  
-        glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
-        glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+        glUniform4fv(prog->getUniform("objColor"), 1, &red[0]);
+        glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
         // draw damage effects, if any
         if (mycam.getDisplayDamage())
           glBindTexture(GL_TEXTURE_2D, 0);
