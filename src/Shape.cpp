@@ -29,10 +29,12 @@ void Shape::loadMesh(const string &meshName, string *mtlpath,
   else
     rc = tinyobj::LoadObj(shapes, objMaterials, errStr, meshName.c_str());
 
+  
   for (int i = 0; i < objMaterials.size(); i++)
   {
       mats.push_back(objMaterials[i]);
   }
+  
 
   if (!rc) {
     cerr << errStr << endl;
@@ -290,22 +292,20 @@ void Shape::draw(const shared_ptr<Program> prog,
 
     // texture
     if (!use_extern_texures) {
+
+      //cout << mats.size() << endl;
       int textureindex = materialIDs[i];
       if (textureindex >= 0) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureIDs[textureindex]);
       }
-      else if (mats.size() > i) {
-          glm::vec3 ambient = glm::vec3(mats[i].ambient[0], mats[i].ambient[1], mats[i].ambient[2]);
-          //glUniform3fv(prog->getUniform("objColor"), 1, &ambient[0]);
-          //cout << mats[i].name << endl;
-          //cout << mats[i].ambient[0] << endl;
-          
+      if (mats.size() > i) {
+          glUniform3fv(prog->getUniform("objColor"), 1, &mats[i].diffuse[0]);
           /*
-          h_col = prog->getAttribute("vertCol");
-          GLSL::enableVertexAttribArray(h_col);
-          glBindBuffer(GL_ARRAY_BUFFER, mats[i].ambient[0]);
-          glVertexAttribPointer(h_col, 3, GL_FLOAT, GL_FALSE, 0, (const void*)0);
+          if (i == 0)
+            glUniform3fv(prog->getUniform("objColor"), 1, &mats[mats.size() - 1].diffuse[0]);
+          else
+            glUniform3fv(prog->getUniform("objColor"), 1, &mats[i-1].diffuse[0]);
           */
       }
     }

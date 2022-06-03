@@ -8,7 +8,8 @@
 
 class gameManager {
 public:
-  gameManager(std::shared_ptr<Shape> shape, std::shared_ptr<Shape> shape2, camera *player) {
+  gameManager(std::shared_ptr<Shape> shape, std::shared_ptr<Shape> shape2, camera *player, std::vector<std::shared_ptr<gameObject>> data) {
+    collisionData = data;
     kibble = shape2;
     curShape = shape;
     srand(glfwGetTime());
@@ -46,4 +47,5 @@ public:
   int framecount = 0;
   std::shared_ptr<Shape> curShape;
   std::vector<std::shared_ptr<gameObject>> objects;
+  std::vector<std::shared_ptr<gameObject>> collisionData;
 };

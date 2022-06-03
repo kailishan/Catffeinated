@@ -32,20 +32,11 @@ void main()
 
 
 	color.a=1;
-	color.rgb = texture(tex, -vertex_tex).rgb;
+	color.rgb = texture(tex, vec2(vertex_tex.x, -vertex_tex.y)).rgb;
 	if (color.rgb == vec3(0, 0, 0))
 		color.rgb = objColor.rgb;
 
-	/*
-	if (intensity > 0.95)
-		color += vec4(0.25,0.25,0.25,0.0);
-	else if (intensity > 0.5)
-		color += vec4(0.0,0.0,0.0,0.0);
-	else if (intensity > 0.25)
-		color -= vec4(0.25,0.25,0.25,0.0);
-	else
-		color -= vec4(0.5,0.5,0.5,0.0);
-	*/
+	
 	
 	vec3 nn = normalize(vertex_normal);
 	vec3 light_pos = lightPos;
@@ -71,8 +62,7 @@ void main()
 	vec3 camDir = campos - vertex_pos;
 	camDir = normalize(camDir);
 	float outline = dot(camDir, nn);
-	if (outline > -0.1 && outline < 0.1)
-	//if (outline == 0)
+	if (outline > -0.15 && outline < 0.15)
 	{
 		intensity = 0.0;
 	}
