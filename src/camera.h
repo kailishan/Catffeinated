@@ -75,6 +75,8 @@ public:
   void playRoost();
   void playCollect();
 
+  bool getDisplayDamage() { return displayDamage; }
+
 private:
   glm::vec3 modeldirection;
   glm::mat4 cammodel;
@@ -110,4 +112,8 @@ private:
 
   // audio engine
   //ma_engine engine;
+
+  bool isDamaged = false;
+  bool displayDamage = false; // true = red, false = texture
+  int damageTimer = 0;
 };
