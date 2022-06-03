@@ -421,6 +421,7 @@ public:
     strcpy(filepath, str.c_str());
     data = stbi_load(filepath, &width, &height, &channels, 4);
     glGenTextures(1, &particleTex);
+    glActiveTexture(GL_TEXTURE4);
     glBindTexture(GL_TEXTURE_2D, particleTex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, data);
@@ -547,7 +548,7 @@ public:
     particleProg->addAttribute("vertPos");
     particleProg->addAttribute("partColor");
 
-    thePartSystem = new particleSys(vec3(2, 1, 3.5));
+    thePartSystem = new particleSys(vec3(0, 1, -3));
     thePartSystem->gpuSetup();
 
     /*
@@ -841,6 +842,19 @@ public:
 
       prog->unbind();
       
+      /* draw our particles */
+      particleProg->bind();
+      glBindTexture(GL_TEXTURE_2D, particleTex);
+      
+      M = glm::mat4(1);
+      glUniformMatrix4fv(particleProg->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+      glUniformMatrix4fv(particleProg->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+      glUniformMatrix4fv(particleProg->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+
+      thePartSystem->drawMe(particleProg);
+      thePartSystem->update();
+      particleProg->unbind();
+
       assert(glGetError() == GL_NO_ERROR);
   }
 
@@ -896,6 +910,8 @@ public:
     V = glm::lookAt(mycam.getPos() - mycam.getFront() * vec3(1.5), mycam.getPos() + mycam.getFront(),
         mycam.getUp());
     mycam.processKeyboard(frametime, objects);
+
+    thePartSystem->setCamera(V);
 
     drawScene(P, V); /* 3RD PERSON CAMERA */
 
