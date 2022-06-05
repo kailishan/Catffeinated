@@ -114,10 +114,23 @@ void camera::processKeyboard(double ftime, std::vector<std::shared_ptr<gameObjec
   }
 
   /* BURST SPEED */
-  if (speedBoost > 0.0)
+  if (speedBoost > 0.0) {
     speedBoost -= 0.005;
-  else
+    /* STRECH & SQUASH */
+    if (sScale >= 1.0f || sScale <= 0.3f)
+      sDir *= -1;
+    if (sDir == 1) {
+      sScale += 0.05f;
+    }
+    else {
+      sScale -= 0.05;
+    }
+  }
+  else {
     speedBoost = 0.0;
+    sScale = 0.5f;
+    sDir = 1;
+  }
 
   if (w)
     nextPos += cameraSpeed * front * (baseSpeed + speedBoost);
