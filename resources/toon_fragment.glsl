@@ -6,6 +6,7 @@ in vec3 vertex_pos;
 in vec2 vertex_tex;
 
 uniform vec3 campos;
+//uniform vec3 lightPosList[7];
 uniform sampler2D tex;
 uniform vec4 objColor;
 uniform vec3 lightPos;

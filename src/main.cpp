@@ -26,6 +26,8 @@ using namespace glm;
 
 camera mycam;
 vector<shared_ptr<gameObject>> objects;
+vector<shared_ptr<vec3>> lights;
+//glm::vec3 lights[7];
 double tail_dt = 0.0f;
 
 
@@ -129,6 +131,10 @@ public:
         make_shared<roomObject>(vec3(x + .75, 1, z), .8);
     objects.push_back(ro17);
     objects.push_back(ro18);
+
+    //vec3 l1 = vec3(10, 5, 10);
+    shared_ptr<vec3> l1 = make_shared<vec3>(vec3(10, 5, 10));
+    lights.push_back(l1);
   }
   void keyCallback(GLFWwindow *window, int key, int scancode, int action,
                    int mods) {
@@ -460,6 +466,7 @@ public:
     prog->addUniform("P");
     prog->addUniform("V");
     prog->addUniform("M");
+    prog->addUniform("lightPosList");
     prog->addUniform("objColor");
     prog->addUniform("campos");
     prog->addUniform("lightPos");
@@ -590,6 +597,10 @@ public:
       tail_dt += frametime;
 
       vec3 camPos = mycam.getPos() - mycam.getFront() * vec3(1.5);
+
+      vec3 lightDir = vec3(0.0, 5.0, 0.0);
+      glUniform3fv(prog->getUniform("lightPos"), 1, &lightDir[0]);
+      //glUniform3fv(prog->getUniform("lightPosList"), 7, (const GLfloat*)&lights[0]);
 
       // set up all the matrices
       auto Model = make_shared<MatrixStack>();
@@ -779,18 +790,16 @@ public:
           }
       }
       glBindTexture(GL_TEXTURE_2D, 0);
-      prog->unbind();
+      //prog->unbind();
 
       // draw room
-      prog->bind();
+      //prog->bind();
 
       M = glm::mat4(1);
       S = glm::scale(glm::mat4(1.0f), glm::vec3(12.5, 12.5, 12.5));
       T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
       M = T * S;
       //glUniform3fv(prog->getUniform("objColor"), 1, &blue[0]);
-      vec3 lightDir = vec3(0.0, 5.0, 0.0);
-      glUniform3fv(prog->getUniform("lightPos"), 1, &lightDir[0]);
       glUniform3fv(prog->getUniform("campos"), 1, &camPos[0]);
       glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
       glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
