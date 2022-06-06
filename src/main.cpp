@@ -133,8 +133,20 @@ public:
     objects.push_back(ro18);
 
     //vec3 l1 = vec3(10, 5, 10);
-    shared_ptr<vec3> l1 = make_shared<vec3>(vec3(10, 5, 10));
+    shared_ptr<vec3> l1 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
     lights.push_back(l1);
+    shared_ptr<vec3> l2 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l2);
+    shared_ptr<vec3> l3 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l3);
+    shared_ptr<vec3> l4 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l4);
+    shared_ptr<vec3> l5 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l5);
+    shared_ptr<vec3> l6 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l6);
+    shared_ptr<vec3> l7 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l7);
   }
   void keyCallback(GLFWwindow *window, int key, int scancode, int action,
                    int mods) {
@@ -607,15 +619,16 @@ public:
   draw
   ********/
   void drawScene(mat4 P, mat4 V) {
+      prog->bind();
       //cout << glm::to_string(V) << endl;
       double frametime = get_last_elapsed_time();
       tail_dt += frametime;
 
       vec3 camPos = mycam.getPos() - mycam.getFront() * vec3(1.5);
 
-      vec3 lightDir = vec3(0.0, 5.0, 0.0);
+      vec3 lightDir = vec3(9.0, 7.0, 9.0);
       glUniform3fv(prog->getUniform("lightPos"), 1, &lightDir[0]);
-      //glUniform3fv(prog->getUniform("lightPosList"), 7, (const GLfloat*)&lights[0]);
+      glUniform3fv(prog->getUniform("lightPosList"), 7, (const GLfloat*)&lights[0]);
 
       // set up all the matrices
       auto Model = make_shared<MatrixStack>();
@@ -628,7 +641,6 @@ public:
       static float w = 0.0;
       w += 1.0 * frametime; // rotation angle
 
-      prog->bind();
       glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
       glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
       glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
