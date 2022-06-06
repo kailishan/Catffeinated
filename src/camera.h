@@ -66,6 +66,7 @@ public:
   void changeZMode() { zMode = !zMode; }
 
   float getSpeedBoost() { return speedBoost; }
+  float getSscale() { return sScale; }
   int getHealth();
   void takeDamage();
 
@@ -87,6 +88,8 @@ private:
   float baseSpeed = 1.0f;
   float speedBoost = 0.0f;
   int speedTimer = 0;
+  float sScale = 0.5f; // strech & squash scale
+  int sDir = 1;
   glm::vec3 up = glm::vec3(0, 1, 0);
   glm::vec3 pos, rot, front;
 

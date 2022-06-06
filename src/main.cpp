@@ -61,7 +61,7 @@ public:
   // texture data
   GLuint Texture;
   GLuint Texture2, HeightTex;
-  GLuint CatTex1, CatTex2;
+  GLuint CatTex1, CatTex2, CatTex3;
 
 
   vec3 g_eye = vec3(0, 1, 0);
@@ -417,6 +417,21 @@ public:
                  GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+    // texture 6
+    str = resourceDirectory + "/rainbow2.png";
+    strcpy(filepath, str.c_str());
+    data = stbi_load(filepath, &width, &height, &channels, 4);
+    glGenTextures(1, &CatTex3);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, CatTex3);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
     //[TWOTEXTURES]
     // set the 2 textures to the correct samplers in the fragment shader:
     GLuint Tex1Location = glGetUniformLocation(
@@ -684,13 +699,24 @@ public:
       Model->pushMatrix();
         Model->loadIdentity();
         Model->translate(vec3(mycam.getPos().x, mycam.getPos().y - 0.5, mycam.getPos().z));
-        Model->scale(0.5f);
+        //Model->scale(0.5f);
+        if (mycam.getSpeedBoost() > 0.0f) { /* SQUASH & STRETCH */
+          Model->scale(glm::vec3(mycam.getSscale(), 0.5f, mycam.getSscale()));
+          //Model->scale(mycam.getSscale());
+        }
+        else {
+          Model->scale(0.5f);
+        }
         Model->rotate(rot, vec3(0, 1, 0));  
         glUniform4fv(prog->getUniform("objColor"), 1, &red[0]);
         glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
         // draw damage effects, if any
         if (mycam.getDisplayDamage())
           glBindTexture(GL_TEXTURE_2D, 0);
+        else if (mycam.getSpeedBoost() > 0.0f) {
+          //glActiveTexture(GL_TEXTURE4);
+          glBindTexture(GL_TEXTURE_2D, CatTex3);
+        }
         else
           glBindTexture(GL_TEXTURE_2D, CatTex1);
         // draw everything but the tail with these transforms
