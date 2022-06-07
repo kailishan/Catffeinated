@@ -6,19 +6,31 @@ in vec3 vertex_pos;
 in vec2 vertex_tex;
 
 uniform vec3 campos;
-uniform vec3 lightPosList[7];
 uniform sampler2D tex;
 uniform vec4 objColor;
-uniform vec3 lightPos;
+uniform vec3 lightPos1;
+uniform vec3 lightPos2;
+uniform vec3 lightPos3;
+uniform vec3 lightPos4;
+uniform vec3 lightPos5;
+uniform vec3 lightPos6;
+uniform vec3 lightPos7;
+uniform vec3 lightPos8;
+uniform vec3 lightDir;
 
 void main()
 {
+	vec3 lights[8] = {lightPos1, lightPos2, lightPos3, lightPos4, lightPos5, lightPos6, lightPos7, lightPos8};
+
 	// Load Texture
 	// If there is no texture, read objColor
 	color.a=1;
 	color.rgb = texture(tex, vec2(vertex_tex.x, -vertex_tex.y)).rgb;
 	if (color.rgb == vec3(0, 0, 0))
 		color.rgb = objColor.rgb;
+
+	float lightRad = cos(radians(30.0f));
+	float theta;
 
 	
 	vec3 nn;
@@ -32,18 +44,23 @@ void main()
 	float intensity;
 
 	// Toon Shading
-	for (int i = 0; i < 7; i++)
+	for (int i = 0; i < 8; i++)
 	{
 		nn = normalize(vertex_normal);
-		light_pos = lightPosList[i];
+		light_pos = lights[i];
 		light_dir = normalize(vertex_pos - light_pos);
-		eye_dir = normalize(-vertex_pos);
-		reflect_dir = normalize(reflect(light_dir, nn));
+		theta = dot(light_dir, normalize(lightDir));
+		
+		if (theta > lightRad)
+		{
+			eye_dir = normalize(-vertex_pos);
+			reflect_dir = normalize(reflect(light_dir, nn));
 	
-		spec = max(dot(reflect_dir, eye_dir), 0.0);
-		diffuse = max(dot(-light_dir, nn), 0.0);
+			spec = max(dot(reflect_dir, eye_dir), 0.0);
+			diffuse = max(dot(-light_dir, nn), 0.0);
 
-		intensity += (0.6 * diffuse + 0.4 * spec)/7;
+			intensity += (0.6 * diffuse + 0.4 * spec);
+		}
 	}
 
 	/*
