@@ -8,6 +8,7 @@
 ma_engine meowEngine;
 ma_engine roostEngine;
 ma_engine collectEngine;
+ma_engine powerupEngine;
 
 int camera::initEngine(int id)
 {
@@ -20,6 +21,8 @@ int camera::initEngine(int id)
     result = ma_engine_init(NULL, &roostEngine);
   if (id == 3)
     result = ma_engine_init(NULL, &collectEngine);
+  if (id == 4)
+    result = ma_engine_init(NULL, &powerupEngine);
   
   if (result != MA_SUCCESS) {
     return result;  // Failed to initialize the engine.
@@ -33,6 +36,7 @@ void camera::uninitEngine()
   ma_engine_uninit(&meowEngine);
   ma_engine_uninit(&roostEngine);
   ma_engine_uninit(&collectEngine);
+  ma_engine_uninit(&powerupEngine);
 }
 
 void camera::playMeow()
@@ -48,6 +52,11 @@ void camera::playRoost()
 void camera::playCollect()
 {
   ma_engine_play_sound(&collectEngine, "../resources/collect.wav", NULL);
+}
+
+void camera::playPowerup()
+{
+  ma_engine_play_sound(&powerupEngine, "../resources/powerup.wav", NULL);
 }
 
 /*****************************************************************************/
@@ -76,8 +85,10 @@ bool camera::isColliding(std::shared_ptr<gameObject> other) {
       speedBoost = 0.5;     /* BURST SPEED BOOST */
       if (baseSpeed < 1.5)  /* STACKED SPEED BOOST */
         baseSpeed += 0.1;
-      if (playerHealth < 5) /* LIFE REGENERATION */
+      if (playerHealth < 5) { /* LIFE REGENERATION */
         playerHealth++;
+        playPowerup();
+      }
       //std::cout << "base speed+ = " << baseSpeed << std::endl;
     }
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;

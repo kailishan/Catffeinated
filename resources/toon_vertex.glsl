@@ -15,8 +15,6 @@ uniform mat4 P;
 uniform mat4 V;
 uniform mat4 M;
 
-uniform int defer;
-out vec2 deferS;
 
 void main()
 {
@@ -37,5 +35,4 @@ void main()
 	fragPos = vec3(V * M * vec4(vertPos, 1.0));
 	//fragPos = vec3(V * M * vertPos);
 	//fragPos = vertex_pos;
-	deferS = vec2(defer,1);
 }

@@ -1,6 +1,7 @@
 #include "catSpline.h"
 
-catSpline::catSpline(std::shared_ptr<Shape> shape) {
+catSpline::catSpline(std::shared_ptr<Shape> shape, std::vector<std::shared_ptr<gameObject>> data) {
+  collisionData = data;
   mesh = shape;
   pos = glm::vec3(1, 0.35, 1);
   float velocities[] = {0.05f, 0.025f, 0.0125f, -0.0125f, -0.025f, -0.05f};
@@ -38,7 +39,17 @@ void catSpline::move(double ftime) {
                              glm::vec3(-0.25, 0.5, 5), glm::vec3(0, 0.5, 5), 5);
     }
 
+    glm::vec3 temp = pos;
+
     pos += glm::vec3(dir.x, dir.y, dir.z);
+
+    for (int i = 0; collisionData.size() > i; i++)
+    {
+        if (isColliding(collisionData[i])) {
+            pos = temp;
+            break;
+        }
+    }
 
 
     glm::mat4 R = formRotationMatrix(ftime, pos);

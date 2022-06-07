@@ -75,6 +75,7 @@ public:
   void playMeow();
   void playRoost();
   void playCollect();
+  void playPowerup();
 
   bool getDisplayDamage() { return displayDamage; }
 

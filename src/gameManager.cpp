@@ -5,7 +5,22 @@
 
 void gameManager::spawnGameObject(std::shared_ptr<Shape> shape)
 {
-  std::shared_ptr<gameObject> object = std::make_shared<cat>(shape);
+  bool spawn = false;
+  std::shared_ptr<gameObject> object = std::make_shared<cat>(shape, collisionData);
+
+  while (!spawn)
+  {
+      spawn = true;
+      //std::cout << "spawning... " << std::endl;
+      object = std::make_shared<cat>(shape, collisionData);
+      for (int i = 0; collisionData.size() > i; i++)
+      {
+          if (object->isColliding(collisionData[i])) {
+              spawn = false;
+          }
+      }
+  }
+
   object->setObjectType(0);
   objects.push_back(object);
   count++;
@@ -13,15 +28,47 @@ void gameManager::spawnGameObject(std::shared_ptr<Shape> shape)
 
 void gameManager::spawnAggressive(std::shared_ptr<Shape> shape,
                                   camera *player) {
+  //std::cout << collisionData.size() << std::endl;
+  bool spawn = false;
   std::shared_ptr<gameObject> object =
-      std::make_shared<catAggressive>(shape, player);
+      std::make_shared<catAggressive>(shape, player, collisionData);
+
+  while (!spawn)
+  {
+      spawn = true;
+      //std::cout << "spawning... " << std::endl;
+      object = std::make_shared<catAggressive>(shape, player, collisionData);
+      for (int i = 0; collisionData.size() > i; i++)
+      {
+          if (object->isColliding(collisionData[i])) {
+              spawn = false;
+          }
+      }
+  }
+
   object->setObjectType(0);
   objects.push_back(object);
   count++;
 }
 
 void gameManager::spawnSpline(std::shared_ptr<Shape> shape) {
-  std::shared_ptr<gameObject> object = std::make_shared<catSpline>(shape);
+    bool spawn = false;
+  std::shared_ptr<gameObject> object = std::make_shared<catSpline>(shape, collisionData);
+
+  while (!spawn)
+  {
+      spawn = true;
+      //std::cout << "spawning... " << std::endl;
+      object = std::make_shared<catSpline>(shape, collisionData);
+      for (int i = 0; collisionData.size() > i; i++)
+      {
+          if (object->isColliding(collisionData[i])) {
+              spawn = false;
+          }
+      }
+  }
+
+
   object->setObjectType(0);
   objects.push_back(object);
   count++;
@@ -31,14 +78,14 @@ void gameManager::spawnSpline(std::shared_ptr<Shape> shape) {
 void gameManager::spawnStaticGameObject(std::shared_ptr<Shape> shape)
 {
   bool spawn = false;
-  std::shared_ptr<gameObject> object = std::make_shared<cat>(shape);
+  std::shared_ptr<gameObject> object = std::make_shared<cat>(shape, collisionData);
 
   
   while (!spawn)
   {
       spawn = true;
-      std::cout << "spawning... " << std::endl;
-      object = std::make_shared<cat>(shape);
+      //std::cout << "spawning... " << std::endl;
+      object = std::make_shared<cat>(shape, collisionData);
       object->setRadius(0.1f);
       for (int i = 0; collisionData.size() > i; i++)
       {
@@ -47,7 +94,7 @@ void gameManager::spawnStaticGameObject(std::shared_ptr<Shape> shape)
           }
       }
   }
-  std::cout << "spawned " << std::endl;
+  //std::cout << "spawned " << std::endl;
   
   
   object->setObjectType(1);

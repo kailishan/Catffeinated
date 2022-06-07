@@ -50,7 +50,7 @@ public:
   shared_ptr<Shape> cat, sphere, room, table, heart;
 
   // Our shader program
-  std::shared_ptr<Program> prog, texProg;
+  std::shared_ptr<Program> prog, progL, heightshader, TVstatic, texProg;
 
   // Contains vertex information for OpenGL
   GLuint VertexArrayID;
@@ -75,7 +75,13 @@ public:
   // Data necessary to give our box to OpenGL
   GLuint MeshPosID, MeshTexID, IndexBufferIDBox;
 
-  // Texture data
+  // Data for TVstatic
+  GLuint FBOtex, fb, depth_fb;
+  GLuint VertexArrayIDScreen, VertexBufferIDScreen, VertexBufferTexScreen;
+
+  // texture data
+  GLuint Texture;
+  GLuint Texture2, HeightTex;
   GLuint CatTex1, CatTex2, CatTex3;
 
   // Camera data
@@ -147,6 +153,9 @@ public:
     objects.push_back(ro17);
     objects.push_back(ro18);
 
+    //cout << "HIT" << endl;
+    //cout << objects.size() << endl;
+
     //vec3 l1 = vec3(10, 5, 10);
     shared_ptr<vec3> l1 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
     lights.push_back(l1);
@@ -171,6 +180,11 @@ public:
     }
 
     // MOVEMENT
+    if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
+        cout << "x: " << mycam.getPos().x << " z: " << mycam.getPos().z << endl;
+    }
+
+
     if (key == GLFW_KEY_W && action == GLFW_PRESS) {
       mycam.setw(1);
     }
@@ -269,6 +283,47 @@ public:
   /* Note that any gl calls must always happen after a GL state is initialized */
   void initGeom() {
 
+    //screen plane
+    glGenVertexArrays(1, &VertexArrayIDScreen);
+    glBindVertexArray(VertexArrayIDScreen);
+    //generate vertex buffer to hand off to OGL
+    glGenBuffers(1, &VertexBufferIDScreen);
+    //set the current state to focus on our vertex buffer
+    glBindBuffer(GL_ARRAY_BUFFER, VertexBufferIDScreen);
+    vec3 vertices[6];
+    vertices[0] = vec3(-1, -1, 0);
+    vertices[1] = vec3(1, -1, 0);
+    vertices[2] = vec3(1, 1, 0);
+    vertices[3] = vec3(-1, -1, 0);
+    vertices[4] = vec3(1, 1, 0);
+    vertices[5] = vec3(-1, 1, 0);
+    //actually memcopy the data - only do this once
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(vec3), vertices, GL_STATIC_DRAW);
+    //we need to set up the vertex array
+    glEnableVertexAttribArray(0);
+    //key function to get up how many elements to pull out at a time (3)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    //generate vertex buffer to hand off to OGL
+    glGenBuffers(1, &VertexBufferTexScreen);
+    //set the current state to focus on our vertex buffer
+    glBindBuffer(GL_ARRAY_BUFFER, VertexBufferTexScreen);
+    vec2 texscreen[6];
+    texscreen[0] = vec2(0, 0);
+    texscreen[1] = vec2(1, 0);
+    texscreen[2] = vec2(1, 1);
+    texscreen[3] = vec2(0, 0);
+    texscreen[4] = vec2(1, 1);
+    texscreen[5] = vec2(0, 1);
+    //actually memcopy the data - only do this once
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(vec2), texscreen, GL_STATIC_DRAW);
+    //we need to set up the vertex array
+    glEnableVertexAttribArray(1);
+    //key function to get up how many elements to pull out at a time (3)
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glBindVertexArray(0);
+
+
+
     string resourceDirectory = "../resources";
     
     // Initialize geometry
@@ -354,6 +409,76 @@ public:
 
     //glEnable(GL_BLEND);
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //[TWOTEXTURES]
+    // set the 2 textures to the correct samplers in the fragment shader:
+    GLuint Tex1Location = glGetUniformLocation(
+        prog->pid, "tex"); // tex, tex2... sampler in the fragment shader
+    // Then bind the uniform samplers to texture units:
+    glUseProgram(prog->pid);
+    glUniform1i(Tex1Location, 0);
+
+    Tex1Location = glGetUniformLocation(
+        heightshader->pid,
+        "tex"); // tex, tex2... sampler in the fragment shader
+    GLuint Tex2Location = glGetUniformLocation(heightshader->pid, "tex2");
+    // Then bind the uniform samplers to texture units:
+    glUseProgram(heightshader->pid);
+    glUniform1i(Tex1Location, 0);
+    glUniform1i(Tex2Location, 1);
+
+    // tex, tex2... sampler in the fragment shader
+    /*Tex1Location = glGetUniformLocation(heightshader->pid, "tex");
+    glUseProgram(progL->pid);
+    glUniform1i(Tex1Location, 0);*/
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    Tex1Location = glGetUniformLocation(TVstatic->pid, "tex");//tex, tex2... sampler in the fragment shader
+    glUseProgram(TVstatic->pid);
+    glUniform1i(Tex1Location, 0);
+
+    glfwGetFramebufferSize(windowManager->getHandle(), &width, &height);
+    //RGBA8 2D texture, 24 bit depth texture, 256x256
+    glGenTextures(1, &FBOtex);
+    glBindTexture(GL_TEXTURE_2D, FBOtex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //NULL means reserve texture memory, but texels are undefined
+    //**** Tell OpenGL to reserve level 0
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+    //You must reserve memory for other mipmaps levels as well either by making a series of calls to
+    //glTexImage2D or use glGenerateMipmapEXT(GL_TEXTURE_2D).
+    //Here, we'll use :
+    glGenerateMipmap(GL_TEXTURE_2D);
+    //make a frame buffer
+    //-------------------------
+    glGenFramebuffers(1, &fb);
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+    //Attach 2D texture to this FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBOtex, 0);
+    //-------------------------
+    glGenRenderbuffers(1, &depth_fb);
+    glBindRenderbuffer(GL_RENDERBUFFER, depth_fb);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+    //-------------------------
+    //Attach depth buffer to FBO
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_fb);
+    //-------------------------
+    //Does the GPU support current FBO configuration?
+    GLenum status;
+    status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    switch (status)
+    {
+    case GL_FRAMEBUFFER_COMPLETE:
+        cout << "status framebuffer: good";
+        break;
+    default:
+        cout << "status framebuffer: bad!!!!!!!!!!!!!!!!!!!!!!!!!";
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
   // General OGL initialization - set OGL state here
@@ -382,11 +507,18 @@ public:
     prog->addUniform("P");
     prog->addUniform("V");
     prog->addUniform("M");
-    prog->addUniform("lightPosList");
     prog->addUniform("objColor");
     prog->addUniform("campos");
-    prog->addUniform("defer");
-    prog->addUniform("lightPos");
+    prog->addUniform("lightRad");
+    prog->addUniform("lightDir");
+    prog->addUniform("lightPos1");
+    prog->addUniform("lightPos2");
+    prog->addUniform("lightPos3");
+    prog->addUniform("lightPos4");
+    prog->addUniform("lightPos5");
+    prog->addUniform("lightPos6");
+    prog->addUniform("lightPos7");
+    prog->addUniform("lightPos8");
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
     prog->addAttribute("vertTex");
@@ -411,6 +543,44 @@ public:
     
     initBuffers();
     initQuad();
+
+        // Initialize the GLSL program.
+    heightshader = std::make_shared<Program>();
+    heightshader->setVerbose(true);
+    heightshader->setShaderNames(resourceDirectory + "/height_vertex.glsl",
+                                 resourceDirectory + "/height_frag.glsl");
+    if (!heightshader->init()) {
+      std::cerr << "One or more shaders failed to compile... exiting!"
+                << std::endl;
+      exit(1);
+    }
+    heightshader->addUniform("P");
+    heightshader->addUniform("V");
+    heightshader->addUniform("M");
+    heightshader->addUniform("camoff");
+    heightshader->addUniform("campos");
+    heightshader->addAttribute("vertPos");
+    heightshader->addAttribute("vertTex");
+
+    // TV Static post processing effect
+    TVstatic = std::make_shared<Program>();
+    TVstatic->setVerbose(true);
+    TVstatic->setShaderNames(resourceDirectory + "/TV_vertex.glsl", resourceDirectory + "/TV_fragment.glsl");
+    if (!TVstatic->init())
+    {
+        std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+        exit(1);
+    }
+    TVstatic->addUniform("u_distortion");
+    TVstatic->addUniform("u_stripe");
+    TVstatic->addUniform("u_rgbshift");
+    TVstatic->addAttribute("vertPos");
+    TVstatic->addAttribute("vertTex");
+
+    /*
+    cout << prog->pid << endl;
+    cout << progL->pid << endl;
+    cout << heightshader->pid << endl;*/
   }
 
   /**** geometry set up for a quad *****/
@@ -473,6 +643,8 @@ public:
   }
 
   void initGame() { 
+
+    cout << objects.size() << endl;
     myManager = make_shared<gameManager>(cat, heart, &mycam, objects);
     //mycam.setManager(myManager.get());
   }
@@ -558,11 +730,6 @@ public:
 
       prog->bind();
 
-    if (DEFER)
-      glUniform1i(prog->getUniform("defer"), 1);
-    else
-      glUniform1i(prog->getUniform("defer"), 0);
-
       /*glEnableVertexAttribArray(0);
       glBindBuffer(GL_ARRAY_BUFFER, gPosition);
       glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -580,9 +747,25 @@ public:
 
       vec3 camPos = mycam.getPos() - mycam.getFront() * vec3(1.5);
 
-      vec3 lightDir = vec3(9.0, 7.0, 9.0);
-      glUniform3fv(prog->getUniform("lightPos"), 1, &lightDir[0]);
-      glUniform3fv(prog->getUniform("lightPosList"), 7, (const GLfloat*)&lights[0]);
+      vec3 lightDir = vec3(-8.1, 7.0, 8.7);
+      glUniform3fv(prog->getUniform("lightPos1"), 1, &lightDir[0]);
+      lightDir = vec3(-7.9, 7.0, 1.5);
+      glUniform3fv(prog->getUniform("lightPos2"), 1, &lightDir[0]);
+      lightDir = vec3(-10.7, 7.0, -8.3);
+      glUniform3fv(prog->getUniform("lightPos3"), 1, &lightDir[0]);
+      lightDir = vec3(-4, 7.0, -8.5);
+      glUniform3fv(prog->getUniform("lightPos4"), 1, &lightDir[0]);
+      lightDir = vec3(4.2, 7.0, -8.5);
+      glUniform3fv(prog->getUniform("lightPos5"), 1, &lightDir[0]);
+      lightDir = vec3(11.2, 7.0, -8.3);
+      glUniform3fv(prog->getUniform("lightPos6"), 1, &lightDir[0]);
+      lightDir = vec3(8.6, 7.0, 2.0);
+      glUniform3fv(prog->getUniform("lightPos7"), 1, &lightDir[0]);
+      lightDir = vec3(8.0, 7.0, 8.3);
+      glUniform3fv(prog->getUniform("lightPos8"), 1, &lightDir[0]);
+      lightDir = vec3(0.0, -1.0, 0.0);
+      glUniform3fv(prog->getUniform("lightDir"), 1, &lightDir[0]);
+      //glUniform1fv(prog->getUniform("lightRad"), 1, cos(radians(12.5f)));
 
       // set up all the matrices
       auto Model = make_shared<MatrixStack>();
@@ -808,11 +991,15 @@ public:
 
   void render() {
 
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+
     // DEFERRED SHADING
-    if (DEFER)
+    /*if (DEFER)
       glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
     else
-      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+
+
 
     double frametime = get_last_elapsed_time();
     myManager->process(&mycam, frametime);
@@ -854,7 +1041,7 @@ public:
 
 
     // DEFERRED SHADING
-    if (DEFER & !FirstTime)
+    /*if (DEFER & !FirstTime)
     {
       // now draw the actual output
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -887,7 +1074,7 @@ public:
       assert(GLTextureWriter::WriteImage(gNormal, "gNorm.png"));
       assert(GLTextureWriter::WriteImage(gColorSpec, "gColorSpec.png"));
       FirstTime = false;
-    }
+    }*/
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -904,7 +1091,34 @@ public:
     // HEALTH
     glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(width-640, height-180, 640, 180);
-    drawHealth(P, TopView); 
+    drawHealth(P, TopView); /* HEALTH */
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, FBOtex);
+    glGenerateMipmap(GL_TEXTURE_2D);
+  }
+
+  void render_with_framebuffer()
+  {
+
+      // Get current frame buffer size.
+      int width, height;
+      glfwGetFramebufferSize(windowManager->getHandle(), &width, &height);
+      glViewport(0, 0, width, height);
+      // Clear framebuffer.
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      TVstatic->bind();
+      static float value = 0.0f;
+      value += 0.01;
+      glUniform1f(TVstatic->getUniform("u_distortion"), 0.0f / 100.0f);
+      glUniform1f(TVstatic->getUniform("u_stripe"), 0.0f  / 100.0f);
+      glUniform1f(TVstatic->getUniform("u_rgbshift"), 2.5 / 1000.0f);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, FBOtex);
+      glBindVertexArray(VertexArrayIDScreen);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+      TVstatic->unbind();
+
   }
 };
 
@@ -920,7 +1134,8 @@ int main(int argc, char **argv) {
   mycam.initEngine(1);
   mycam.initEngine(2);
   mycam.initEngine(3);
-  //mycam.playRoost();
+  mycam.initEngine(4);
+  mycam.playRoost();
 
   Application *application = new Application();
 
@@ -943,13 +1158,14 @@ int main(int argc, char **argv) {
   // Initialize scene.
   application->init(resourceDir);
   application->initGeom();
-  application->initGame();
   application->initRoomGeo();
+  application->initGame();
 
   // Loop until the user closes the window.
   while (!glfwWindowShouldClose(windowManager->getHandle())) {
     // Render scene.
     application->render();
+    application->render_with_framebuffer();
 
     // Swap front and back buffers.
     glfwSwapBuffers(windowManager->getHandle());
