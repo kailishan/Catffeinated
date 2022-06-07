@@ -136,6 +136,9 @@ public:
     objects.push_back(ro17);
     objects.push_back(ro18);
 
+    //cout << "HIT" << endl;
+    //cout << objects.size() << endl;
+
     //vec3 l1 = vec3(10, 5, 10);
     shared_ptr<vec3> l1 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
     lights.push_back(l1);
@@ -663,6 +666,8 @@ public:
   }
 
   void initGame() { 
+
+    cout << objects.size() << endl;
     myManager = make_shared<gameManager>(cat, heart, &mycam, objects);
     //mycam.setManager(myManager.get());
   }
@@ -1069,9 +1074,9 @@ public:
       TVstatic->bind();
       static float value = 0.0f;
       value += 0.01;
-      glUniform1f(TVstatic->getUniform("u_distortion"), 20.0f / 100.0f);
-      glUniform1f(TVstatic->getUniform("u_stripe"), 70.0f  / 100.0f);
-      glUniform1f(TVstatic->getUniform("u_rgbshift"), 2.5 * sin(value) / 1000.0f);
+      glUniform1f(TVstatic->getUniform("u_distortion"), 0.0f / 100.0f);
+      glUniform1f(TVstatic->getUniform("u_stripe"), 0.0f  / 100.0f);
+      glUniform1f(TVstatic->getUniform("u_rgbshift"), 2.5 / 1000.0f);
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, FBOtex);
       glBindVertexArray(VertexArrayIDScreen);
@@ -1116,8 +1121,8 @@ int main(int argc, char **argv) {
   // Initialize scene.
   application->init(resourceDir);
   application->initGeom();
-  application->initGame();
   application->initRoomGeo();
+  application->initGame();
 
   // Loop until the user closes the window.
   while (!glfwWindowShouldClose(windowManager->getHandle())) {

@@ -9,6 +9,7 @@
 class gameManager {
 public:
   gameManager(std::shared_ptr<Shape> shape, std::shared_ptr<Shape> shape2, camera *player, std::vector<std::shared_ptr<gameObject>> data) {
+    //std::cout << data.size() << std::endl;
     collisionData = data;
     kibble = shape2;
     curShape = shape;

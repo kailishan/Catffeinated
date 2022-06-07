@@ -86,6 +86,7 @@ void main()
  		intensity = 0.5;
 	}
 
+	// black outline
 	vec3 camDir = campos - vertex_pos;
 	camDir = normalize(camDir);
 	float outline = dot(camDir, nn);
