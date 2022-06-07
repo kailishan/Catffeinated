@@ -17,6 +17,7 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "stb_image.h"
 
 #include "Shape.h"
+#include "Texture.h"
 #include "WindowManager.h"
 // value_ptr for glm
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,8 +28,7 @@ using namespace glm;
 
 camera mycam;
 vector<shared_ptr<gameObject>> objects;
-double tail_dt = 0.0f;
-
+float tail_dt = 0.0f;
 
 double get_last_elapsed_time() {
   static double lasttime = glfwGetTime();
@@ -52,7 +52,11 @@ public:
   std::shared_ptr<Program> prog, progL, heightshader;
   std::shared_ptr<Program> particleProg;
 
+  shared_ptr<Texture> partTex;
+
   particleSys *thePartSystem;
+  float t = 0.0f;
+  float h = 0.01f;
 
   // Contains vertex information for OpenGL
   GLuint VertexArrayID;
@@ -61,10 +65,9 @@ public:
   GLuint MeshPosID, MeshTexID, IndexBufferIDBox;
 
   // texture data
-  GLuint Texture;
+  GLuint Texture0;
   GLuint Texture2, HeightTex;
   GLuint CatTex1, CatTex2;
-  GLuint particleTexTID;
 
 
   vec3 g_eye = vec3(0, 1, 0);
@@ -344,9 +347,9 @@ public:
     string str = resourceDirectory + "/woodfloor.jpg";
     strcpy(filepath, str.c_str());
     unsigned char *data = stbi_load(filepath, &width, &height, &channels, 4);
-    glGenTextures(1, &Texture);
+    glGenTextures(1, &Texture0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, Texture);
+    glBindTexture(GL_TEXTURE_2D, Texture0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
@@ -415,30 +418,6 @@ public:
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
-
-    // particle texture
-    str = resourceDirectory + "/alpha.bmp";
-    strcpy(filepath, str.c_str());
-    stbi_set_flip_vertically_on_load(true);
-    data = stbi_load(filepath, &width, &height, &channels, 0);
-    if (!data) {
-        cerr << filepath << " not found" << endl;
-    }
-    if (channels != 3) {
-        cerr << filepath << " must have 3 components (RGB)" << endl;
-    }
-    glGenTextures(1, &particleTexTID);
-    glBindTexture(GL_TEXTURE_2D, particleTexTID);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    stbi_image_free(data);
-
 
     //[TWOTEXTURES]
     // set the 2 textures to the correct samplers in the fragment shader:
@@ -555,13 +534,22 @@ public:
     particleProg->addAttribute("vertPos");
     particleProg->addAttribute("partColor");
 
-    thePartSystem = new particleSys(vec3(0, 1, -3));
+    thePartSystem = new particleSys(vec3(0, 0.5f, -3));
     thePartSystem->gpuSetup();
 
     /*
     cout << prog->pid << endl;
     cout << progL->pid << endl;
     cout << heightshader->pid << endl;*/
+  }
+
+  void initParticleTexture(const std::string& resourceDirectory) {
+    // particle texture
+    partTex = make_shared<Texture>();
+    partTex->setFilename(resourceDirectory + "/alpha.bmp");
+    partTex->init();
+    partTex->setUnit(0);
+    partTex->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
   }
 
   void initGame() { 
@@ -647,6 +635,11 @@ public:
 
       // set up all the matrices
       auto Model = make_shared<MatrixStack>();
+      auto Projection = make_shared<MatrixStack>();
+
+      Projection->pushMatrix();
+      Projection->perspective(45.0f, 1920, 1080, 0.01f, 100.0f);
+
 
       glm::mat4 M = glm::mat4(1);
       glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f));
@@ -665,7 +658,7 @@ public:
       glUniform3fv(progL->getUniform("campos"), 1, &camPos[0]);
       //glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
       glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, Texture);
+      glBindTexture(GL_TEXTURE_2D, Texture0);
 
       glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
       //glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
@@ -850,21 +843,25 @@ public:
       prog->unbind();
       
       /* draw our particles */
-      particleProg->bind();
 
       thePartSystem->setCamera(V);
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, particleTexTID);
-      glUniform1i(particleProg->getUniform("alphaTexture"), GL_TEXTURE0);
 
-      M = glm::mat4(1);
+      particleProg->bind();
+      Model->pushMatrix();
+      Model->loadIdentity();
+      Model->scale(100000.0f);
+      partTex->bind(particleProg->getUniform("alphaTexture"));
       CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("P"), 1, GL_FALSE, value_ptr(P)));
       CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("V"), 1, GL_FALSE, value_ptr(V)));
-      CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("M"), 1, GL_FALSE, &M[0][0]));
+      CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix())));
 
       thePartSystem->drawMe(particleProg);
       thePartSystem->update();
+      Model->popMatrix();
+
       particleProg->unbind();
+
+      Projection->popMatrix();
 
       assert(glGetError() == GL_NO_ERROR);
   }
@@ -972,6 +969,7 @@ int main(int argc, char **argv) {
   // Initialize scene.
   application->init(resourceDir);
   application->initGeom();
+  application->initParticleTexture(resourceDir);
   application->initGame();
   application->initRoomGeo();
 
