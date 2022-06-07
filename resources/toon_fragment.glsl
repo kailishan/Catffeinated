@@ -20,7 +20,7 @@ uniform vec3 lightDir;
 
 void main()
 {
-	vec3 lights[8] = {lightPos1, lightPos2, lightPos3, lightPos4, lightPos5, lightPos6, lightPos7, lightPos8};
+	vec3 lights[8] = vec3[](lightPos1, lightPos2, lightPos3, lightPos4, lightPos5, lightPos6, lightPos7, lightPos8);
 
 	// Load Texture
 	// If there is no texture, read objColor
