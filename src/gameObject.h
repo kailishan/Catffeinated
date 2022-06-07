@@ -33,6 +33,7 @@ public:
   
 protected:
   std::shared_ptr<Shape> mesh = NULL;
+  
   int objectType = NULL;
   bool isStatic = false;
   glm::vec3 pos, vel;

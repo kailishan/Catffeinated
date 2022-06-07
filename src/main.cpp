@@ -9,9 +9,9 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "MatrixStack.h"
 #include "Program.h"
 #include "camera.h"
-#include "particleSys.h"
 #include "gameManager.h"
 #include "gameObject.h"
+#include "particleSys.h"
 #include "roomObject.h"
 #include "math.h"
 #include "stb_image.h"
@@ -55,8 +55,6 @@ public:
   shared_ptr<Texture> partTex;
 
   particleSys *thePartSystem;
-  float t = 0.0f;
-  float h = 0.01f;
 
   // Contains vertex information for OpenGL
   GLuint VertexArrayID;
@@ -635,11 +633,6 @@ public:
 
       // set up all the matrices
       auto Model = make_shared<MatrixStack>();
-      auto Projection = make_shared<MatrixStack>();
-
-      Projection->pushMatrix();
-      Projection->perspective(45.0f, 1920, 1080, 0.01f, 100.0f);
-
 
       glm::mat4 M = glm::mat4(1);
       glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f));
@@ -653,7 +646,6 @@ public:
       glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
       glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
       glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-
 
       glUniform3fv(progL->getUniform("campos"), 1, &camPos[0]);
       //glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
@@ -713,7 +705,6 @@ public:
       //    mycam.getUp());
       M = T * S * R;
 
-
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, CatTex1);
       // base transforms for player model
@@ -740,7 +731,6 @@ public:
         Model->popMatrix();
       Model->popMatrix();
       glBindTexture(GL_TEXTURE_2D, 0);
-
 
       // draw the game objects
       for (int i = 0; i < myManager->getObjects().size(); i++) {
@@ -849,7 +839,6 @@ public:
       particleProg->bind();
       Model->pushMatrix();
       Model->loadIdentity();
-      Model->scale(100000.0f);
       partTex->bind(particleProg->getUniform("alphaTexture"));
       CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("P"), 1, GL_FALSE, value_ptr(P)));
       CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("V"), 1, GL_FALSE, value_ptr(V)));
@@ -860,8 +849,6 @@ public:
       Model->popMatrix();
 
       particleProg->unbind();
-
-      Projection->popMatrix();
 
       assert(glGetError() == GL_NO_ERROR);
   }

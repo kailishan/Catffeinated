@@ -93,8 +93,8 @@ private:
                       // results in a direction vector pointing to the right so
                       // we initially rotate a bit to the left.
   float pitch = 0.0f;
-  float lastX = 1920.0f / 2.0;
-  float lastY = 1080.0f / 2.0;
+  float lastX = 0;
+  float lastY = 0;
 
   int w = 0;
   int a = 0;
