@@ -48,9 +48,9 @@ void Particle::rebirth(float t, vec3 start)
 	lifespan = randFloat(0.0f, 2.0f); 
 	tEnd = t + lifespan;
 	scale = randFloat(0.2, 1.0f);
-  	color.r = randFloat(0.9f, 1.0f);
+  	color.r = randFloat(0.2, 0.3f);
 	color.g = randFloat(0.9f, 1.0f);
-  	color.b = randFloat(0.9f, 1.0f);
+  	color.b = randFloat(0.2f, 0.5f);
 	color.a = randFloat(0.2f, 1.0f);
 }
 
@@ -65,7 +65,7 @@ void Particle::update(float t, float h, const vec3 &g, const vec3 start)
 	//very simple update
 	x += h * v;
 	//To do - how do you want to update the forces?
-	color.g -= 0.015f;
+	color.r -= 0.015f;
 	color.b -= 0.025f;
 	color.a = (tEnd-t) / lifespan;
 }
