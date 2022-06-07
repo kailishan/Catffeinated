@@ -63,13 +63,13 @@ void Texture::setWrapModes(GLint wrapS, GLint wrapT)
 {
 	// Must be called after init()
 	glBindTexture(GL_TEXTURE_2D, tid);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
 }
 
 void Texture::bind(GLint handle)
 {
-	glActiveTexture(GL_TEXTURE0 + unit);
 	glBindTexture(GL_TEXTURE_2D, tid);
 	glUniform1i(handle, unit);
 }

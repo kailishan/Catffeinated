@@ -12,11 +12,14 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "camera.h"
 #include "gameManager.h"
 #include "gameObject.h"
+#include "particleSys.h"
 #include "roomObject.h"
 #include "math.h"
 #include "stb_image.h"
+#include "kibble.h"
 
 #include "Shape.h"
+#include "Texture.h"
 #include "WindowManager.h"
 #include "GLTextureWriter.h"
 // value_ptr for glm
@@ -52,7 +55,11 @@ public:
   shared_ptr<Shape> cat, sphere, room, table, heart;
 
   // Our shader program
-  std::shared_ptr<Program> prog, progL, heightshader, TVstatic, texProg;
+  std::shared_ptr<Program> prog, progL, heightshader, TVstatic, texProg, particleProg;
+
+  shared_ptr<Texture> partTex;
+
+  particleSys *thePartSystem;
 
   // Contains vertex information for OpenGL
   GLuint VertexArrayID;
@@ -82,7 +89,7 @@ public:
   GLuint VertexArrayIDScreen, VertexBufferIDScreen, VertexBufferTexScreen;
 
   // texture data
-  GLuint Texture;
+  GLuint Texture0;
   GLuint Texture2, HeightTex;
   GLuint CatTex1, CatTex2, CatTex3;
 
@@ -433,6 +440,10 @@ public:
     glUseProgram(progL->pid);
     glUniform1i(Tex1Location, 0);*/
 
+    GLuint particleTexLocation = glGetUniformLocation(particleProg->pid, "alphaTexture");
+    glUseProgram(particleProg->pid);
+    glUniform1i(particleTexLocation, 0);
+        
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -564,6 +575,27 @@ public:
     heightshader->addAttribute("vertPos");
     heightshader->addAttribute("vertTex");
 
+    particleProg = make_shared<Program>();
+    particleProg->setVerbose(true);
+    particleProg->setShaderNames(
+      resourceDirectory + "/particle_vert.glsl",
+      resourceDirectory + "/particle_frag.glsl"
+    );
+    if (!particleProg->init()) {
+      std::cerr << "One or more shaders failed to compile... exiting!"
+                << std::endl;
+      exit(1); 
+    }
+    particleProg->addUniform("P");
+    particleProg->addUniform("V");
+    particleProg->addUniform("M");
+    particleProg->addUniform("alphaTexture");
+    particleProg->addAttribute("vertPos");
+    particleProg->addAttribute("partColor");
+
+    thePartSystem = new particleSys(vec3(0, 0.5f, -3));
+    thePartSystem->gpuSetup();
+    
     // TV Static post processing effect
     TVstatic = std::make_shared<Program>();
     TVstatic->setVerbose(true);
@@ -585,7 +617,13 @@ public:
     cout << progL->pid << endl;
     cout << heightshader->pid << endl;*/
   }
-
+  void initParticleTexture(const std::string& resourceDirectory) {
+    // particle texture
+    partTex = make_shared<Texture>();
+    partTex->setFilename(resourceDirectory + "/alpha.bmp");
+    partTex->init();
+    partTex->setUnit(0);
+  }
   /**** geometry set up for a quad *****/
 	void initQuad() {
 		//now set up a simple quad for rendering FBO
@@ -642,7 +680,6 @@ public:
 
     // more FBO set up
     GLenum DrawBuffers[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
-    glDrawBuffers(3, DrawBuffers);
   }
 
   void initGame() { 
@@ -988,6 +1025,43 @@ public:
 
       //glDisable(GL_DEPTH_TEST);
       
+      /* draw our particles */
+
+      thePartSystem->setCamera(V);
+      particleProg->bind();
+
+      for (int i = 0; i < myManager->getObjects().size(); i++) {
+        std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
+        if (currObj->getIsStatic()) {
+          std::shared_ptr<kibble> k = dynamic_pointer_cast<kibble>(currObj);
+          k->particleSystem->setCamera(V);
+          Model->pushMatrix();
+          Model->loadIdentity();
+          partTex->bind(particleProg->getUniform("alphaTexture"));
+          CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("P"), 1, GL_FALSE, value_ptr(P)));
+          CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("V"), 1, GL_FALSE, value_ptr(V)));
+          CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix())));
+
+          k->particleSystem->drawMe(particleProg);
+          k->particleSystem->update();
+          Model->popMatrix();
+        }
+      }      
+      particleProg->unbind();
+
+      // Model->pushMatrix();
+      // Model->loadIdentity();
+      // partTex->bind(particleProg->getUniform("alphaTexture"));
+      // CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("P"), 1, GL_FALSE, value_ptr(P)));
+      // CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("V"), 1, GL_FALSE, value_ptr(V)));
+      // CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix())));
+
+      // thePartSystem->drawMe(particleProg);
+      // thePartSystem->update();
+      // Model->popMatrix();
+
+      // particleProg->unbind();
+
       assert(glGetError() == GL_NO_ERROR);
   }
 
@@ -1158,6 +1232,8 @@ int main(int argc, char **argv) {
   // Initialize scene.
   application->init(resourceDir);
   application->initGeom();
+  application->initParticleTexture(resourceDir);
+  application->initGame();
   application->initRoomGeo();
   application->initGame();
 

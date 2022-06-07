@@ -11,7 +11,7 @@ public:
   gameManager(std::shared_ptr<Shape> shape, std::shared_ptr<Shape> shape2, camera *player, std::vector<std::shared_ptr<gameObject>> data) {
     //std::cout << data.size() << std::endl;
     collisionData = data;
-    kibble = shape2;
+    kibbleShape = shape2;
     curShape = shape;
     srand(glfwGetTime());
     for (int i = 0; i < 3; i++) {
@@ -21,7 +21,7 @@ public:
     spawnSpline(curShape);
 
     while (count <= 14) {
-      spawnStaticGameObject(kibble);
+      spawnStaticGameObject(kibbleShape);
     }
   }
 
@@ -36,7 +36,7 @@ public:
   std::vector<std::shared_ptr<gameObject>> getObjects() { return objects; }
 
   //temp
-  std::shared_ptr<Shape> kibble;
+  std::shared_ptr<Shape> kibbleShape;
   //
 
  private:
