@@ -64,7 +64,7 @@ public:
   GLuint Texture;
   GLuint Texture2, HeightTex;
   GLuint CatTex1, CatTex2;
-  GLuint particleTex;
+  GLuint particleTexTID;
 
 
   vec3 g_eye = vec3(0, 1, 0);
@@ -417,13 +417,19 @@ public:
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // particle texture
-    str = resourceDirectory + "/particle.png";
+    str = resourceDirectory + "/alpha.bmp";
     strcpy(filepath, str.c_str());
-    data = stbi_load(filepath, &width, &height, &channels, 4);
-    glGenTextures(1, &particleTex);
-    glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, particleTex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGBA,
+    stbi_set_flip_vertically_on_load(true);
+    data = stbi_load(filepath, &width, &height, &channels, 0);
+    if (!data) {
+        cerr << filepath << " not found" << endl;
+    }
+    if (channels != 3) {
+        cerr << filepath << " must have 3 components (RGB)" << endl;
+    }
+    glGenTextures(1, &particleTexTID);
+    glBindTexture(GL_TEXTURE_2D, particleTexTID);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
                  GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -431,6 +437,7 @@ public:
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
+    stbi_image_free(data);
 
 
     //[TWOTEXTURES]
@@ -458,7 +465,7 @@ public:
     GLuint particleTexLocation = glGetUniformLocation(particleProg->pid, "alphaTexture");
     glUseProgram(particleProg->pid);
     glUniform1i(particleTexLocation, 0);
-
+        
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   }
@@ -844,12 +851,16 @@ public:
       
       /* draw our particles */
       particleProg->bind();
-      glBindTexture(GL_TEXTURE_2D, particleTex);
-      
+
+      thePartSystem->setCamera(V);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, particleTexTID);
+      glUniform1i(particleProg->getUniform("alphaTexture"), GL_TEXTURE0);
+
       M = glm::mat4(1);
-      glUniformMatrix4fv(particleProg->getUniform("P"), 1, GL_FALSE, value_ptr(P));
-      glUniformMatrix4fv(particleProg->getUniform("V"), 1, GL_FALSE, value_ptr(V));
-      glUniformMatrix4fv(particleProg->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("P"), 1, GL_FALSE, value_ptr(P)));
+      CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("V"), 1, GL_FALSE, value_ptr(V)));
+      CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("M"), 1, GL_FALSE, &M[0][0]));
 
       thePartSystem->drawMe(particleProg);
       thePartSystem->update();
@@ -910,8 +921,6 @@ public:
     V = glm::lookAt(mycam.getPos() - mycam.getFront() * vec3(1.5), mycam.getPos() + mycam.getFront(),
         mycam.getUp());
     mycam.processKeyboard(frametime, objects);
-
-    thePartSystem->setCamera(V);
 
     drawScene(P, V); /* 3RD PERSON CAMERA */
 

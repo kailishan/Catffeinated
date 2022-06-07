@@ -10,6 +10,7 @@ uniform mat4 V;
 //replace with an attribute
 layout(location = 1) in vec3 partColor;
 
+
 out vec3 partCol;
 
 
