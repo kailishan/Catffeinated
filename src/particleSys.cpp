@@ -8,12 +8,34 @@
 
 using namespace std;
 
+GLenum glCheckError_(const char *file, int line)
+{
+    GLenum errorCode;
+    while ((errorCode = glGetError()) != GL_NO_ERROR)
+    {
+        std::string error;
+        switch (errorCode)
+        {
+            case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
+            case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
+            case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
+            case GL_STACK_OVERFLOW:                error = "STACK_OVERFLOW"; break;
+            case GL_STACK_UNDERFLOW:               error = "STACK_UNDERFLOW"; break;
+            case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+        }
+        std::cout << error << " | " << file << " (" << line << ")" << std::endl;
+    }
+    return errorCode;
+}
+#define glCheckError() glCheckError_(__FILE__, __LINE__) 
+
 particleSys::particleSys(vec3 source) {
 
 	numP = 50;
 	t = 0.0f;
 	h = 0.01f;
-	g = vec3(0.0f, -0.098, 0.0f);
+	g = vec3(0.0f, -0.0098, 0.0f);
 	start = source;
 	theCamera = glm::mat4(1.0);
 }
@@ -38,18 +60,25 @@ void particleSys::gpuSetup() {
 
 	//generate the VAO
 	glGenVertexArrays(1, &vertArrObj);
+	glCheckError(); 
 	glBindVertexArray(vertArrObj);
-
+	glCheckError(); 
 	//generate vertex buffer to hand off to OGL - using instancing
 	glGenBuffers(1, &vertBuffObj);
+	glCheckError(); 
 	//set the current state to focus on our vertex buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertBuffObj);
+	glCheckError(); 
 	//actually memcopy the data - only do this once
 	glBufferData(GL_ARRAY_BUFFER, sizeof(points), &points[0], GL_STREAM_DRAW);
+	glCheckError(); 
 
 	glGenBuffers(1, &colorbuffer);
+	glCheckError(); 
 	glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+	glCheckError(); 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(pointColors), &pointColors[0], GL_STREAM_DRAW);
+	glCheckError(); 
 
 	assert(glGetError() == GL_NO_ERROR);
 }

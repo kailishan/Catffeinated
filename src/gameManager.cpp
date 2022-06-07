@@ -1,6 +1,7 @@
 #include "cat.h"
 #include "catAggressive.h"
 #include "catSpline.h"
+#include "kibble.h"
 #include "gameManager.h"
 
 void gameManager::spawnGameObject(std::shared_ptr<Shape> shape)
@@ -31,14 +32,14 @@ void gameManager::spawnSpline(std::shared_ptr<Shape> shape) {
 void gameManager::spawnStaticGameObject(std::shared_ptr<Shape> shape)
 {
   bool spawn = false;
-  std::shared_ptr<gameObject> object = std::make_shared<cat>(shape);
+  std::shared_ptr<gameObject> object = std::make_shared<kibble>(shape);
 
   
   while (!spawn)
   {
       spawn = true;
       std::cout << "spawning... " << std::endl;
-      object = std::make_shared<cat>(shape);
+      object = std::make_shared<kibble>(shape);
       object->setRadius(0.1f);
       for (int i = 0; collisionData.size() > i; i++)
       {
@@ -115,6 +116,6 @@ void gameManager::process(camera *mycam, double ftime)
     count++;
     //std::cout << "CATS REMAINING: " << count << std::endl;
     framecount = 0;
-    spawnStaticGameObject(kibble);
+    spawnStaticGameObject(kibbleShape);
   }
 }

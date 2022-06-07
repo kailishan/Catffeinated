@@ -15,6 +15,7 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "roomObject.h"
 #include "math.h"
 #include "stb_image.h"
+#include "kibble.h"
 
 #include "Shape.h"
 #include "Texture.h"
@@ -797,7 +798,7 @@ public:
           }
           else {
               glBindTexture(GL_TEXTURE_2D, 0);
-              glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
+              glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
               // transform spheres
               S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
               currPos.y = 0.1f;
@@ -835,20 +836,39 @@ public:
       /* draw our particles */
 
       thePartSystem->setCamera(V);
-
       particleProg->bind();
-      Model->pushMatrix();
-      Model->loadIdentity();
-      partTex->bind(particleProg->getUniform("alphaTexture"));
-      CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("P"), 1, GL_FALSE, value_ptr(P)));
-      CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("V"), 1, GL_FALSE, value_ptr(V)));
-      CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix())));
 
-      thePartSystem->drawMe(particleProg);
-      thePartSystem->update();
-      Model->popMatrix();
+      for (int i = 0; i < myManager->getObjects().size(); i++) {
+        std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
+        if (currObj->getIsStatic()) {
+          std::shared_ptr<kibble> k = dynamic_pointer_cast<kibble>(currObj);
+          k->particleSystem->setCamera(V);
+          Model->pushMatrix();
+          Model->loadIdentity();
+          partTex->bind(particleProg->getUniform("alphaTexture"));
+          CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("P"), 1, GL_FALSE, value_ptr(P)));
+          CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("V"), 1, GL_FALSE, value_ptr(V)));
+          CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix())));
 
+          k->particleSystem->drawMe(particleProg);
+          k->particleSystem->update();
+          Model->popMatrix();
+        }
+      }      
       particleProg->unbind();
+
+      // Model->pushMatrix();
+      // Model->loadIdentity();
+      // partTex->bind(particleProg->getUniform("alphaTexture"));
+      // CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("P"), 1, GL_FALSE, value_ptr(P)));
+      // CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("V"), 1, GL_FALSE, value_ptr(V)));
+      // CHECKED_GL_CALL(glUniformMatrix4fv(particleProg->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix())));
+
+      // thePartSystem->drawMe(particleProg);
+      // thePartSystem->update();
+      // Model->popMatrix();
+
+      // particleProg->unbind();
 
       assert(glGetError() == GL_NO_ERROR);
   }
