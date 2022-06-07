@@ -17,7 +17,7 @@ cat::cat(std::shared_ptr<Shape> shape, std::vector<std::shared_ptr<gameObject>> 
   glm::vec3 velDirection = glm::normalize(vel);
   float angle = acos(glm::dot(posDirection, velDirection));
 
-  rad = .6;
+  rad = .5;
   std::cout << "x: " << pos.x << " z: " << pos.z << std::endl;
 }
 

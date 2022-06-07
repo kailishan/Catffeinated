@@ -6,6 +6,7 @@ uniform sampler2D tex;
 uniform float     u_distortion;
 uniform float     u_stripe;
 uniform float     u_rgbshift;
+uniform float     time;
 
 void main()
 {
@@ -20,7 +21,7 @@ void main()
         vec2 texCoord = vec2(ndc_pos.s, -ndc_pos.t) * 0.5 + 0.5;
 
         // stripes
-        float stripTile = texCoord.t * mix(10.0, 100.0, u_stripe);
+        float stripTile = texCoord.t * mix(10.0, 100.0, u_stripe) + time;
         float stripFac = 1.0 + 0.25 * u_stripe * (step(0.5, stripTile-float(int(stripTile))) - 0.5);
         
         // rgb shift

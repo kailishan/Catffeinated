@@ -576,6 +576,7 @@ public:
     TVstatic->addUniform("u_distortion");
     TVstatic->addUniform("u_stripe");
     TVstatic->addUniform("u_rgbshift");
+    TVstatic->addUniform("time");
     TVstatic->addAttribute("vertPos");
     TVstatic->addAttribute("vertTex");
 
@@ -1106,9 +1107,10 @@ public:
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       TVstatic->bind();
       static float value = 0.0f;
-      value += 0.01;
-      glUniform1f(TVstatic->getUniform("u_distortion"), 0.0f / 100.0f);
-      glUniform1f(TVstatic->getUniform("u_stripe"), 0.0f  / 100.0f);
+      value += 0.02;
+      glUniform1f(TVstatic->getUniform("time"), value);
+      glUniform1f(TVstatic->getUniform("u_distortion"), 20.0f / 100.0f);
+      glUniform1f(TVstatic->getUniform("u_stripe"), 70.0f  / 100.0f);
       glUniform1f(TVstatic->getUniform("u_rgbshift"), 2.5 / 1000.0f);
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, FBOtex);

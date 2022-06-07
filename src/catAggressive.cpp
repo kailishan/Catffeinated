@@ -19,7 +19,7 @@ catAggressive::catAggressive(std::shared_ptr<Shape> shape, camera *p, std::vecto
   glm::vec3 velDirection = glm::normalize(vel);
   float angle = acos(glm::dot(posDirection, velDirection));
 
-  rad = .6;
+  rad = .5;
   std::cout << "x: " << pos.x << " z: " << pos.z << std::endl;
 }
 
