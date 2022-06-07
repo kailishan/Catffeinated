@@ -36,7 +36,7 @@ void main()
 	if (color.rgb == vec3(0, 0, 0))
 		color.rgb = objColor.rgb;
 
-	float lightRad = cos(radians(30.0f));
+	float lightRad = cos(radians(35.0f));
 	float theta;
 
 	

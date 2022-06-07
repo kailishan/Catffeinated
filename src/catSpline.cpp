@@ -11,7 +11,7 @@ catSpline::catSpline(std::shared_ptr<Shape> shape, std::vector<std::shared_ptr<g
   glm::vec3 velDirection = glm::normalize(vel);
   float angle = acos(glm::dot(posDirection, velDirection));
 
-  rad = .15;
+  rad = .6;
   std::cout << "x: " << pos.x << " z: " << pos.z << std::endl;
 
   splinepath[0] = Spline(pos, glm::vec3(-3, 0.35, -3),

@@ -94,15 +94,15 @@ public:
   void initRoomGeo()
   {
     shared_ptr<gameObject> ro1 =
-        make_shared<roomObject>(vec3(5.75, 1, .75), .8);
+        make_shared<roomObject>(vec3(5.75, 1, .75), .9);
     shared_ptr<gameObject> ro2 =
-        make_shared<roomObject>(vec3(5.75, 1, 3.25), .8);
+        make_shared<roomObject>(vec3(5.75, 1, 3.25), .9);
     shared_ptr<gameObject> ro3 =
-        make_shared<roomObject>(vec3(5.75, 1, 5.75), .8);
+        make_shared<roomObject>(vec3(5.75, 1, 5.75), .9);
     shared_ptr<gameObject> ro4 =
-        make_shared<roomObject>(vec3(5.75, 1, 8.25), .8);
+        make_shared<roomObject>(vec3(5.75, 1, 8.25), .9);
     shared_ptr<gameObject> ro5 =
-        make_shared<roomObject>(vec3(5.75, 1, 10.75), .8);
+        make_shared<roomObject>(vec3(5.75, 1, 10.75), .9);
     objects.push_back(ro1);
     objects.push_back(ro2);
     objects.push_back(ro3);
@@ -110,17 +110,17 @@ public:
     objects.push_back(ro5);
 
     shared_ptr<gameObject> ro6 =
-        make_shared<roomObject>(vec3(10.75, 1, -1.75), .8);
+        make_shared<roomObject>(vec3(11.5, 1, -1.75), .9);
     shared_ptr<gameObject> ro7 =
-        make_shared<roomObject>(vec3(10.75, 1, .75), .8);
+        make_shared<roomObject>(vec3(11.5, 1, .75), .9);
     shared_ptr<gameObject> ro8 =
-        make_shared<roomObject>(vec3(10.75, 1, 3.25), .8);
+        make_shared<roomObject>(vec3(11.5, 1, 3.25), .9);
     shared_ptr<gameObject> ro9 =
-        make_shared<roomObject>(vec3(10.75, 1, 5.25), .8);
+        make_shared<roomObject>(vec3(11.5, 1, 5.25), .9);
     shared_ptr<gameObject> ro10 =
-        make_shared<roomObject>(vec3(10.75, 1, 8.25), .8);
+        make_shared<roomObject>(vec3(11.5, 1, 8.25), .9);
     shared_ptr<gameObject> ro11 =
-        make_shared<roomObject>(vec3(10.75, 1, 10.75), .8);
+        make_shared<roomObject>(vec3(11.5, 1, 10.75), .9);
     objects.push_back(ro6);
     objects.push_back(ro7);
     objects.push_back(ro8);
@@ -131,15 +131,15 @@ public:
     int x = -3.5;
     int z = 5.75;
     shared_ptr<gameObject> ro12 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .9);
     shared_ptr<gameObject> ro13 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .9);
     shared_ptr<gameObject> ro14 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .9);
     shared_ptr<gameObject> ro15 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .9);
     shared_ptr<gameObject> ro16 =
-        make_shared<roomObject>(vec3(x, 1, z = z + 2), .8);
+        make_shared<roomObject>(vec3(x, 1, z = z + 2), .9);
     objects.push_back(ro12);
     objects.push_back(ro13);
     objects.push_back(ro14);
@@ -149,9 +149,9 @@ public:
     x = -8.9;
     z = 12.5;
     shared_ptr<gameObject> ro17 =
-        make_shared<roomObject>(vec3(x, 1, z), .8);
+        make_shared<roomObject>(vec3(x, 1, z), .9);
     shared_ptr<gameObject> ro18 = 
-        make_shared<roomObject>(vec3(x + .75, 1, z), .8);
+        make_shared<roomObject>(vec3(x + .75, 1, z), .9);
     objects.push_back(ro17);
     objects.push_back(ro18);
 
