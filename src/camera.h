@@ -6,6 +6,7 @@
 
 #include "WindowManager.h"
 #include "gameObject.h"
+#include "audioManager.h"
 
 class camera {
 public:
@@ -60,6 +61,8 @@ public:
   void setp(int newP) { p = newP; }
   void setz(int newZ) { z = newZ; }
 
+  void setAudio(audioManager myAudio) { audio = myAudio; }
+
   void decrementHealth() { playerHealth = playerHealth - 1; }
   void incrementFrames() { invinFrames++; }
   void resetFrames() { invinFrames = 0; }
@@ -70,12 +73,12 @@ public:
   int getHealth();
   void takeDamage();
 
-  int initEngine(int id);
+  /*int initEngine(int id);
   void uninitEngine();
   void playMeow();
   void playRoost();
   void playCollect();
-  void playPowerup();
+  void playPowerup();*/
 
   bool getDisplayDamage() { return displayDamage; }
 
@@ -116,6 +119,7 @@ private:
 
   // audio engine
   //ma_engine engine;
+  audioManager audio;
 
   bool isDamaged = false;
   bool displayDamage = false; // true = red, false = texture

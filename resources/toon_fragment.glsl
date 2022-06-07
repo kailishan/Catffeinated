@@ -104,21 +104,21 @@ void main()
 
 	color.rgb = color.rgb * intensity;
 
-	// DEFERRED SHADING
+	/* DEFERRED SHADING */
 
-	// store the fragment position vector in the first gbuffer texture
+	/* store the fragment position vector in the first gbuffer texture */
    //gPosition = fragPos;
 
-   // also store the per-fragment normals into the gbuffer
+   /* also store the per-fragment normals into the gbuffer */
    //gNormal = normalize(fragNor);
 
-   // and the diffuse per-fragment color
-	//vec3 difTex = texture(tex, vertex_tex).rgb;
-   //gAlbedoSpec.rgb = color.rgb;
+   /* and the diffuse per-fragment color */
+	//gAlbedoSpec.rgb = color.rgb;
 	//gAlbedoSpec = color;
+	//vec3 difTex = texture(tex, vertex_tex).rgb;
 
-   // store specular intensity in gAlbedoSpec's alpha component
-	// constant could be from a texture
+   /* store specular intensity in gAlbedoSpec's alpha component
+	 * constant could be from a texture */
    //gAlbedoSpec.a = 1.0;
 
 

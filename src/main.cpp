@@ -8,6 +8,7 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "GLSL.h"
 #include "MatrixStack.h"
 #include "Program.h"
+#include "audioManager.h"
 #include "camera.h"
 #include "gameManager.h"
 #include "gameObject.h"
@@ -26,6 +27,7 @@ using namespace std;
 using namespace glm;
 
 camera mycam;
+
 vector<shared_ptr<gameObject>> objects;
 vector<shared_ptr<vec3>> lights;
 //glm::vec3 lights[7];
@@ -999,8 +1001,6 @@ public:
     else
       glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 
-
-
     double frametime = get_last_elapsed_time();
     myManager->process(&mycam, frametime);
     mycam.setDt(mycam.getDt() + frametime);
@@ -1032,7 +1032,7 @@ public:
     
     mycam.processKeyboard(frametime, objects);
 
-   /* glDisableVertexAttribArray(0);
+   /*glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(2);*/
 
@@ -1079,8 +1079,6 @@ public:
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    //glBindTexture(GL_TEXTURE_2D, 0);
-
     // MINI MAP
     mat4 OrthoProj = GetOrthoMatrix();
     mat4 TopView = GetTopView();
@@ -1100,7 +1098,6 @@ public:
 
   void render_with_framebuffer()
   {
-
       // Get current frame buffer size.
       int width, height;
       glfwGetFramebufferSize(windowManager->getHandle(), &width, &height);
@@ -1118,7 +1115,6 @@ public:
       glBindVertexArray(VertexArrayIDScreen);
       glDrawArrays(GL_TRIANGLES, 0, 6);
       TVstatic->unbind();
-
   }
 };
 
@@ -1131,11 +1127,13 @@ int main(int argc, char **argv) {
   }
 
   // *** audio engine ***
-  mycam.initEngine(1);
-  mycam.initEngine(2);
-  mycam.initEngine(3);
-  mycam.initEngine(4);
-  mycam.playRoost();
+  audioManager myaudio;
+  myaudio.initEngine(1);
+  myaudio.initEngine(2);
+  myaudio.initEngine(3);
+  myaudio.initEngine(4);
+  mycam.setAudio(myaudio);
+  myaudio.playRoost();
 
   Application *application = new Application();
 
@@ -1174,7 +1172,7 @@ int main(int argc, char **argv) {
   }
 
   // *** audio engine ***
-  mycam.uninitEngine();
+  myaudio.uninitEngine();
 
   // Quit program.
   windowManager->shutdown();
