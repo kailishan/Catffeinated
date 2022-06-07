@@ -1,25 +1,32 @@
 #version 330 core
-out vec4 color;
+layout (location = 0) out vec3 gPosition;
+layout (location = 1) out vec3 gNormal;
+layout (location = 2) out vec4 gAlbedoSpec;
+
+in vec3 fragNor;
+in vec3 fragPos;
 
 in vec3 vertex_normal;
 in vec3 vertex_pos;
 in vec2 vertex_tex;
 
-uniform vec3 campos;
-uniform vec3 lightPosList[7];
+out vec4 color;
+
 uniform sampler2D tex;
+uniform vec3 campos;
 uniform vec4 objColor;
+uniform vec3 lightPosList[7];
 uniform vec3 lightPos;
+in vec2 deferS;
 
 void main()
 {
 	// Load Texture
-	// If there is no texture, read objColor
-	color.a=1;
+	color.a = 1;
 	color.rgb = texture(tex, vec2(vertex_tex.x, -vertex_tex.y)).rgb;
+	// If there is no texture, read objColor
 	if (color.rgb == vec3(0, 0, 0))
 		color.rgb = objColor.rgb;
-
 	
 	vec3 nn;
 	vec3 light_pos;
@@ -31,7 +38,7 @@ void main()
 	float diffuse;
 	float intensity;
 
-	// Toon Shading
+	// TOON SHADING
 	for (int i = 0; i < 7; i++)
 	{
 		nn = normalize(vertex_normal);
@@ -78,4 +85,24 @@ void main()
 	}
 
 	color.rgb = color.rgb * intensity;
+
+	// DEFERRED SHADING
+
+	// store the fragment position vector in the first gbuffer texture
+   //gPosition = fragPos;
+
+   // also store the per-fragment normals into the gbuffer
+   //gNormal = normalize(fragNor);
+
+   // and the diffuse per-fragment color
+	//vec3 difTex = texture(tex, vertex_tex).rgb;
+   //gAlbedoSpec.rgb = color.rgb;
+	//gAlbedoSpec = color;
+
+   // store specular intensity in gAlbedoSpec's alpha component
+	// constant could be from a texture
+   //gAlbedoSpec.a = 1.0;
+
+
+
 }
