@@ -1,57 +1,5 @@
 #include "camera.h"
 
-/* MINI AUDIO */
-#define MINIAUDIO_IMPLEMENTATION
-#include "miniaudio.h"
-#include <stdio.h>
-
-ma_engine meowEngine;
-ma_engine roostEngine;
-ma_engine collectEngine;
-
-int camera::initEngine(int id)
-{
-  ma_result result;
-  ma_sound sound;
-
-  if (id == 1)
-    result = ma_engine_init(NULL, &meowEngine);
-  if (id == 2)
-    result = ma_engine_init(NULL, &roostEngine);
-  if (id == 3)
-    result = ma_engine_init(NULL, &collectEngine);
-  
-  if (result != MA_SUCCESS) {
-    return result;  // Failed to initialize the engine.
-  }
-
-  return 0;
-}
-
-void camera::uninitEngine()
-{
-  ma_engine_uninit(&meowEngine);
-  ma_engine_uninit(&roostEngine);
-  ma_engine_uninit(&collectEngine);
-}
-
-void camera::playMeow()
-{
-  ma_engine_play_sound(&meowEngine, "../resources/meow.wav", NULL);
-}
-
-void camera::playRoost()
-{
-  ma_engine_play_sound(&meowEngine, "../resources/roost.wav", NULL);
-}
-
-void camera::playCollect()
-{
-  ma_engine_play_sound(&collectEngine, "../resources/collect.wav", NULL);
-}
-
-/*****************************************************************************/
-
 
 float distance(float x1, float y1, float z1, float x2, float y2, float z2) {
   float d = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2) + pow(z2 - z1, 2) * 1.0);
@@ -67,7 +15,7 @@ bool camera::isColliding(std::shared_ptr<gameObject> other) {
     return false;
   } else if (d <= rad + other->getRad() && !other->getDestroying() && other->getObjectType() == 1) {
     score++;
-    playCollect();
+    audio.playCollect();
     std::cout << "Kibble Collected: " << score << std::endl;
     if ((score > 0) && (score % 10 == 0)) {
       //std::cout << "timer = " << speedTimer << std::endl;
@@ -76,8 +24,10 @@ bool camera::isColliding(std::shared_ptr<gameObject> other) {
       speedBoost = 0.5;     /* BURST SPEED BOOST */
       if (baseSpeed < 1.5)  /* STACKED SPEED BOOST */
         baseSpeed += 0.1;
-      if (playerHealth < 5) /* LIFE REGENERATION */
+      if (playerHealth < 5) { /* LIFE REGENERATION */
         playerHealth++;
+        audio.playPowerup();
+      }
       //std::cout << "base speed+ = " << baseSpeed << std::endl;
     }
     // cout << "(CAM) " << "x: " << pos.x << " z: " << pos.z << endl;
@@ -114,10 +64,23 @@ void camera::processKeyboard(double ftime, std::vector<std::shared_ptr<gameObjec
   }
 
   /* BURST SPEED */
-  if (speedBoost > 0.0)
+  if (speedBoost > 0.0) {
     speedBoost -= 0.005;
-  else
+    /* STRECH & SQUASH */
+    if (sScale >= 1.0f || sScale <= 0.3f)
+      sDir *= -1;
+    if (sDir == 1) {
+      sScale += 0.05f;
+    }
+    else {
+      sScale -= 0.05;
+    }
+  }
+  else {
     speedBoost = 0.0;
+    sScale = 0.5f;
+    sDir = 1;
+  }
 
   if (w)
     nextPos += cameraSpeed * front * (baseSpeed + speedBoost);
@@ -148,6 +111,21 @@ void camera::processKeyboard(double ftime, std::vector<std::shared_ptr<gameObjec
           pos = prevPos;
   }
 
+  /* RED EFFECT ON DAMAGE */
+  if (isDamaged) {
+    if (damageTimer == 0)
+      displayDamage = true;
+    if (damageTimer == 15)
+      displayDamage = false;
+    if (damageTimer == 30)
+      displayDamage = true;
+    if (damageTimer == 45) {
+      displayDamage = false;
+      isDamaged = false; 
+      damageTimer = -1;
+    }
+    damageTimer++;
+  }
 
   if (nextPos.x > 12 || nextPos.x < -12 || nextPos.z > 12 ||
       nextPos.z < -12)
@@ -169,19 +147,10 @@ void camera::takeDamage()
   if (dt > 3.0f && !zMode) {
     dt = 0.0f;
     decrementHealth();
-    playMeow();
-    //playAudio();
+    audio.playMeow();
+    isDamaged = true;
     std::cout << "Health: " << playerHealth << std::endl;
   }
-  /*
-    if (invinFrames > 150)
-    {
-        resetFrames();
-        decrementHealth();
-        std::cout << "Health: " << playerHealth << std::endl;
-        //std::cout << "OUCH" << std::endl;
-    }
-    */
     if (playerHealth == 0)
         exit(0);
 }

@@ -1,45 +1,78 @@
 #version 330 core
-out vec4 color;
+layout (location = 0) out vec3 gPosition;
+layout (location = 1) out vec3 gNormal;
+layout (location = 2) out vec4 gAlbedoSpec;
+
+in vec3 fragNor;
+in vec3 fragPos;
+
 in vec3 vertex_normal;
 in vec3 vertex_pos;
 in vec2 vertex_tex;
-in vec3 vertex_color;
 
-uniform vec3 campos;
+out vec4 color;
+
 uniform sampler2D tex;
-uniform vec3 objColor;
-uniform vec3 lightPos;
+uniform vec3 campos;
+uniform vec4 objColor;
+uniform vec3 lightPos1;
+uniform vec3 lightPos2;
+uniform vec3 lightPos3;
+uniform vec3 lightPos4;
+uniform vec3 lightPos5;
+uniform vec3 lightPos6;
+uniform vec3 lightPos7;
+uniform vec3 lightPos8;
+uniform vec3 lightDir;
 
 void main()
 {
-	/*
-	vec3 n = normalize(vertex_normal);
-	vec3 lp=vec3(10,20,-100);
-	vec3 ld = normalize(vertex_pos - lp);
-	float diffuse = dot(n,ld);
+	vec3 lights[8] = vec3[](lightPos1, lightPos2, lightPos3, lightPos4, lightPos5, lightPos6, lightPos7, lightPos8);
 
-	color.rgb = texture(tex, vertex_tex).rgb;
-
-	color.rgb *= diffuse*0.7;
-
-	vec3 cd = normalize(vertex_pos - campos);
-	vec3 h = normalize(cd+ld);
-	float spec = dot(n,h);
-	spec = clamp(spec,0,1);
-	spec = pow(spec,20);
-	color.rgb += vec3(1,1,1)*spec*3;
-	*/
-
-
-	color.a=1;
+	// Load Texture
+	color.a = 1;
 	color.rgb = texture(tex, vec2(vertex_tex.x, -vertex_tex.y)).rgb;
+	// If there is no texture, read objColor
 	if (color.rgb == vec3(0, 0, 0))
 		color.rgb = objColor.rgb;
 
+	float lightRad = cos(radians(35.0f));
+	float theta;
+
 	
+	vec3 nn;
+	vec3 light_pos;
+	vec3 light_dir;
+	vec3 eye_dir;
+	vec3 reflect_dir;
 	
+	float spec;
+	float diffuse;
+	float intensity;
+
+	// Toon Shading
+	for (int i = 0; i < 8; i++)
+	{
+		nn = normalize(vertex_normal);
+		light_pos = lights[i];
+		light_dir = normalize(vertex_pos - light_pos);
+		theta = dot(light_dir, normalize(lightDir));
+		
+		if (theta > lightRad)
+		{
+			eye_dir = normalize(-vertex_pos);
+			reflect_dir = normalize(reflect(light_dir, nn));
+	
+			spec = max(dot(reflect_dir, eye_dir), 0.0);
+			diffuse = max(dot(-light_dir, nn), 0.0);
+
+			intensity += (0.6 * diffuse + 0.4 * spec);
+		}
+	}
+
+	/*
 	vec3 nn = normalize(vertex_normal);
-	vec3 light_pos = lightPos;
+	vec3 light_pos = lightPosList[0];
 	vec3 light_dir = normalize(vertex_pos - light_pos);
 	vec3 eye_dir = normalize(-vertex_pos);
 	vec3 reflect_dir = normalize(reflect(light_dir, nn));
@@ -48,6 +81,7 @@ void main()
 	float diffuse = max(dot(-light_dir, nn), 0.0);
 
 	float intensity = 0.6 * diffuse + 0.4 * spec;
+	*/
 
  	if (intensity > 0.9) {
  		intensity = 1.1;
@@ -59,6 +93,7 @@ void main()
  		intensity = 0.5;
 	}
 
+	// black outline
 	vec3 camDir = campos - vertex_pos;
 	camDir = normalize(camDir);
 	float outline = dot(camDir, nn);
@@ -68,4 +103,24 @@ void main()
 	}
 
 	color.rgb = color.rgb * intensity;
+
+	/* DEFERRED SHADING */
+
+	/* store the fragment position vector in the first gbuffer texture */
+   //gPosition = fragPos;
+
+   /* also store the per-fragment normals into the gbuffer */
+   //gNormal = normalize(fragNor);
+
+   /* and the diffuse per-fragment color */
+	//gAlbedoSpec.rgb = color.rgb;
+	//gAlbedoSpec = color;
+	//vec3 difTex = texture(tex, vertex_tex).rgb;
+
+   /* store specular intensity in gAlbedoSpec's alpha component
+	 * constant could be from a texture */
+   //gAlbedoSpec.a = 1.0;
+
+
+
 }

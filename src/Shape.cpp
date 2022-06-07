@@ -300,7 +300,8 @@ void Shape::draw(const shared_ptr<Program> prog,
         glBindTexture(GL_TEXTURE_2D, textureIDs[textureindex]);
       }
       if (mats.size() > i) {
-          glUniform3fv(prog->getUniform("objColor"), 1, &mats[i].diffuse[0]);
+          glm::vec4 diffuse = glm::vec4(mats[i].diffuse[0], mats[i].diffuse[1], mats[i].diffuse[2], 1);
+          glUniform4fv(prog->getUniform("objColor"), 1, &diffuse[0]);
           /*
           if (i == 0)
             glUniform3fv(prog->getUniform("objColor"), 1, &mats[mats.size() - 1].diffuse[0]);

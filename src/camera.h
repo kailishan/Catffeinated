@@ -6,6 +6,7 @@
 
 #include "WindowManager.h"
 #include "gameObject.h"
+#include "audioManager.h"
 
 class camera {
 public:
@@ -60,20 +61,26 @@ public:
   void setp(int newP) { p = newP; }
   void setz(int newZ) { z = newZ; }
 
+  void setAudio(audioManager myAudio) { audio = myAudio; }
+
   void decrementHealth() { playerHealth = playerHealth - 1; }
   void incrementFrames() { invinFrames++; }
   void resetFrames() { invinFrames = 0; }
   void changeZMode() { zMode = !zMode; }
 
   float getSpeedBoost() { return speedBoost; }
+  float getSscale() { return sScale; }
   int getHealth();
   void takeDamage();
 
-  int initEngine(int id);
+  /*int initEngine(int id);
   void uninitEngine();
   void playMeow();
   void playRoost();
   void playCollect();
+  void playPowerup();*/
+
+  bool getDisplayDamage() { return displayDamage; }
 
 private:
   glm::vec3 modeldirection;
@@ -85,6 +92,8 @@ private:
   float baseSpeed = 1.0f;
   float speedBoost = 0.0f;
   int speedTimer = 0;
+  float sScale = 0.5f; // strech & squash scale
+  int sDir = 1;
   glm::vec3 up = glm::vec3(0, 1, 0);
   glm::vec3 pos, rot, front;
 
@@ -110,4 +119,9 @@ private:
 
   // audio engine
   //ma_engine engine;
+  audioManager audio;
+
+  bool isDamaged = false;
+  bool displayDamage = false; // true = red, false = texture
+  int damageTimer = 0;
 };

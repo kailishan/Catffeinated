@@ -1,6 +1,7 @@
 #include "kibble.h"
 
-kibble::kibble(std::shared_ptr<Shape> shape) {
+kibble::kibble(std::shared_ptr<Shape> shape, std::vector<std::shared_ptr<gameObject>> data) {
+  collisionData = data;
   mesh = shape;
   // pos = glm::vec3(rand() % 25 - 12, 0, rand() % 25 - 12);
   pos = glm::vec3((rand() % 25) - 12, 0.35, (rand() % 25) - 12);

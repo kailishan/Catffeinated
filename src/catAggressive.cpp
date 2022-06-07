@@ -1,6 +1,7 @@
 #include "catAggressive.h"
 
-catAggressive::catAggressive(std::shared_ptr<Shape> shape, camera *p) {
+catAggressive::catAggressive(std::shared_ptr<Shape> shape, camera *p, std::vector<std::shared_ptr<gameObject>> data) {
+  collisionData = data;
   mesh = shape;
   player = p;
   // pos = glm::vec3(rand() % 25 - 12, 0, rand() % 25 - 12);
@@ -18,7 +19,7 @@ catAggressive::catAggressive(std::shared_ptr<Shape> shape, camera *p) {
   glm::vec3 velDirection = glm::normalize(vel);
   float angle = acos(glm::dot(posDirection, velDirection));
 
-  rad = .15;
+  rad = .5;
   std::cout << "x: " << pos.x << " z: " << pos.z << std::endl;
 }
 
@@ -40,7 +41,16 @@ void catAggressive::move(double ftime) {
 
   glm::mat4 R = formRotationMatrix(ftime);
 
+  glm::vec3 temp = pos;
   pos += dir * vel;
+
+  for (int i = 0; collisionData.size() > i; i++)
+  {
+      if (isColliding(collisionData[i])) {
+          pos = temp;
+          break;
+      }
+  }
 
   glm::mat4 T = glm::translate(glm::mat4(1), pos);
   matrix = T * R;

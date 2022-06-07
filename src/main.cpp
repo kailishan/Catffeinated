@@ -8,6 +8,7 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "GLSL.h"
 #include "MatrixStack.h"
 #include "Program.h"
+#include "audioManager.h"
 #include "camera.h"
 #include "gameManager.h"
 #include "gameObject.h"
@@ -20,6 +21,7 @@ CPE/CSC 471 Lab base code Wood/Dunn/Eckhardt
 #include "Shape.h"
 #include "Texture.h"
 #include "WindowManager.h"
+#include "GLTextureWriter.h"
 // value_ptr for glm
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -28,8 +30,12 @@ using namespace std;
 using namespace glm;
 
 camera mycam;
+
 vector<shared_ptr<gameObject>> objects;
-float tail_dt = 0.0f;
+vector<shared_ptr<vec3>> lights;
+//glm::vec3 lights[7];
+double tail_dt = 0.0f;
+
 
 double get_last_elapsed_time() {
   static double lasttime = glfwGetTime();
@@ -45,13 +51,11 @@ public:
   WindowManager *windowManager = nullptr;
   std::shared_ptr<gameManager> myManager;
 
-  // shapes to draw
+  // Shapes to draw
   shared_ptr<Shape> cat, sphere, room, table, heart;
 
-
   // Our shader program
-  std::shared_ptr<Program> prog, progL, heightshader;
-  std::shared_ptr<Program> particleProg;
+  std::shared_ptr<Program> prog, progL, heightshader, TVstatic, texProg, particleProg;
 
   shared_ptr<Texture> partTex;
 
@@ -60,15 +64,36 @@ public:
   // Contains vertex information for OpenGL
   GLuint VertexArrayID;
 
+  // Data necessary to give our triangle to OpenGL
+  GLuint VertexBufferID;
+
+  // Geometry for texture render
+  GLuint quad_VertexArrayID;
+  GLuint quad_vertexbuffer;
+
+  // Reference to texture FBO
+  GLuint gBuffer;
+  GLuint gPosition, gNormal, gColorSpec;
+
+  // Deferred shading data
+  bool FirstTime = true;
+  bool DEFER = false;
+  int gMat = 0;
+  vec3 g_light = vec3(2, 6, 6);
+
   // Data necessary to give our box to OpenGL
   GLuint MeshPosID, MeshTexID, IndexBufferIDBox;
+
+  // Data for TVstatic
+  GLuint FBOtex, fb, depth_fb;
+  GLuint VertexArrayIDScreen, VertexBufferIDScreen, VertexBufferTexScreen;
 
   // texture data
   GLuint Texture0;
   GLuint Texture2, HeightTex;
-  GLuint CatTex1, CatTex2;
+  GLuint CatTex1, CatTex2, CatTex3;
 
-
+  // Camera data
   vec3 g_eye = vec3(0, 1, 0);
   vec3 g_lookAt = vec3(0, 1, -4);
 
@@ -76,15 +101,15 @@ public:
   void initRoomGeo()
   {
     shared_ptr<gameObject> ro1 =
-        make_shared<roomObject>(vec3(5.75, 1, .75), .8);
+        make_shared<roomObject>(vec3(5.75, 1, .75), .9);
     shared_ptr<gameObject> ro2 =
-        make_shared<roomObject>(vec3(5.75, 1, 3.25), .8);
+        make_shared<roomObject>(vec3(5.75, 1, 3.25), .9);
     shared_ptr<gameObject> ro3 =
-        make_shared<roomObject>(vec3(5.75, 1, 5.75), .8);
+        make_shared<roomObject>(vec3(5.75, 1, 5.75), .9);
     shared_ptr<gameObject> ro4 =
-        make_shared<roomObject>(vec3(5.75, 1, 8.25), .8);
+        make_shared<roomObject>(vec3(5.75, 1, 8.25), .9);
     shared_ptr<gameObject> ro5 =
-        make_shared<roomObject>(vec3(5.75, 1, 10.75), .8);
+        make_shared<roomObject>(vec3(5.75, 1, 10.75), .9);
     objects.push_back(ro1);
     objects.push_back(ro2);
     objects.push_back(ro3);
@@ -92,17 +117,17 @@ public:
     objects.push_back(ro5);
 
     shared_ptr<gameObject> ro6 =
-        make_shared<roomObject>(vec3(10.75, 1, -1.75), .8);
+        make_shared<roomObject>(vec3(11.5, 1, -1.75), .9);
     shared_ptr<gameObject> ro7 =
-        make_shared<roomObject>(vec3(10.75, 1, .75), .8);
+        make_shared<roomObject>(vec3(11.5, 1, .75), .9);
     shared_ptr<gameObject> ro8 =
-        make_shared<roomObject>(vec3(10.75, 1, 3.25), .8);
+        make_shared<roomObject>(vec3(11.5, 1, 3.25), .9);
     shared_ptr<gameObject> ro9 =
-        make_shared<roomObject>(vec3(10.75, 1, 5.25), .8);
+        make_shared<roomObject>(vec3(11.5, 1, 5.25), .9);
     shared_ptr<gameObject> ro10 =
-        make_shared<roomObject>(vec3(10.75, 1, 8.25), .8);
+        make_shared<roomObject>(vec3(11.5, 1, 8.25), .9);
     shared_ptr<gameObject> ro11 =
-        make_shared<roomObject>(vec3(10.75, 1, 10.75), .8);
+        make_shared<roomObject>(vec3(11.5, 1, 10.75), .9);
     objects.push_back(ro6);
     objects.push_back(ro7);
     objects.push_back(ro8);
@@ -113,15 +138,15 @@ public:
     int x = -3.5;
     int z = 5.75;
     shared_ptr<gameObject> ro12 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .9);
     shared_ptr<gameObject> ro13 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .9);
     shared_ptr<gameObject> ro14 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .9);
     shared_ptr<gameObject> ro15 =
-        make_shared<roomObject>(vec3(x = x - 2, 1, z), .8);
+        make_shared<roomObject>(vec3(x = x - 2, 1, z), .9);
     shared_ptr<gameObject> ro16 =
-        make_shared<roomObject>(vec3(x, 1, z = z + 2), .8);
+        make_shared<roomObject>(vec3(x, 1, z = z + 2), .9);
     objects.push_back(ro12);
     objects.push_back(ro13);
     objects.push_back(ro14);
@@ -131,16 +156,41 @@ public:
     x = -8.9;
     z = 12.5;
     shared_ptr<gameObject> ro17 =
-        make_shared<roomObject>(vec3(x, 1, z), .8);
+        make_shared<roomObject>(vec3(x, 1, z), .9);
     shared_ptr<gameObject> ro18 = 
-        make_shared<roomObject>(vec3(x + .75, 1, z), .8);
+        make_shared<roomObject>(vec3(x + .75, 1, z), .9);
     objects.push_back(ro17);
     objects.push_back(ro18);
+
+    //cout << "HIT" << endl;
+    //cout << objects.size() << endl;
+
+    //vec3 l1 = vec3(10, 5, 10);
+    shared_ptr<vec3> l1 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l1);
+    shared_ptr<vec3> l2 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l2);
+    shared_ptr<vec3> l3 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l3);
+    shared_ptr<vec3> l4 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l4);
+    shared_ptr<vec3> l5 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l5);
+    shared_ptr<vec3> l6 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l6);
+    shared_ptr<vec3> l7 = make_shared<vec3>(vec3(9.0, 7.0, 9.0));
+    lights.push_back(l7);
   }
+
   void keyCallback(GLFWwindow *window, int key, int scancode, int action,
                    int mods) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
       glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+
+    // MOVEMENT
+    if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
+        cout << "x: " << mycam.getPos().x << " z: " << mycam.getPos().z << endl;
     }
 
 
@@ -172,6 +222,8 @@ public:
       mycam.setd(0);
       mycam.newKey = true;
     }
+
+    // POLYGON MODE
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
       mycam.setp(1);
       glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -181,7 +233,7 @@ public:
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
-
+    // ZOE MODE
     if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
         mycam.setz(1);
     }
@@ -189,6 +241,7 @@ public:
         mycam.setz(0);
     }
 
+    // CAMERA POSITION XZ
     if (key == GLFW_KEY_L && action == GLFW_PRESS) {
         ;
     }
@@ -196,28 +249,20 @@ public:
         cout << mycam.getPos().x << " " << mycam.getPos().z << endl;
     }
 
+    // DEFERRED SHADING
+    if (key == GLFW_KEY_O && action == GLFW_PRESS)
+    {
+      DEFER = !DEFER;
+    }
   }
 
-  // callback for the mouse when clicked move the triangle when helper functions
-  // written
+  // callback for the mouse when clicked
   void mouseCallback(GLFWwindow *window, int button, int action, int mods) {
     double posX, posY;
     float newPt[2];
     if (action == GLFW_PRESS) {
       glfwGetCursorPos(window, &posX, &posY);
       std::cout << "Pos X " << posX << " Pos Y " << posY << std::endl;
-
-      // change this to be the points converted to WORLD
-      // THIS IS BROKEN< YOU GET TO FIX IT - yay!
-      /*newPt[0] = 0;
-      newPt[1] = 0;
-
-      std::cout << "converted:" << newPt[0] << " " << newPt[1] << std::endl;
-      glBindBuffer(GL_ARRAY_BUFFER, MeshPosID);
-      // update the vertex array with the updated points
-      glBufferSubData(GL_ARRAY_BUFFER, sizeof(float) * 6, sizeof(float) * 2,
-                      newPt);
-      glBindBuffer(GL_ARRAY_BUFFER, 0);*/
     }
   }
 
@@ -243,76 +288,56 @@ public:
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
   }
-#define MESHSIZE 25
-  void init_mesh() {
-    // generate the VAO
-    glGenVertexArrays(1, &VertexArrayID);
-    glBindVertexArray(VertexArrayID);
 
-    // generate vertex buffer to hand off to OGL
-    glGenBuffers(1, &MeshPosID);
-    glBindBuffer(GL_ARRAY_BUFFER, MeshPosID);
-    vec3 vertices[MESHSIZE * MESHSIZE * 4];
-    for (int x = 0; x < MESHSIZE; x++)
-      for (int z = 0; z < MESHSIZE; z++) {
-        vertices[x * 4 + z * MESHSIZE * 4 + 0] =
-            vec3(0.0, 0.0, 0.0) + vec3(x, 0, z);
-        vertices[x * 4 + z * MESHSIZE * 4 + 1] =
-            vec3(1.0, 0.0, 0.0) + vec3(x, 0, z);
-        vertices[x * 4 + z * MESHSIZE * 4 + 2] =
-            vec3(1.0, 0.0, 1.0) + vec3(x, 0, z);
-        vertices[x * 4 + z * MESHSIZE * 4 + 3] =
-            vec3(0.0, 0.0, 1.0) + vec3(x, 0, z);
-      }
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vec3) * MESHSIZE * MESHSIZE * 4,
-                 vertices, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
-    // tex coords
-    float t = 1. / 100;
-    vec2 tex[MESHSIZE * MESHSIZE * 4];
-    for (int x = 0; x < MESHSIZE; x++)
-      for (int y = 0; y < MESHSIZE; y++) {
-        tex[x * 4 + y * MESHSIZE * 4 + 0] = vec2(0.0, 0.0) + vec2(x, y) * t;
-        tex[x * 4 + y * MESHSIZE * 4 + 1] = vec2(t, 0.0) + vec2(x, y) * t;
-        tex[x * 4 + y * MESHSIZE * 4 + 2] = vec2(t, t) + vec2(x, y) * t;
-        tex[x * 4 + y * MESHSIZE * 4 + 3] = vec2(0.0, t) + vec2(x, y) * t;
-      }
-    glGenBuffers(1, &MeshTexID);
-    // set the current state to focus on our vertex buffer
-    glBindBuffer(GL_ARRAY_BUFFER, MeshTexID);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * MESHSIZE * MESHSIZE * 4, tex,
-                 GL_STATIC_DRAW);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-
-    glGenBuffers(1, &IndexBufferIDBox);
-    // set the current state to focus on our vertex buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferIDBox);
-    GLushort elements[MESHSIZE * MESHSIZE * 6];
-    int ind = 0;
-    for (int i = 0; i < MESHSIZE * MESHSIZE * 6; i += 6, ind += 4) {
-      elements[i + 0] = ind + 0;
-      elements[i + 1] = ind + 1;
-      elements[i + 2] = ind + 2;
-      elements[i + 3] = ind + 0;
-      elements[i + 4] = ind + 2;
-      elements[i + 5] = ind + 3;
-    }
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                 sizeof(GLushort) * MESHSIZE * MESHSIZE * 6, elements,
-                 GL_STATIC_DRAW);
-    glBindVertexArray(0);
-  }
-  /*Note that any gl calls must always happen after a GL state is initialized */
+  /* Note that any gl calls must always happen after a GL state is initialized */
   void initGeom() {
-    // initialize the net mesh
-    init_mesh();
+
+    //screen plane
+    glGenVertexArrays(1, &VertexArrayIDScreen);
+    glBindVertexArray(VertexArrayIDScreen);
+    //generate vertex buffer to hand off to OGL
+    glGenBuffers(1, &VertexBufferIDScreen);
+    //set the current state to focus on our vertex buffer
+    glBindBuffer(GL_ARRAY_BUFFER, VertexBufferIDScreen);
+    vec3 vertices[6];
+    vertices[0] = vec3(-1, -1, 0);
+    vertices[1] = vec3(1, -1, 0);
+    vertices[2] = vec3(1, 1, 0);
+    vertices[3] = vec3(-1, -1, 0);
+    vertices[4] = vec3(1, 1, 0);
+    vertices[5] = vec3(-1, 1, 0);
+    //actually memcopy the data - only do this once
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(vec3), vertices, GL_STATIC_DRAW);
+    //we need to set up the vertex array
+    glEnableVertexAttribArray(0);
+    //key function to get up how many elements to pull out at a time (3)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    //generate vertex buffer to hand off to OGL
+    glGenBuffers(1, &VertexBufferTexScreen);
+    //set the current state to focus on our vertex buffer
+    glBindBuffer(GL_ARRAY_BUFFER, VertexBufferTexScreen);
+    vec2 texscreen[6];
+    texscreen[0] = vec2(0, 0);
+    texscreen[1] = vec2(1, 0);
+    texscreen[2] = vec2(1, 1);
+    texscreen[3] = vec2(0, 0);
+    texscreen[4] = vec2(1, 1);
+    texscreen[5] = vec2(0, 1);
+    //actually memcopy the data - only do this once
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(vec2), texscreen, GL_STATIC_DRAW);
+    //we need to set up the vertex array
+    glEnableVertexAttribArray(1);
+    //key function to get up how many elements to pull out at a time (3)
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glBindVertexArray(0);
+
+
 
     string resourceDirectory = "../resources";
-    // Initialize cat.
+    
+    // Initialize geometry
+
     cat = make_shared<Shape>();
-    // shape->loadMesh(resourceDirectory + "/t800.obj");
     cat->loadMesh(resourceDirectory + "/catsplit.obj");
     cat->resize();
     cat->init();
@@ -338,62 +363,20 @@ public:
     heart->resize();
     heart->init();
 
+    // Initialize texture
 
     int width, height, channels;
     char filepath[1000];
 
+    string str;
+    unsigned char *data;
+
     // texture 1
-    string str = resourceDirectory + "/woodfloor.jpg";
-    strcpy(filepath, str.c_str());
-    unsigned char *data = stbi_load(filepath, &width, &height, &channels, 4);
-    glGenTextures(1, &Texture0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, Texture0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    // texture 2
-    str = resourceDirectory + "/brickwall.jpg";
-    strcpy(filepath, str.c_str());
-    data = stbi_load(filepath, &width, &height, &channels, 4);
-    glGenTextures(1, &Texture2);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, Texture2);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    // texture 3
-    str = resourceDirectory + "/height.png";
-    strcpy(filepath, str.c_str());
-    data = stbi_load(filepath, &width, &height, &channels, 4);
-    glGenTextures(1, &HeightTex);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, HeightTex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    // texture 4
     str = resourceDirectory + "/tiger.jpg";
     strcpy(filepath, str.c_str());
     data = stbi_load(filepath, &width, &height, &channels, 4);
     glGenTextures(1, &CatTex1);
-    glActiveTexture(GL_TEXTURE2);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, CatTex1);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -403,12 +386,12 @@ public:
                  GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    // texture 5
+    // texture 2
     str = resourceDirectory + "/calico.jpg";
     strcpy(filepath, str.c_str());
     data = stbi_load(filepath, &width, &height, &channels, 4);
     glGenTextures(1, &CatTex2);
-    glActiveTexture(GL_TEXTURE3);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, CatTex2);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -418,6 +401,23 @@ public:
                  GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
+    // texture 3
+    str = resourceDirectory + "/rainbow.png";
+    strcpy(filepath, str.c_str());
+    data = stbi_load(filepath, &width, &height, &channels, 4);
+    glGenTextures(1, &CatTex3);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, CatTex3);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //[TWOTEXTURES]
     // set the 2 textures to the correct samplers in the fragment shader:
     GLuint Tex1Location = glGetUniformLocation(
@@ -436,9 +436,9 @@ public:
     glUniform1i(Tex2Location, 1);
 
     // tex, tex2... sampler in the fragment shader
-    Tex1Location = glGetUniformLocation(heightshader->pid, "tex");
+    /*Tex1Location = glGetUniformLocation(heightshader->pid, "tex");
     glUseProgram(progL->pid);
-    glUniform1i(Tex1Location, 0);
+    glUniform1i(Tex1Location, 0);*/
 
     GLuint particleTexLocation = glGetUniformLocation(particleProg->pid, "alphaTexture");
     glUseProgram(particleProg->pid);
@@ -446,6 +446,52 @@ public:
         
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    Tex1Location = glGetUniformLocation(TVstatic->pid, "tex");//tex, tex2... sampler in the fragment shader
+    glUseProgram(TVstatic->pid);
+    glUniform1i(Tex1Location, 0);
+
+    glfwGetFramebufferSize(windowManager->getHandle(), &width, &height);
+    //RGBA8 2D texture, 24 bit depth texture, 256x256
+    glGenTextures(1, &FBOtex);
+    glBindTexture(GL_TEXTURE_2D, FBOtex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //NULL means reserve texture memory, but texels are undefined
+    //**** Tell OpenGL to reserve level 0
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+    //You must reserve memory for other mipmaps levels as well either by making a series of calls to
+    //glTexImage2D or use glGenerateMipmapEXT(GL_TEXTURE_2D).
+    //Here, we'll use :
+    glGenerateMipmap(GL_TEXTURE_2D);
+    //make a frame buffer
+    //-------------------------
+    glGenFramebuffers(1, &fb);
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+    //Attach 2D texture to this FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FBOtex, 0);
+    //-------------------------
+    glGenRenderbuffers(1, &depth_fb);
+    glBindRenderbuffer(GL_RENDERBUFFER, depth_fb);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+    //-------------------------
+    //Attach depth buffer to FBO
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_fb);
+    //-------------------------
+    //Does the GPU support current FBO configuration?
+    GLenum status;
+    status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    switch (status)
+    {
+    case GL_FRAMEBUFFER_COMPLETE:
+        cout << "status framebuffer: good";
+        break;
+    default:
+        cout << "status framebuffer: bad!!!!!!!!!!!!!!!!!!!!!!!!!";
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
   }
 
   // General OGL initialization - set OGL state here
@@ -454,15 +500,18 @@ public:
     GLSL::checkVersion();
 
     // Set background color.
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.098f, 0.098f, 0.439f, 1.0f);
     // Enable z-buffer test.
     glEnable(GL_DEPTH_TEST);
-
+    glDepthFunc(GL_LESS);
+    
     // Initialize the GLSL program.
     prog = std::make_shared<Program>();
     prog->setVerbose(true);
     prog->setShaderNames(resourceDirectory + "/toon_vertex.glsl",
                          resourceDirectory + "/toon_fragment.glsl");
+    /*prog->setShaderNames(resourceDirectory + "/simple_vert.glsl",
+                         resourceDirectory + "/gbuf_frag.glsl");*/
     if (!prog->init()) {
       std::cerr << "One or more shaders failed to compile... exiting!"
                 << std::endl;
@@ -473,31 +522,42 @@ public:
     prog->addUniform("M");
     prog->addUniform("objColor");
     prog->addUniform("campos");
-    prog->addUniform("lightPos");
+    prog->addUniform("lightRad");
+    prog->addUniform("lightDir");
+    prog->addUniform("lightPos1");
+    prog->addUniform("lightPos2");
+    prog->addUniform("lightPos3");
+    prog->addUniform("lightPos4");
+    prog->addUniform("lightPos5");
+    prog->addUniform("lightPos6");
+    prog->addUniform("lightPos7");
+    prog->addUniform("lightPos8");
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
     prog->addAttribute("vertTex");
 
-    progL = std::make_shared<Program>();
-    progL->setVerbose(true);
-    progL->setShaderNames(resourceDirectory + "/shader_vertex_light.glsl",
-                          resourceDirectory + "/shader_fragment_light.glsl");
-    if (!progL->init()) {
+    /* DEFERRED SHADING */
+    texProg = make_shared<Program>();
+    texProg->setVerbose(true);
+    texProg->setShaderNames(
+        resourceDirectory + "/pass_vert.glsl",
+        resourceDirectory + "/tex_frag.glsl");
+    if (!texProg->init()) {
       std::cerr << "One or more shaders failed to compile... exiting!"
                 << std::endl;
       exit(1);
     }
-    progL->addUniform("P");
-    progL->addUniform("V");
-    progL->addUniform("M");
-    progL->addUniform("campos");
-    progL->addUniform("objColor");
-    progL->addAttribute("vertPos");
-    progL->addAttribute("vertColor");
-    progL->addAttribute("vertNor");
-    progL->addAttribute("vertTex");
+    //texProg->addUniform("texBuf");
+    texProg->addUniform("gBuf");
+    texProg->addUniform("norBuf");
+    texProg->addUniform("colorBuf");
+    texProg->addAttribute("vertPos");
+    texProg->addUniform("Ldir");
+    
+    initBuffers();
+    initQuad();
 
-    // Initialize the GLSL program.
+        // Initialize the GLSL program.
     heightshader = std::make_shared<Program>();
     heightshader->setVerbose(true);
     heightshader->setShaderNames(resourceDirectory + "/height_vertex.glsl",
@@ -535,23 +595,96 @@ public:
 
     thePartSystem = new particleSys(vec3(0, 0.5f, -3));
     thePartSystem->gpuSetup();
+    
+    // TV Static post processing effect
+    TVstatic = std::make_shared<Program>();
+    TVstatic->setVerbose(true);
+    TVstatic->setShaderNames(resourceDirectory + "/TV_vertex.glsl", resourceDirectory + "/TV_fragment.glsl");
+    if (!TVstatic->init())
+    {
+        std::cerr << "One or more shaders failed to compile... exiting!" << std::endl;
+        exit(1);
+    }
+    TVstatic->addUniform("u_distortion");
+    TVstatic->addUniform("u_stripe");
+    TVstatic->addUniform("u_rgbshift");
+    TVstatic->addUniform("time");
+    TVstatic->addAttribute("vertPos");
+    TVstatic->addAttribute("vertTex");
 
     /*
     cout << prog->pid << endl;
     cout << progL->pid << endl;
     cout << heightshader->pid << endl;*/
   }
-
   void initParticleTexture(const std::string& resourceDirectory) {
     // particle texture
     partTex = make_shared<Texture>();
     partTex->setFilename(resourceDirectory + "/alpha.bmp");
     partTex->init();
     partTex->setUnit(0);
-    partTex->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+  }
+  /**** geometry set up for a quad *****/
+	void initQuad() {
+		//now set up a simple quad for rendering FBO
+		glGenVertexArrays(1, &quad_VertexArrayID);
+		glBindVertexArray(quad_VertexArrayID);
+
+		static const GLfloat g_quad_vertex_buffer_data[] =
+		{
+			-1.0f, -1.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,
+			1.0f,  1.0f, 0.0f,
+		};
+
+		glGenBuffers(1, &quad_vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+	}
+
+  void initBuffers()
+  {
+    int width, height;
+    glfwGetFramebufferSize(windowManager->getHandle(), &width, &height);
+
+    // initialize the buffers -- from learnopengl.com
+    glGenFramebuffers(1, &gBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+
+    // - position color buffer
+    glGenTextures(1, &gPosition);
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+
+    // - normal color buffer
+    glGenTextures(1, &gNormal);
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+
+    // - color + specular color buffer
+    glGenTextures(1, &gColorSpec);
+    glBindTexture(GL_TEXTURE_2D, gColorSpec);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gColorSpec, 0);
+
+    // more FBO set up
+    GLenum DrawBuffers[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
   }
 
   void initGame() { 
+
+    cout << objects.size() << endl;
     myManager = make_shared<gameManager>(cat, heart, &mycam, objects);
     //mycam.setManager(myManager.get());
   }
@@ -585,25 +718,28 @@ public:
   }
 
   void drawHealth(mat4 P, mat4 V) {
-
+    
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     glBindTexture(GL_TEXTURE_2D, 0);
-    progL->bind();
+
+    prog->bind();
     
     glm::mat4 M = glm::mat4(1.0f);
     glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.35f, 0.5f, 0.35f));
     glm::mat4 R = glm::rotate(glm::mat4(1.0f), -1.5708f, vec3(1, 0, 0));
     glm::mat4 T = glm::mat4(1.0f);
 
-    glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
-    glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
-    glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
+    glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+    glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+    glUniform3fv(prog->getUniform("campos"), 1, &mycam.getPos()[0]);
 
     glm::vec4 red = glm::vec4(1, 0.302, 0.302, 1);
     glm::vec4 green = glm::vec4(0.302, 1, 0.302, 1);
     if (mycam.getSpeedBoost() > 0.0f)
-      glUniform4fv(progL->getUniform("objColor"), 1, &green[0]);
+      glUniform4fv(prog->getUniform("objColor"), 1, &green[0]);
     else
-      glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
+      glUniform4fv(prog->getUniform("objColor"), 1, &red[0]);
 
     glm::vec3 pos = mycam.getPos();
     pos.y += 2.5f;
@@ -612,49 +748,95 @@ public:
     for (int i = 0; i < mycam.getHealth(); i++) {
       T = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x + offset, pos.y, pos.z));
       M = T * R * S;
-      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-      heart->draw(progL, true); 
+      glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      heart->draw(prog, true); 
       offset -= 0.8;
     }
 
-    progL->unbind();
+    prog->unbind();
+
+    //glDisable(GL_DEPTH_TEST);
   }
 
-  /****DRAW
+  /**** DRAW
   This is the most important function in your program - this is where you
   will actually issue the commands to draw any geometry you have set up to
   draw
   ********/
   void drawScene(mat4 P, mat4 V) {
-      //cout << glm::to_string(V) << endl;
+
+      glEnable(GL_DEPTH_TEST);
+      glDepthFunc(GL_LESS);
+
+      prog->bind();
+
+      /*glEnableVertexAttribArray(0);
+      glBindBuffer(GL_ARRAY_BUFFER, gPosition);
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+      glEnableVertexAttribArray(1);
+      glBindBuffer(GL_ARRAY_BUFFER, gNormal);
+      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+      glEnableVertexAttribArray(2);
+      glBindBuffer(GL_ARRAY_BUFFER, gColorSpec);
+      glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);*/
+
       double frametime = get_last_elapsed_time();
       tail_dt += frametime;
 
       vec3 camPos = mycam.getPos() - mycam.getFront() * vec3(1.5);
 
+      vec3 lightDir = vec3(-8.1, 7.0, 8.7);
+      glUniform3fv(prog->getUniform("lightPos1"), 1, &lightDir[0]);
+      lightDir = vec3(-7.9, 7.0, 1.5);
+      glUniform3fv(prog->getUniform("lightPos2"), 1, &lightDir[0]);
+      lightDir = vec3(-10.7, 7.0, -8.3);
+      glUniform3fv(prog->getUniform("lightPos3"), 1, &lightDir[0]);
+      lightDir = vec3(-4, 7.0, -8.5);
+      glUniform3fv(prog->getUniform("lightPos4"), 1, &lightDir[0]);
+      lightDir = vec3(4.2, 7.0, -8.5);
+      glUniform3fv(prog->getUniform("lightPos5"), 1, &lightDir[0]);
+      lightDir = vec3(11.2, 7.0, -8.3);
+      glUniform3fv(prog->getUniform("lightPos6"), 1, &lightDir[0]);
+      lightDir = vec3(8.6, 7.0, 2.0);
+      glUniform3fv(prog->getUniform("lightPos7"), 1, &lightDir[0]);
+      lightDir = vec3(8.0, 7.0, 8.3);
+      glUniform3fv(prog->getUniform("lightPos8"), 1, &lightDir[0]);
+      lightDir = vec3(0.0, -1.0, 0.0);
+      glUniform3fv(prog->getUniform("lightDir"), 1, &lightDir[0]);
+      //glUniform1fv(prog->getUniform("lightRad"), 1, cos(radians(12.5f)));
+
       // set up all the matrices
       auto Model = make_shared<MatrixStack>();
 
-      glm::mat4 M = glm::mat4(1);
-      glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f));
-      glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+      glm::mat4 M = glm::mat4(1.0f);
+      glm::mat4 S = glm::mat4(1.0f);
+      glm::mat4 T = glm::mat4(1.0f);
       glm::mat4 R = glm::mat4(1.0f);
 
       static float w = 0.0;
       w += 1.0 * frametime; // rotation angle
 
-      progL->bind();
-      glUniformMatrix4fv(progL->getUniform("P"), 1, GL_FALSE, value_ptr(P));
-      glUniformMatrix4fv(progL->getUniform("V"), 1, GL_FALSE, value_ptr(V));
-      glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-
-      glUniform3fv(progL->getUniform("campos"), 1, &camPos[0]);
-      //glUniform3fv(progL->getUniform("campos"), 1, &mycam.getPos()[0]);
+      glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+      glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+      //glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      glUniform3fv(prog->getUniform("campos"), 1, &camPos[0]);
+      //glUniform3fv(prog->getUniform("campos"), 1, &mycam.getPos()[0]);
       glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, Texture0);
+      //glBindTexture(GL_TEXTURE_2D, Texture);
+
+      glBindTexture(GL_TEXTURE_2D, 0);
+
+      // draw room
+      M = glm::mat4(1);
+      S = glm::scale(glm::mat4(1.0f), glm::vec3(12.5, 12.5, 12.5));
+      T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
+      M = T * S;
+      glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+      room->draw(prog, false);
 
       glm::vec4 pink = glm::vec4(1.0, 0.357, 0.796, 1);
-      //glm::vec4 green = glm::vec4(0.424, 0.576, 0.424, 1);
       glm::vec4 green = glm::vec4(0.486, 0.988, 0, 1);
       glm::vec3 blue = glm::vec3(0.2588, 0.4, 0.9608);
       glm::vec4 red = glm::vec4(1, 0.302, 0.302, 1);
@@ -693,7 +875,6 @@ public:
               if (mycam.getFront().x < 0)
                   rot += M_PI;
               //mycam.newKey = false;
-
           }
       }
       else
@@ -701,10 +882,89 @@ public:
           rot = rot;
       }
       R = glm::rotate(glm::mat4(1.0f), rot, vec3(0, 1, 0));
-      //M = glm::lookAt(mycam.getPos(), mycam.getPos() + mycam.getFront(), mycam.getUp());
-      //glm::mat4 RT = glm::lookAt(-mycam.getPos(), -mycam.getPos() + mycam.getFront().x + mycam.getFront().z,
-      //    mycam.getUp());
       M = T * S * R;
+
+      // draw the game objects
+      for (int i = 0; i < myManager->getObjects().size(); i++) {
+        glBindTexture(GL_TEXTURE_2D, CatTex2);
+        std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
+        vec3 currPos = currObj->getPos();
+        if (!currObj->getIsStatic())
+        {
+          // object is a cat -- use matrix stack
+          glUniform4fv(prog->getUniform("objColor"), 1, &pink[0]);
+          Model->pushMatrix();
+          Model->loadIdentity();
+          Model->multMatrix(myManager->getObjects().at(i)->getMatrix() * S);
+          glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+          // torso transforms
+          for (int i = 0; i < 3; i++)
+          {
+            if (i != 4)
+              currObj->getMesh()->draw(prog, i, true);
+          }
+          // tail transform
+          Model->pushMatrix();
+          float angle = sin(glfwGetTime() * 5) / 3;
+          Model->rotate(-25.0f, vec3(1, 0, 0));
+          Model->rotate(angle, vec3(0, 0, 1));
+          // clip the tail slightly back into the model -- this helps hide any disjoint
+          Model->translate(vec3(0, -0.05f, 0.05f));
+          glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+          currObj->getMesh()->draw(prog, 4, true);
+          Model->popMatrix();
+          glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+          // right rear leg
+          Model->pushMatrix();
+          angle = sin(glfwGetTime() * 3) / 3;
+          Model->rotate(angle, vec3(1, 0, 0));
+          Model->translate(vec3(0, fabs(angle) / 2, 0));
+          glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+          currObj->getMesh()->draw(prog, 8, true);
+          Model->popMatrix();
+          // right front leg
+          Model->pushMatrix();
+          angle = sin(glfwGetTime() * 3 - 1) / 3;
+          Model->rotate(angle, vec3(1, 0, 0));
+          Model->translate(vec3(0, fabs(angle) / 2, 0));
+          glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+          currObj->getMesh()->draw(prog, 6, true);
+          Model->popMatrix();
+          // left rear leg
+          Model->pushMatrix();
+          angle = sin(glfwGetTime() * 3 - 2) / 3;
+          Model->rotate(angle, vec3(1, 0, 0));
+          Model->translate(vec3(0, fabs(angle) / 2, 0));
+          glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+          currObj->getMesh()->draw(prog, 7, true);
+          Model->popMatrix();
+          // left front leg
+          Model->pushMatrix();
+          angle = sin(glfwGetTime() * 3 - 3) / 3;
+          Model->rotate(angle, vec3(1, 0, 0));
+          Model->translate(vec3(0, fabs(angle) / 2, 0));
+          glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+          currObj->getMesh()->draw(prog, 5, true);
+          Model->popMatrix();
+          Model->popMatrix();
+        }
+        else
+        {
+          glBindTexture(GL_TEXTURE_2D, 0);
+          glUniform4fv(prog->getUniform("objColor"), 1, &green[0]);
+          // transform kibble
+          S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
+          currPos.y = 0.1f;
+          T = glm::translate(glm::mat4(1.0f), currPos);
+          // kibble rotation
+          R = glm::rotate(glm::mat4(1), w * 3, glm::vec3(0.0f, 1.0f, 0.0f));
+          M = T * R * S;
+          glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
+          currObj->getMesh()->draw(prog, true);
+        }
+      }
+      glBindTexture(GL_TEXTURE_2D, 0);
+
 
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, CatTex1);
@@ -712,14 +972,25 @@ public:
       Model->pushMatrix();
         Model->loadIdentity();
         Model->translate(vec3(mycam.getPos().x, mycam.getPos().y - 0.5, mycam.getPos().z));
-        Model->scale(0.5f);
+        if (mycam.getSpeedBoost() > 0.0f) /* SQUASH & STRETCH */
+          Model->scale(glm::vec3(mycam.getSscale(), 0.5f, mycam.getSscale()));
+        else {
+          Model->scale(0.5f);
+        }
         Model->rotate(rot, vec3(0, 1, 0));  
-        glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
-        glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+        glUniform4fv(prog->getUniform("objColor"), 1, &red[0]);
+        glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+        // texture effects
+        if (mycam.getDisplayDamage()) // damage 
+          glBindTexture(GL_TEXTURE_2D, 0);
+        else if (mycam.getSpeedBoost() > 0.0f) // power up 
+          glBindTexture(GL_TEXTURE_2D, CatTex3);
+        else // normal 
+          glBindTexture(GL_TEXTURE_2D, CatTex1);
         // draw everything but the tail with these transforms
         for (int i = 0; i < cat->getObjCount(); i++) {
           if (i != 4)
-            cat->draw(progL, i, true);
+            cat->draw(prog, i, true);
         }
         // tail transforms
         Model->pushMatrix();
@@ -727,111 +998,32 @@ public:
           Model->rotate(angle, vec3(0, 0, 1));
           // clip the tail slightly back into the model -- this helps hide any disjoint
           Model->translate(vec3(0, 0, 0.05f));
-          glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-          cat->draw(progL, 4, true);
+          glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+          cat->draw(prog, 4, true);
         Model->popMatrix();
       Model->popMatrix();
       glBindTexture(GL_TEXTURE_2D, 0);
 
-      // draw the game objects
-      for (int i = 0; i < myManager->getObjects().size(); i++) {
-          glActiveTexture(GL_TEXTURE2);
-          glBindTexture(GL_TEXTURE_2D, CatTex2);
-          std::shared_ptr<gameObject> currObj = myManager->getObjects().at(i);
-          vec3 currPos = currObj->getPos();
-          if (!currObj->getIsStatic()) {
-              // object is a cat -- use matrix stack
-              glUniform4fv(progL->getUniform("objColor"), 1, &pink[0]);
-              Model->pushMatrix();
-              Model->loadIdentity();
-              Model->multMatrix(myManager->getObjects().at(i)->getMatrix() * S);
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              // torso transforms
-              for (int i = 0; i < 3; i++) {
-                  if (i != 4)
-                      currObj->getMesh()->draw(progL, i, true);
-              }
-              // tail transform
-              Model->pushMatrix();
-              float angle = sin(glfwGetTime() * 5) / 3;
-              Model->rotate(-25.0f, vec3(1, 0, 0));
-              Model->rotate(angle, vec3(0, 0, 1));
-              // clip the tail slightly back into the model -- this helps hide any disjoint
-              Model->translate(vec3(0, -0.05f, 0.05f));
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              currObj->getMesh()->draw(progL, 4, true);
-              Model->popMatrix();
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              // right rear leg
-              Model->pushMatrix();
-              angle = sin(glfwGetTime() * 3) / 3;
-              Model->rotate(angle, vec3(1, 0, 0));
-              Model->translate(vec3(0, fabs(angle) / 2, 0));
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              currObj->getMesh()->draw(progL, 8, true);
-              Model->popMatrix();
-              // right front leg
-              Model->pushMatrix();
-              angle = sin(glfwGetTime() * 3 - 1) / 3;
-              Model->rotate(angle, vec3(1, 0, 0));
-              Model->translate(vec3(0, fabs(angle) / 2, 0));
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              currObj->getMesh()->draw(progL, 6, true);
-              Model->popMatrix();
-              // left rear leg
-              Model->pushMatrix();
-              angle = sin(glfwGetTime() * 3 - 2) / 3;
-              Model->rotate(angle, vec3(1, 0, 0));
-              Model->translate(vec3(0, fabs(angle) / 2, 0));
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              currObj->getMesh()->draw(progL, 7, true);
-              Model->popMatrix();
-              // left front leg
-              Model->pushMatrix();
-              angle = sin(glfwGetTime() * 3 - 3) / 3;
-              Model->rotate(angle, vec3(1, 0, 0));
-              Model->translate(vec3(0, fabs(angle) / 2, 0));
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-              currObj->getMesh()->draw(progL, 5, true);
-              Model->popMatrix();
-              Model->popMatrix();
-          }
-          else {
-              glBindTexture(GL_TEXTURE_2D, 0);
-              glUniform4fv(progL->getUniform("objColor"), 1, &red[0]);
-              // transform spheres
-              S = glm::scale(glm::mat4(1.0f), glm::vec3(currObj->getRad()));
-              currPos.y = 0.1f;
-              T = glm::translate(glm::mat4(1.0f), currPos);
-              // kibble rotation
-              R = glm::rotate(glm::mat4(1), w * 3, glm::vec3(0.0f, 1.0f, 0.0f));
-              M = T * R * S;
-              //M = T * S * myManager->getObjects().at(i).getMatrix();
-              glUniformMatrix4fv(progL->getUniform("M"), 1, GL_FALSE, &M[0][0]);
-              currObj->getMesh()->draw(progL, true);
-          }
-      }
-      glBindTexture(GL_TEXTURE_2D, 0);
-      progL->unbind();
 
       // draw room
-      prog->bind();
-
-      M = glm::mat4(1);
+      /*M = glm::mat4(1);
       S = glm::scale(glm::mat4(1.0f), glm::vec3(12.5, 12.5, 12.5));
       T = glm::translate(glm::mat4(1.0f), glm::vec3(0, 3.8, 0));
       M = T * S;
-      //glUniform3fv(prog->getUniform("objColor"), 1, &blue[0]);
-      vec3 lightDir = vec3(0.0, 5.0, 0.0);
-      glUniform3fv(prog->getUniform("lightPos"), 1, &lightDir[0]);
-      glUniform3fv(prog->getUniform("campos"), 1, &camPos[0]);
-      glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
-      glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+      //glUniform3fv(prog->getUniform("campos"), 1, &camPos[0]);
+      //glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+      //glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
       glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, &M[0][0]);
 
-      room->draw(prog, false);
+      room->draw(prog, false);*/
+        
+      /*glDisableVertexAttribArray(0);
+      glDisableVertexAttribArray(1);
+      glDisableVertexAttribArray(2);*/
 
       prog->unbind();
+
+      //glDisable(GL_DEPTH_TEST);
       
       /* draw our particles */
 
@@ -876,6 +1068,14 @@ public:
 
   void render() {
 
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+
+    // DEFERRED SHADING
+    /*if (DEFER)
+      glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+    else
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+
     double frametime = get_last_elapsed_time();
     myManager->process(&mycam, frametime);
     mycam.setDt(mycam.getDt() + frametime);
@@ -887,13 +1087,12 @@ public:
     glViewport(0, 0, width, height);
 
     // Clear framebuffer.
-    glClearColor(0.8f, 0.8f, 1.0f, 1.0f);
+    glClearColor(0.098f, 0.098f, 0.439f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Create the matrix stacks
-    glm::mat4 V, M, P; // View, Model and Perspective matrix
+    glm::mat4 V, P; // View and Perspective matrix
     V = glm::mat4(1);
-    M = glm::mat4(1);
     // Apply orthographic projection....
     P = glm::ortho(-1 * aspect, 1 * aspect, -1.0f, 1.0f, -2.0f, 100.0f);
     if (width < height) {
@@ -903,41 +1102,95 @@ public:
     P = glm::perspective(
         (float)(3.14159 / 4.), (float)((float)width / (float)height), 0.1f,
         1000.0f); // so much type casting... GLM metods are quite funny ones
-
-    // animation with the model matrix:
-    /*static float w = 0.0;
-    w += 1.0 * frametime; // rotation angle
-    float trans = 0;      // sin(t) * 2;
-    glm::mat4 RotateY =
-        glm::rotate(glm::mat4(1.0f), w, glm::vec3(0.0f, 1.0f, 0.0f));
-    float angle = -3.1415926 / 2.0;
-    glm::mat4 RotateX =
-        glm::rotate(glm::mat4(1.0f), angle, glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::mat4 TransZ =
-        glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3 + trans));*/
-
-    glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(0.3f, 0.3f, 0.3f));
-    glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    glm::mat4 R = glm::mat4(1.0f);
-    // M =  TransZ * RotateY * RotateX * S;
-    M = S * T;
-
     V = glm::lookAt(mycam.getPos() - mycam.getFront() * vec3(1.5), mycam.getPos() + mycam.getFront(),
         mycam.getUp());
+    
     mycam.processKeyboard(frametime, objects);
 
-    drawScene(P, V); /* 3RD PERSON CAMERA */
+   /*glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);*/
 
-    /* draw the complete scene from a top down camera */
+    // 3RD PERSON CAMERA
+    drawScene(P, V);
+
+
+    // DEFERRED SHADING
+    /*if (DEFER & !FirstTime)
+    {
+      // now draw the actual output
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      texProg->bind();
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, gPosition);
+      glActiveTexture(GL_TEXTURE0 + 1);
+      glBindTexture(GL_TEXTURE_2D, gNormal);
+      glActiveTexture(GL_TEXTURE0 + 2);
+      glBindTexture(GL_TEXTURE_2D, gColorSpec);
+      // glUniform1i(texProg->getUniform("texBuf"), 0);
+      glUniform1i(texProg->getUniform("gBuf"), 0);
+      glUniform1i(texProg->getUniform("norBuf"), 1);
+      glUniform1i(texProg->getUniform("colorBuf"), 2);
+      glUniform3f(texProg->getUniform("Ldir"), g_light.x, g_light.y, g_light.z);
+      glEnableVertexAttribArray(0);
+      glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+      glDisableVertexAttribArray(0);
+      texProg->unbind();
+    }
+    if (DEFER & FirstTime)
+    {
+      // code to write out the FBO (texture) just once
+      assert(GLTextureWriter::WriteImage(gBuffer, "gBuf.png"));
+      assert(GLTextureWriter::WriteImage(gPosition, "gPos.png"));
+      assert(GLTextureWriter::WriteImage(gNormal, "gNorm.png"));
+      assert(GLTextureWriter::WriteImage(gColorSpec, "gColorSpec.png"));
+      FirstTime = false;
+    }*/
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // MINI MAP
     mat4 OrthoProj = GetOrthoMatrix();
     mat4 TopView = GetTopView();
     glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(0, height-180, 320, 180);
-    drawScene(P, TopView); /* MINI MAP */
+    drawScene(P, TopView); // draw the complete scene from a top down camera
 
+    // HEALTH
     glClear(GL_DEPTH_BUFFER_BIT);
     glViewport(width-640, height-180, 640, 180);
     drawHealth(P, TopView); /* HEALTH */
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, FBOtex);
+    glGenerateMipmap(GL_TEXTURE_2D);
+  }
+
+  void render_with_framebuffer()
+  {
+      // Get current frame buffer size.
+      int width, height;
+      glfwGetFramebufferSize(windowManager->getHandle(), &width, &height);
+      glViewport(0, 0, width, height);
+      // Clear framebuffer.
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      TVstatic->bind();
+      static float value = 0.0f;
+      value += 0.02;
+      glUniform1f(TVstatic->getUniform("time"), value);
+      glUniform1f(TVstatic->getUniform("u_distortion"), 20.0f / 100.0f);
+      glUniform1f(TVstatic->getUniform("u_stripe"), 70.0f  / 100.0f);
+      glUniform1f(TVstatic->getUniform("u_rgbshift"), 2.5 / 1000.0f);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, FBOtex);
+      glBindVertexArray(VertexArrayIDScreen);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+      TVstatic->unbind();
   }
 };
 
@@ -950,10 +1203,13 @@ int main(int argc, char **argv) {
   }
 
   // *** audio engine ***
-  mycam.initEngine(1);
-  mycam.initEngine(2);
-  mycam.initEngine(3);
-  mycam.playRoost();
+  audioManager myaudio;
+  myaudio.initEngine(1);
+  myaudio.initEngine(2);
+  myaudio.initEngine(3);
+  myaudio.initEngine(4);
+  mycam.setAudio(myaudio);
+  myaudio.playRoost();
 
   Application *application = new Application();
 
@@ -979,11 +1235,13 @@ int main(int argc, char **argv) {
   application->initParticleTexture(resourceDir);
   application->initGame();
   application->initRoomGeo();
+  application->initGame();
 
   // Loop until the user closes the window.
   while (!glfwWindowShouldClose(windowManager->getHandle())) {
     // Render scene.
     application->render();
+    application->render_with_framebuffer();
 
     // Swap front and back buffers.
     glfwSwapBuffers(windowManager->getHandle());
@@ -991,11 +1249,11 @@ int main(int argc, char **argv) {
     glfwPollEvents();
   }
 
+  // *** audio engine ***
+  myaudio.uninitEngine();
+
   // Quit program.
   windowManager->shutdown();
-
-  // *** audio engine ***
-  mycam.uninitEngine();
 
   return 0;
 }
